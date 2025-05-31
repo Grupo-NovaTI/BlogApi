@@ -8,15 +8,25 @@ services:
     env_file:
       - backend.env
     volumes:
-      - .:/app
+      - .:/app # Comment this line if you want to use a pre-built image instead of building from source
+    depends_on:
+      - db
+      - redis
+  
   db:
     image: postgres:latest
     env_file:
       - database.env
-    ports:
-      - "5432:5432"
+    # ports: Uncomment if you want to expose the database port
+    #   - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    # ports: Uncomment if you want to expose the Redis port
+    #   - "6379:6379"
+
 
 volumes:
   db_data:
