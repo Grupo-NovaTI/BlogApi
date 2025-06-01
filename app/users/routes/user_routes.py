@@ -1,12 +1,16 @@
-from fastapi import APIRouter
-from users.models.user_model import UserModel
+from fastapi import APIRouter, HTTPException
 from users.schemas.user_response import UserResponse
 from users.schemas.user_request import UserRequest
 from core.dependencies.depends import UserRepositoryDependency
-user_router = APIRouter()
+from starlette import status
+user_router = APIRouter(
+    prefix="/users",
+    tags=["users"],
+    responses={404: {"description": "Not found"}},
+)
 
 
-@user_router.get("/users", response_model=list[UserResponse], summary="Get all users", tags=["users"])
+@user_router.get("", response_model=list[UserResponse], summary="Get all users", tags=["users"])
 async def get_users(repo: UserRepositoryDependency):
     """
     Endpoint to retrieve a list of users.
@@ -16,7 +20,7 @@ async def get_users(repo: UserRepositoryDependency):
     """
     return repo.get_all_users()
 
-@user_router.post("/users", response_model=UserResponse, summary="Insert a new user", tags=["users"])
+@user_router.post("", response_model=UserResponse, summary="Insert a new user", tags=["users"])
 async def insert_user(repo: UserRepositoryDependency, user: UserRequest):
     """
     Endpoint to insert a new user.
@@ -28,5 +32,8 @@ async def insert_user(repo: UserRepositoryDependency, user: UserRequest):
     Returns:
         The inserted user.
     """
-    new_user = UserModel(**user.model_dump())
-    return repo.create_user(user=new_user)
+    try:
+       user_orm = user.to_orm()
+       return repo.create_user(user=user_orm)
+    except Exception as e:
+       raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
