@@ -4,6 +4,7 @@ from core.db.database import init_db
 from users.routes.user_routes import user_router
 from comments.routes.comment_routes import comment_router
 from blogs.routes.blog_routes import blog_router
+from auth.routes.auth_routes import auth_router
 from tags.routes.tag_routes import tag_router
 from core.config.application_config import ApplicationConfig
 
@@ -43,6 +44,7 @@ app.include_router(user_router, prefix="/api/v1", tags=["users"])
 app.include_router(comment_router, prefix="/api/v1", tags=["comments"])
 app.include_router(blog_router, prefix="/api/v1", tags=["blogs"])
 app.include_router(tag_router, prefix="/api/v1", tags=["tags"])
+app.include_router(auth_router, prefix="/api/v1", tags=["auth"])
 
 if __name__ == "__main__" and application_config.debug:
     uvicorn.run(app, host=application_config.host, port=int(

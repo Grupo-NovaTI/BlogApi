@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException
+from utils.enumns.user_roles import UserRole
 from users.schemas.user_response import UserResponse
 from users.schemas.user_request import UserRequest
-from core.dependencies.depends import UserRepositoryDependency
+from core.dependencies.depends import UserRepositoryDependency, JwtAccessTokenDependency
+from core.security.authentication_decorators import role_required, admin_only
 from starlette import status
 user_router = APIRouter(
     prefix="/users",
@@ -11,7 +13,8 @@ user_router = APIRouter(
 
 
 @user_router.get("", response_model=list[UserResponse], summary="Get all users", tags=["users"])
-async def get_users(repo: UserRepositoryDependency):
+@admin_only()
+async def get_users(repo: UserRepositoryDependency, jwt_payload: JwtAccessTokenDependency):
     """
     Endpoint to retrieve a list of users.
     
@@ -21,7 +24,7 @@ async def get_users(repo: UserRepositoryDependency):
     return repo.get_all_users()
 
 @user_router.post("", response_model=UserResponse, summary="Insert a new user", tags=["users"])
-async def insert_user(repo: UserRepositoryDependency, user: UserRequest):
+async def insert_user( repo: UserRepositoryDependency, user: UserRequest):
     """
     Endpoint to insert a new user.
     
