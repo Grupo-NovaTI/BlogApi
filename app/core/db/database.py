@@ -2,13 +2,14 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
-from core.config.config import Config
+from core.config.application_config import ApplicationConfig
+import logging
 
-database_url: str = Config().db_url
+_database_configuration = ApplicationConfig()
 
-engine: Engine = create_engine(url="postgresql+psycopg2://postgres:postgres@db/postgres")
+_engine: Engine = create_engine(url=_database_configuration.db_url)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+_SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=_engine)
 
 Base = declarative_base()
 
@@ -20,7 +21,7 @@ def get_db():
     Yields:
         Session: A database session that can be used to interact with the database.
     """
-    db: Session = SessionLocal()
+    db: Session = _SessionLocal()
     try:
         yield db
     finally:
@@ -32,5 +33,7 @@ def init_db() -> None:
     Initialize the database by creating all tables.
     This function should be called at the start of the application.
     """
-    Base.metadata.create_all(bind=engine)
-    print("Database initialized successfully.")
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(filename='example.log', encoding='utf-8', level=logging.DEBUG)
+    Base.metadata.create_all(bind=_engine)
+    logger.info("Database initialized successfully.")

@@ -6,37 +6,37 @@ from core.db.database import get_db
 from users.repositories.user_repository import UserRepository
 from utils.repositories.base_repository import BaseRepository
 
-# Definición del tipo para la sesión de base de datos
-DatabaseSession = Annotated[Session, Depends(get_db)]
+# Database session type definition
+_DatabaseSession = Annotated[Session, Depends(get_db)]
 
 class DependencyProvider:
     """
-    Clase proveedora de dependencias que centraliza la gestión de dependencias.
-    Facilita la inyección de dependencias y el testing.
+    Dependency provider class that centralizes dependency management.
+    Facilitates dependency injection and testing.
     """
     @staticmethod
-    def get_repository(repository_class: Type[BaseRepository], db: DatabaseSession) -> BaseRepository:
+    def get_repository(repository_class: Type[BaseRepository], db: _DatabaseSession) -> BaseRepository:
         """
-        Método genérico para obtener cualquier repositorio.
+        Generic method to obtain any repository.
         
         Args:
-            repository_class: Clase del repositorio que se desea instanciar
-            db (Session): Sesión de base de datos
+            repository_class: Repository class to be instantiated
+            db (Session): Database session
             
         Returns:
-            BaseRepository: Instancia del repositorio solicitado
+            BaseRepository: Instance of the requested repository
         """
         return repository_class(db_session=db)
 
-def get_user_repository(db: DatabaseSession) -> UserRepository:
+def get_user_repository(db: _DatabaseSession) -> UserRepository:
     """
-    Dependencia que proporciona una instancia de UserRepository.
+    Dependency that provides a UserRepository instance.
     
     Args:
         db (Session): The database session dependency.
     
     Returns:
-        UserRepository: Instancia del repositorio de usuarios
+        UserRepository: Instance of the user repository
     
     Example:
         ```python
@@ -47,5 +47,5 @@ def get_user_repository(db: DatabaseSession) -> UserRepository:
     """
     return DependencyProvider.get_repository(repository_class=UserRepository, db=db)  # type: ignore[return-value]
 
-# Dependencias tipadas para uso en los endpoints
+# Typed dependencies for use in endpoints
 UserRepositoryDependency = Annotated[UserRepository, Depends(get_user_repository)]
