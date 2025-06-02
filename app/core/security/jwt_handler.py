@@ -46,7 +46,11 @@ class JwtHandler:
                     detail="Token has expired",
                     headers={"WWW-Authenticate": "Bearer"},
                 )
-            return payload
+            return {
+                "user_id": payload.get("sub"),
+                "role": payload.get("role"),
+                "exp": payload.get("exp"),
+            }
         except JWTError as e:
             print(f"ERROR: JWTError during decoding: {e}")  # See what JWTError says
             raise HTTPException(

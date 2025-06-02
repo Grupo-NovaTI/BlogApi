@@ -8,11 +8,6 @@ class UserAlreadyExistsException(Exception):
     pass
 
 
-class InvalidUserCredentialsException(Exception):
-    """Exception raised when user credentials are invalid."""
-    pass
-
-
-class UserPermissionDeniedException(Exception):
-    """Exception raised when a user does not have permission to perform an action."""
+class UserOperationException(Exception):
+    """Exception raised when a user cannot be created due to validation errors."""
     pass
