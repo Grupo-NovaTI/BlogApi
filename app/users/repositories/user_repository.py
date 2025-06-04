@@ -1,10 +1,9 @@
 from typing import List
-from utils.repositories.base_repository import BaseRepository
 from users.models.user_model import UserModel as User
 from users.excepctions.user_exception import UserOperationException
 from sqlalchemy.orm import Session
 
-class UserRepository(BaseRepository):
+class UserRepository:
     def __init__(self, db_session : Session) -> None:
         self._db_session:Session = db_session
 

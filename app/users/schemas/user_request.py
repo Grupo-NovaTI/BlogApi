@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from users.models.user_model import UserModel
 from core.security.password_hasher import PasswordHasher
-from utils.validators.regex_patterns import email_pattern
+from utils.consts.consts import email_pattern
 from utils.enumns.user_roles import UserRole
 
 class UserRequest(BaseModel):

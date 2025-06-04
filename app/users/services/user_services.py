@@ -4,7 +4,7 @@ from users.excepctions.user_exception import UserNotFoundException, UserAlreadyE
 from users.models.user_model import UserModel
 
 
-class UserServices:
+class UserService:
     def __init__(self, user_repository: UserRepository) -> None:
         self._user_repository: UserRepository = user_repository
 
