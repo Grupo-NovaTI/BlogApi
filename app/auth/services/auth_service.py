@@ -5,10 +5,10 @@ from auth.exceptions.auth_exceptions import InvalidUserCredentialsException
 from core.security.password_hasher import PasswordHasher
 
 class AuthService:
-    def __init__(self, user_repository: UserRepository, jwt_handler: JwtHandler) -> None:
+    def __init__(self, user_repository: UserRepository, jwt_handler: JwtHandler, password_service : PasswordHasher) -> None:
         self._user_repository: UserRepository = user_repository
         self._jwt_handler: JwtHandler = jwt_handler
-        self._password_hasher_service: PasswordHasher = PasswordHasher()
+        self._password_hasher_service: PasswordHasher = password_service
 
     def login(self, username, password) -> str:
         """
