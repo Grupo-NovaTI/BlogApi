@@ -25,4 +25,4 @@ async def get_token_payload(
 ) -> dict:
     return jwt_handler.decode_access_token(token=token)
 
-JwtAccessTokenDependency = Annotated[dict, Depends(get_token_payload)]
+AccessTokenDependency = Annotated[dict, Depends(get_token_payload)]

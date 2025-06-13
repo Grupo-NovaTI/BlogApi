@@ -1,6 +1,6 @@
 from typing import List
 from users.repositories.user_repository import UserRepository
-from users.excepctions.user_exception import UserNotFoundException, UserAlreadyExistsException
+from users.excepctions.user_exceptions import UserNotFoundException, UserAlreadyExistsException
 from users.models.user_model import UserModel
 
 

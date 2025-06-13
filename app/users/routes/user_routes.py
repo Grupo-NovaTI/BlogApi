@@ -6,9 +6,9 @@ from utils.enumns.user_roles import UserRole
 from users.schemas.user_response import UserResponse
 from users.schemas.user_request import UserRequest
 from core.dependencies.services_depends import UserServiceDependency
-from core.dependencies.security_depends import JwtAccessTokenDependency
+from core.dependencies.security_depends import AccessTokenDependency
 from core.security.authentication_decorators import authentication_required, role_required
-from users.excepctions.user_exception import UserNotFoundException, UserAlreadyExistsException, UserOperationException
+from users.excepctions.user_exceptions import UserNotFoundException, UserAlreadyExistsException, UserOperationException
 
 user_router = APIRouter(
     prefix="/users",
@@ -19,7 +19,7 @@ user_router = APIRouter(
 
 @user_router.get(path="/me", response_model=UserResponse, summary="Get current user", tags=["users"])
 @authentication_required()
-async def get_current_user(service: UserServiceDependency, jwt_payload: JwtAccessTokenDependency):
+async def get_current_user(service: UserServiceDependency, jwt_payload: AccessTokenDependency):
     """
     Endpoint to retrieve the current authenticated user.
 
@@ -49,7 +49,7 @@ async def get_current_user(service: UserServiceDependency, jwt_payload: JwtAcces
 
 @user_router.get(path="/{user_id}", response_model=UserResponse, summary="Get user by ID", tags=["users"])
 @role_required(required_role=[UserRole.ADMIN, UserRole.USER])
-async def get_user_by_id(user_id: int, service: UserServiceDependency, jwt_payload: JwtAccessTokenDependency):
+async def get_user_by_id(user_id: int, service: UserServiceDependency, jwt_payload: AccessTokenDependency):
     """
     Endpoint to retrieve a user by their ID.
 
@@ -76,7 +76,7 @@ async def get_user_by_id(user_id: int, service: UserServiceDependency, jwt_paylo
 
 @user_router.get(path="", response_model=List[UserResponse], summary="Get all users", tags=["users"])
 @authentication_required()
-async def get_users(service: UserServiceDependency, jwt_payload: JwtAccessTokenDependency):
+async def get_users(service: UserServiceDependency, jwt_payload: AccessTokenDependency):
     """
     Endpoint to retrieve a list of users.
 

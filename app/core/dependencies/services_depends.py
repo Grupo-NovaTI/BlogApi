@@ -2,9 +2,10 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from users.services.user_services import UserService
+from users.services.user_service import UserService
+from tags.services.tag_service import TagService
 from auth.services.auth_service import AuthService
-from core.dependencies.repo_depends import UserRepositoryDependency
+from core.dependencies.repo_depends import UserRepositoryDependency, TagRepositoryDependency
 from core.dependencies.security_depends import JWTHandlerDependency, PasswordHasherDependency
 
 def get_user_services(user_repository: UserRepositoryDependency) -> UserService:
@@ -31,7 +32,18 @@ def get_auth_services(user_repository: UserRepositoryDependency, jwt_handler: JW
     """
     return AuthService(user_repository=user_repository, jwt_handler=jwt_handler, password_service= password_service)
 
+def get_tag_services(tag_repository: TagRepositoryDependency) -> TagService:
+    """
+    Dependency that provides a TagService instance.
 
+    Args:
+        tag_repository (TagRepositoryDependency): The tag repository dependency.
+
+    Returns:
+        TagService: Instance of the tag services
+    """
+    return TagService(tag_repository=tag_repository)
 
 UserServiceDependency = Annotated[UserService, Depends(dependency=get_user_services)]
 AuthServiceDependency = Annotated[AuthService, Depends(dependency=get_auth_services)]
+TagServiceDependency = Annotated[TagService, Depends(dependency=get_tag_services)]

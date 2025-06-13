@@ -1,6 +1,6 @@
 from typing import List
 from users.models.user_model import UserModel as User
-from users.excepctions.user_exception import UserOperationException
+from users.excepctions.user_exceptions import UserOperationException
 from sqlalchemy.orm import Session
 
 class UserRepository:
