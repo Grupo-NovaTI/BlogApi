@@ -11,8 +11,8 @@ class TagResponse(BaseModel):
     description: Optional[str]
 
     class Config:
-        orm_mode = True
-        schema_extra = {
+        from_attributes = True
+        json_schema_extra = {
             "example": {
                 "id": 1,
                 "name": "example_tag",

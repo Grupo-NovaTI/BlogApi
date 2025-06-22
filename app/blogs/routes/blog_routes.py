@@ -1,10 +1,168 @@
-from fastapi import APIRouter, Depends, HTTPException
-
+from typing import List, Optional
+from fastapi import APIRouter, HTTPException
+from blogs.exceptions.blog_exceptions import BlogNotFoundException, BlogOperationException
+from core.dependencies.services_depends import BlogServiceDependency
+from blogs.schemas.blog_request import BlogRequest
+from blogs.schemas.blog_response import BlogResponse, BlogResponseFull
+from core.dependencies.security_depends import AccessTokenDependency
+from core.security.authentication_decorators import authentication_required
 from blogs.models.blog_model import BlogModel
 
-blog_router= APIRouter(
+blog_router = APIRouter(
     prefix="/blogs",
     tags=["blogs"],
     responses={404: {"description": "Not found"}},
 )
 
+
+@blog_router.get(path="", response_model=List[BlogResponseFull], tags=["blogs"], description="Get all blogs")
+async def get_blogs(
+    blog_service: BlogServiceDependency,
+    access_token: AccessTokenDependency,
+    limit: int = 10,
+    offset: int = 0,
+) -> List[BlogModel]:
+    try:
+        return blog_service.get_all_blogs(limit=limit, offset=offset)
+    except BlogOperationException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@blog_router.get(path="/{id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")
+async def get_blog_by_id(
+    id: int,
+    blog_service: BlogServiceDependency,
+    access_token: AccessTokenDependency,
+) -> Optional[BlogModel]:
+    try:
+        return blog_service.get_blog_by_id(id=id)
+    except BlogNotFoundException as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except BlogOperationException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@blog_router.post(path="", response_model=BlogResponseFull, tags=["blogs"], description="Create a new blog")
+async def create_blog(
+    blog: BlogRequest,
+    blog_service: BlogServiceDependency,
+    access_token: AccessTokenDependency,
+) -> BlogModel:
+    """
+Create a new blog post.
+This endpoint allows users to create a new blog post by providing the necessary details in the request body.
+"""
+    try:
+        return blog_service.create_blog(blog=BlogModel(**blog.model_dump()))
+    except BlogOperationException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+
+@blog_router.put(path="/{id}", response_model=BlogResponseFull, tags=["blogs"], description="Update a blog")
+async def update_blog(
+    id: int,
+    blog: BlogRequest,
+    blog_service: BlogServiceDependency,
+    access_token: AccessTokenDependency,
+) -> BlogModel:
+    try:
+        return blog_service.update_blog(blog=blog.model_dump(), id=id)
+    except BlogNotFoundException as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except BlogOperationException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@blog_router.delete(path="/{id}", response_model=BlogResponse, tags=["blogs"], description="Delete a blog")
+async def delete_blog(
+    id: int,
+    blog_service: BlogServiceDependency,
+    access_token: AccessTokenDependency,
+) -> BlogModel:
+    try:
+        return blog_service.delete_blog(blog_id=id)
+    except BlogNotFoundException as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except BlogOperationException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@blog_router.patch("/{id}/visibility", response_model=BlogResponseFull, tags=["blogs"], description="Update blog visibility")
+async def update_blog_visibility(
+    id: int,
+    visibility: bool,
+    blog_service: BlogServiceDependency,
+    access_token: AccessTokenDependency,
+) -> Optional[BlogModel]:
+    try:
+        return blog_service.update_blog_visibility(id=id, visibility=visibility)
+    except BlogNotFoundException as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except BlogOperationException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@blog_router.get("/public", response_model=List[BlogResponseFull], tags=["blogs"], description="Get public blogs")
+async def get_public_blogs(
+    blog_service: BlogServiceDependency,
+    access_token: AccessTokenDependency,
+    limit: int = 10,
+    offset: int = 0,
+) -> List[BlogModel]:
+    try:
+        return blog_service.get_public_blogs(limit=limit, offset=offset)
+    except BlogOperationException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@blog_router.get("/user/{user_id}", response_model=List[BlogResponseFull], tags=["blogs"], description="Get blogs by user")
+async def get_blogs_by_user(
+    user_id: int,
+
+    blog_service: BlogServiceDependency,
+    access_token: AccessTokenDependency,
+    limit: int = 10,
+    offset: int = 0,
+) -> List[BlogModel]:
+    try:
+        return blog_service.get_blogs_by_user(user_id=user_id, limit=limit, offset=offset)
+    except BlogOperationException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal Server Error {str(e)}")
+
+
+@blog_router.get("/users/me", response_model=List[BlogResponseFull], tags=["blogs"], description="Get blogs by current user")
+async def get_blogs_by_current_user(
+    blog_service: BlogServiceDependency,
+    access_token: AccessTokenDependency,
+    limit: int = 10,
+    offset: int = 0,
+) -> List[BlogModel]:
+    try:
+        user_id = access_token.get("user_id", None)
+        if user_id is None:
+            raise HTTPException(
+                status_code=401, detail="Unauthorized: User ID not found in access token")
+        return blog_service.get_blogs_by_user(user_id=user_id)
+    except BlogOperationException as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal Server Error {str(e)}")

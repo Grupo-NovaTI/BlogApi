@@ -21,8 +21,8 @@ class TagRequest(BaseModel):
     )
 
     class Config:
-        orm_mode = True
-        schema_extra = {
+        from_attributes = True
+        json_schema_extra = {
             "example": {
                 "name": "example_tag",
                 "description": "This is an example tag.",

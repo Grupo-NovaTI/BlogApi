@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -14,6 +14,7 @@ class BlogModel(Base):
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    is_published = Column(Boolean, nullable=False, server_default="False", default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(
     ), default=datetime.now(tz=timezone.utc))
     updated_at = Column(DateTime(timezone=True), server_default=func.now(
