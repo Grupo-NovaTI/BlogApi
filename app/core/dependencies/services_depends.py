@@ -5,7 +5,8 @@ from fastapi import Depends
 from users.services.user_service import UserService
 from tags.services.tag_service import TagService
 from auth.services.auth_service import AuthService
-from core.dependencies.repo_depends import UserRepositoryDependency, TagRepositoryDependency
+from blogs.services.blog_service import BlogService
+from core.dependencies.repo_depends import UserRepositoryDependency, TagRepositoryDependency, BlogRepositoryDependency
 from core.dependencies.security_depends import JWTHandlerDependency, PasswordHasherDependency
 
 def get_user_services(user_repository: UserRepositoryDependency) -> UserService:
@@ -44,6 +45,19 @@ def get_tag_services(tag_repository: TagRepositoryDependency) -> TagService:
     """
     return TagService(tag_repository=tag_repository)
 
+def get_blog_services(blog_repository: BlogRepositoryDependency) -> BlogService:
+    """
+    Dependency that provides a BlogService instance.
+
+    Args:
+        blog_repository (BlogRepositoryDependency): The blog repository dependency.
+
+    Returns:
+        BlogService: Instance of the blog services
+    """
+    return BlogService(blog_repository=blog_repository)
+
 UserServiceDependency = Annotated[UserService, Depends(dependency=get_user_services)]
 AuthServiceDependency = Annotated[AuthService, Depends(dependency=get_auth_services)]
 TagServiceDependency = Annotated[TagService, Depends(dependency=get_tag_services)]
+BlogServiceDependency = Annotated[BlogService, Depends(dependency=get_blog_services)]

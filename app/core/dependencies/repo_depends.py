@@ -3,6 +3,7 @@ from typing import Annotated, Type
 from fastapi import Depends
 from users.repositories.user_repository import UserRepository
 from tags.repositories.tag_repository import TagRepository
+from blogs.repositories.blog_repository import BlogRepository
 from core.dependencies.db_depends import DatabaseSession
 
 
@@ -31,7 +32,21 @@ def _get_tag_repository(db: DatabaseSession) -> TagRepository:
     """
     return TagRepository(db=db)
 
+def _get_blog_repository(db: DatabaseSession) -> BlogRepository:
+    """
+    Dependency that provides a BlogRepository instance.
+
+    Args:
+        db (Session): The database session dependency.
+
+    Returns:
+        BlogRepository: Instance of the blog repository
+    """
+    return BlogRepository(db=db)
+
 UserRepositoryDependency = Annotated[UserRepository, Depends(
     dependency=_get_user_repository)]
 TagRepositoryDependency = Annotated[TagRepository, Depends(
     dependency=_get_tag_repository)]
+BlogRepositoryDependency = Annotated[BlogRepository, Depends(
+    dependency=_get_blog_repository)]

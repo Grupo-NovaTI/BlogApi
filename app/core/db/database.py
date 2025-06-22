@@ -2,7 +2,6 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
-from utils.logger.application_logger import ApplicationLogger
 from core.config.application_config import ApplicationConfig
 
 _database_configuration = ApplicationConfig()
@@ -33,6 +32,4 @@ def init_db() -> None:
     Initialize the database by creating all tables.
     This function should be called at the start of the application.
     """
-    logger = ApplicationLogger("Database")
     Base.metadata.create_all(bind=_engine)
-    logger.log_debug("Database initialized successfully.")
