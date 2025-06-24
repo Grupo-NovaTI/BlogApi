@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from typing import Annotated
-from fastapi import Depends, HTTPException
+from starlette import status
+from fastapi import  HTTPException
 from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
-from core.config.application_config import ApplicationConfig
-from starlette import status
+from app.core.config.application_config import ApplicationConfig
 
 oauth_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 

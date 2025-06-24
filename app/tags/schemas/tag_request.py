@@ -3,7 +3,7 @@
 from typing import Optional
 from pydantic import BaseModel, Field
 
-from tags.models.tag_model import TagModel
+from app.tags.models.tag_model import TagModel
 
 
 class TagRequest(BaseModel):

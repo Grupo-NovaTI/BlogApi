@@ -1,10 +1,10 @@
 # from datetime import datetime, timezone
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from users.models.user_model import UserModel
-from core.security.password_hasher import PasswordHasher
-from utils.consts.consts import email_pattern
-from utils.enumns.user_roles import UserRole
+from app.users.models.user_model import UserModel
+from app.core.security.password_hasher import PasswordHasher
+from app.utils.consts.consts import email_pattern
+from app.utils.enumns.user_roles import UserRole
 
 class UserRequest(BaseModel):
     id: Optional[int] = Field(

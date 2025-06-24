@@ -1,7 +1,7 @@
 from typing import List, Optional
-from blogs.models.blog_model import BlogModel
-from blogs.repositories.blog_repository import BlogRepository
-from blogs.exceptions.blog_exceptions import BlogNotFoundException
+from app.blogs.models.blog_model import BlogModel
+from app.blogs.repositories.blog_repository import BlogRepository
+from app.blogs.exceptions.blog_exceptions import BlogNotFoundException
 class BlogService:
     def __init__(self, blog_repository: BlogRepository) -> None:
         self.__blog_repository: BlogRepository = blog_repository

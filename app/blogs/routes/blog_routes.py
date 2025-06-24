@@ -1,12 +1,12 @@
 from typing import List, Optional
 from fastapi import APIRouter, HTTPException
-from blogs.exceptions.blog_exceptions import BlogNotFoundException, BlogOperationException
-from core.dependencies.services_depends import BlogServiceDependency
-from blogs.schemas.blog_request import BlogRequest
-from blogs.schemas.blog_response import BlogResponse, BlogResponseFull
-from core.dependencies.security_depends import AccessTokenDependency
-from core.security.authentication_decorators import authentication_required
-from blogs.models.blog_model import BlogModel
+from app.blogs.exceptions.blog_exceptions import BlogNotFoundException, BlogOperationException
+from app.core.dependencies.services_depends import BlogServiceDependency
+from app.blogs.schemas.blog_request import BlogRequest
+from app.blogs.schemas.blog_response import BlogResponse, BlogResponseFull
+from app.core.dependencies.security_depends import AccessTokenDependency
+from app.core.security.authentication_decorators import authentication_required
+from app.blogs.models.blog_model import BlogModel
 
 blog_router = APIRouter(
     prefix="/blogs",

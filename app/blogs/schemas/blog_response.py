@@ -1,7 +1,7 @@
 from pydantic import BaseModel
-from users.schemas.user_response import UserResponse
 from typing import List, Optional
-from tags.schemas.tag_response import TagResponse
+from app.users.schemas.user_response import UserResponse
+from app.tags.schemas.tag_response import TagResponse
 class BlogResponse(BaseModel):
     """
     Schema for blog response.

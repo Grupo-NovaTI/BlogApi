@@ -2,7 +2,7 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
-from core.config.application_config import ApplicationConfig
+from app.core.config.application_config import ApplicationConfig
 
 _database_configuration = ApplicationConfig()
 

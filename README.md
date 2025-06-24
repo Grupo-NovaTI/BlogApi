@@ -4,3 +4,5 @@ In order to develop the application it is necessary to build a DevContainer usin
 
 ## Testing and Deployment:
 To test the application you can use the command docker-compose up or docker-compose run backend.
+
+Run uvicorn app.app:app --reload

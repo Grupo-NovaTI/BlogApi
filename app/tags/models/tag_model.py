@@ -3,8 +3,8 @@ from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
-from core.db.database import Base
-from tags.models.blog_tags import blog_tags
+from app.core.db.database import Base
+from app.tags.models.blog_tags import blog_tags
 
 class TagModel(Base):
     __tablename__ = "tags"

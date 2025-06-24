@@ -2,12 +2,12 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from users.services.user_service import UserService
-from tags.services.tag_service import TagService
-from auth.services.auth_service import AuthService
-from blogs.services.blog_service import BlogService
-from core.dependencies.repo_depends import UserRepositoryDependency, TagRepositoryDependency, BlogRepositoryDependency
-from core.dependencies.security_depends import JWTHandlerDependency, PasswordHasherDependency
+from app.users.services.user_service import UserService
+from app.tags.services.tag_service import TagService
+from app.auth.services.auth_service import AuthService
+from app.blogs.services.blog_service import BlogService
+from app.core.dependencies.repo_depends import UserRepositoryDependency, TagRepositoryDependency, BlogRepositoryDependency
+from app.core.dependencies.security_depends import JWTHandlerDependency, PasswordHasherDependency
 
 def get_user_services(user_repository: UserRepositoryDependency) -> UserService:
     """

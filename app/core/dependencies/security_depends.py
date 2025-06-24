@@ -1,8 +1,8 @@
 from typing import Annotated
 from fastapi import Depends
 
-from core.security.jwt_handler import JwtHandler
-from core.security.password_hasher import PasswordHasher
+from app.core.security.jwt_handler import JwtHandler
+from app.core.security.password_hasher import PasswordHasher
 
 
 _jwt_handler_instance = JwtHandler()

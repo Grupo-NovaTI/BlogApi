@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm.session import Session
-from tags.exceptions.tag_exceptions import TagOperationException
-from tags.models.tag_model import TagModel
+from sqlalchemy.exc import SQLAlchemyError
+from app.tags.exceptions.tag_exceptions import TagOperationException
+from app.tags.models.tag_model import TagModel
 
 
 class TagRepository:
@@ -16,7 +17,7 @@ class TagRepository:
                 f"Error on retrieving all tags: {str(e)}"
             )
 
-    def get_tag_by_id(self, tag_id: int) -> TagModel | None:
+    def get_tag_by_id(self, tag_id: int) -> Optional[TagModel]:
         """
         Retrieve a tag by its ID from the database.
 
@@ -38,7 +39,7 @@ class TagRepository:
                 f"Error on retrieving tag by ID: {str(e)}"
             )
 
-    def get_tag_by_name(self, tag_name: str) -> TagModel | None:
+    def get_tag_by_name(self, tag_name: str) -> Optional[TagModel]:
         """
         Retrieve a tag by its name from the database.
 
@@ -46,7 +47,7 @@ class TagRepository:
             tag_name (str): The name of the tag to retrieve.
 
         Returns:
-            TagModel: The tag object if found.
+            Optional[TagModel]: The tag object if found, otherwise None.
 
         Raises:
             TagOperationException: If there is a database error during retrieval.
@@ -74,14 +75,22 @@ class TagRepository:
             TagOperationException: If there is a database error during creation.
         """
         try:
-            self._db_session.add(tag)
-            self._db_session.commit()
+            with self._db_session.begin():
+                self._db_session.add(tag)
+                self._db_session.commit()
+                self._db_session.refresh(tag)
             return tag
+        except SQLAlchemyError as e:
+            self._db_session.rollback()
+            raise TagOperationException(
+                f"Database error on creating tag: {str(e)}"
+            )
         except Exception as e:
+            self._db_session.rollback()
             raise TagOperationException(
                 f"Error on creating tag: {str(e)}"
             )
-    def update_tag(self, tag: TagModel) -> TagModel:
+    def update_tag(self, tag_id : int, tag_data: dict) -> TagModel:
         """
         Update an existing tag in the database.
 
@@ -95,15 +104,24 @@ class TagRepository:
             TagOperationException: If there is a database error during update.
         """
         try:
-            self._db_session.merge(tag)
-            self._db_session.commit()
-            return tag
+            with self._db_session.begin():
+                self._db_session.query(TagModel).filter(
+                    TagModel.id == tag_id
+                ).update(tag_data)
+                self._db_session.commit()
+            return self.get_tag_by_id(tag_id)
+        except SQLAlchemyError as e:
+            self._db_session.rollback()
+            raise TagOperationException(
+                f"Database error on updating tag: {str(e)}"
+            )
         except Exception as e:
+            self._db_session.rollback()
             raise TagOperationException(
                 f"Error on updating tag: {str(e)}"
             )
-        
-    def delete_tag(self, tag_id: int) -> TagModel | None:
+
+    def delete_tag(self, tag_id: int) -> Optional[TagModel]:
         """
         Delete a tag by its ID from the database.
 
@@ -114,14 +132,21 @@ class TagRepository:
             TagOperationException: If there is a database error during deletion.
         """
         try:
-            tag: TagModel | None = self.get_tag_by_id(tag_id)
-            if tag:
-                self._db_session.delete(tag)
+            with self._db_session.begin():
+                self._db_session.query(TagModel).filter(
+                    TagModel.id == tag_id
+                ).delete()
                 self._db_session.commit()
-                return tag
-            else:
-                raise TagOperationException("Tag not found")
+            return self.get_tag_by_id(tag_id)
+        except SQLAlchemyError as e:
+            self._db_session.rollback()
+            raise TagOperationException(
+                f"Database error on deleting tag: {str(e)}"
+            )
         except Exception as e:
+            self._db_session.rollback()
             raise TagOperationException(
                 f"Error on deleting tag: {str(e)}"
             )
+
+    

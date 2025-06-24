@@ -1,7 +1,7 @@
 from typing import List
-from users.models.user_model import UserModel as User
-from users.excepctions.user_exceptions import UserOperationException
 from sqlalchemy.orm import Session
+from app.users.models.user_model import UserModel as User
+from app.users.excepctions.user_exceptions import UserOperationException
 
 class UserRepository:
     def __init__(self, db_session : Session) -> None:

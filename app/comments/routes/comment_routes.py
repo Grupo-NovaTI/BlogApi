@@ -1,5 +1,5 @@
-from comments.models.comment_model import CommentModel
 from fastapi import APIRouter, Depends, HTTPException
+from app.comments.models.comment_model import CommentModel
 
 comment_router = APIRouter(
     prefix="/comments",

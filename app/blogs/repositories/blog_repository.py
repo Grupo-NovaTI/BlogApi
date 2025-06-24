@@ -1,8 +1,8 @@
 from typing import List, Optional
 from sqlalchemy.orm.session import Session
-from blogs.models.blog_model import BlogModel
-from blogs.exceptions.blog_exceptions import BlogOperationException
 from sqlalchemy.exc import SQLAlchemyError
+from app.blogs.models.blog_model import BlogModel
+from app.blogs.exceptions.blog_exceptions import BlogOperationException
 
 
 class BlogRepository:

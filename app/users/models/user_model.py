@@ -5,7 +5,7 @@ from sqlalchemy.sql import func
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship, Mapped
 from typing import List
-from core.db.database import Base
+from app.core.db.database import Base
 
 
 

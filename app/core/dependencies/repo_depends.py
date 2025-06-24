@@ -1,10 +1,10 @@
-from typing import Annotated, Type
+from typing import Annotated
 
 from fastapi import Depends
-from users.repositories.user_repository import UserRepository
-from tags.repositories.tag_repository import TagRepository
-from blogs.repositories.blog_repository import BlogRepository
-from core.dependencies.db_depends import DatabaseSession
+from app.users.repositories.user_repository import UserRepository
+from app.tags.repositories.tag_repository import TagRepository
+from app.blogs.repositories.blog_repository import BlogRepository
+from app.core.dependencies.db_depends import DatabaseSession
 
 
 

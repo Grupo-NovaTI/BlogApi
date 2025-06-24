@@ -1,11 +1,11 @@
 from starlette import status
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
-from core.dependencies.services_depends import AuthServiceDependency as AuthService
-from auth.schemas.token_response import TokenResponse
-from users.schemas.user_request import UserRequest
-from users.excepctions.user_exceptions import UserAlreadyExistsException, UserOperationException
-from auth.exceptions.auth_exceptions import InvalidUserCredentialsException, OperationFailedException
+from app.core.dependencies.services_depends import AuthServiceDependency as AuthService
+from app.auth.schemas.token_response import TokenResponse
+from app.users.schemas.user_request import UserRequest
+from app.users.excepctions.user_exceptions import UserAlreadyExistsException, UserOperationException
+from app.auth.exceptions.auth_exceptions import InvalidUserCredentialsException, OperationFailedException
 auth_router = APIRouter(
     prefix="/auth",
     tags=["auth"]

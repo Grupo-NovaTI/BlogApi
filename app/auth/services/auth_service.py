@@ -1,8 +1,8 @@
-from users.models.user_model import UserModel
-from core.security.jwt_handler import JwtHandler
-from users.repositories.user_repository import UserRepository
-from auth.exceptions.auth_exceptions import InvalidUserCredentialsException
-from core.security.password_hasher import PasswordHasher
+from app.users.models.user_model import UserModel
+from app.core.security.jwt_handler import JwtHandler
+from app.users.repositories.user_repository import UserRepository
+from app.auth.exceptions.auth_exceptions import InvalidUserCredentialsException
+from app.core.security.password_hasher import PasswordHasher
 
 class AuthService:
     def __init__(self, user_repository: UserRepository, jwt_handler: JwtHandler, password_service : PasswordHasher) -> None:

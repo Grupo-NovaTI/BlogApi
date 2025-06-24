@@ -1,12 +1,12 @@
 import uvicorn
 from fastapi import FastAPI
-from core.db.database import init_db
-from users.routes.user_routes import user_router
-from comments.routes.comment_routes import comment_router
-from blogs.routes.blog_routes import blog_router
-from auth.routes.auth_routes import auth_router
-from tags.routes.tag_routes import tag_router
-from core.config.application_config import ApplicationConfig
+from app.core.db.database import init_db
+from app.users.routes.user_routes import user_router
+from app.comments.routes.comment_routes import comment_router
+from app.blogs.routes.blog_routes import blog_router
+from app.auth.routes.auth_routes import auth_router
+from app.tags.routes.tag_routes import tag_router
+from app.core.config.application_config import ApplicationConfig
 
 
 
