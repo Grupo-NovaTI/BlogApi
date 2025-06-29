@@ -1,26 +1,68 @@
 import logging
-from typing import Optional
+import os
+from datetime import datetime
+from pathlib import Path
 
 class ApplicationLogger:
-    def __init__(self, name: str = "ApplicationLogger", logger_level: int = logging.DEBUG) -> None:
+    def __init__(
+        self,
+        name: str = "ApplicationLogger",
+        logger_level: int = logging.DEBUG,
+        log_to_console: bool = True,
+        log_to_file: bool = True,
+        log_dir: str = "logs"
+    ) -> None:
         """
-        Initialize the logger.
+        Initialize the logger with both console and file handlers.
         
         Args:
-            name (str): The name of the logger.
-            logger_level (int): Logging level (default is logging.DEBUG).
+            name (str): The name of the logger
+            logger_level (int): Logging level (default is logging.DEBUG)
+            log_to_console (bool): Whether to log to console (default True)
+            log_to_file (bool): Whether to log to file (default True)
+            log_dir (str): Directory to store log files (default "logs")
         """
         self.logger: logging.Logger = logging.getLogger(name)
         self.logger.setLevel(logger_level)
+        
+        # Create formatter
+        self.formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
 
-        # Default console handler
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logger_level)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        console_handler.setFormatter(formatter)
-
+        # Setup handlers if logger doesn't have any
         if not self.logger.hasHandlers():
-            self.logger.addHandler(console_handler)
+            # Console handler
+            if log_to_console:
+                self._setup_console_handler(logger_level)
+            
+            # File handler
+            if log_to_file:
+                self._setup_file_handler(logger_level, log_dir)
+
+    def _setup_console_handler(self, level: int) -> None:
+        """Setup console handler with formatting"""
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(level)
+        console_handler.setFormatter(self.formatter)
+        self.logger.addHandler(console_handler)
+
+    def _setup_file_handler(self, level: int, log_dir: str) -> None:
+        """Setup file handler with formatting and rotation"""
+        # Create logs directory if it doesn't exist
+        log_path = Path(log_dir)
+        log_path.mkdir(exist_ok=True)
+
+        # Create log file with timestamp
+        timestamp = datetime.now().strftime('%Y%m%d')
+        log_file = log_path / f"application_{timestamp}.log"
+
+        # Setup file handler
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(level)
+        file_handler.setFormatter(self.formatter)
+        self.logger.addHandler(file_handler)
 
     def add_logger_handler(self, handler: logging.Handler) -> None:
         """Add a custom logging handler."""
@@ -74,3 +116,39 @@ class ApplicationLogger:
     def debug(self, message: str) -> None:
         """Alias for debug logging."""
         self.logger.debug(message)
+    
+    def log_exception(self, exc: Exception) -> None:
+        """
+        Log an exception with traceback.
+        
+        Args:
+            exc (Exception): The exception to log
+        """
+        self.logger.exception(f"Exception occurred: {str(exc)}")
+
+    @classmethod
+    def get_logger(
+        cls,
+        name: str,
+        level: int = logging.DEBUG,
+        log_to_console: bool = True,
+        log_to_file: bool = True
+    ) -> 'ApplicationLogger':
+        """
+        Factory method to create or get an existing logger.
+        
+        Args:
+            name (str): Logger name
+            level (int): Logging level
+            log_to_console (bool): Whether to log to console
+            log_to_file (bool): Whether to log to file
+        
+        Returns:
+            ApplicationLogger: Configured logger instance
+        """
+        return cls(
+            name=name,
+            logger_level=level,
+            log_to_console=log_to_console,
+            log_to_file=log_to_file
+        )
