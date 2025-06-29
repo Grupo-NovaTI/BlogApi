@@ -8,13 +8,12 @@ from app.core.config.application_config import ApplicationConfig
 oauth_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
 class JwtHandler:
-    def __init__(self, oauth_scheme : str = "api/v1/auth/login"):
-        self._config = ApplicationConfig()
+    def __init__(self,config : ApplicationConfig, oauth_scheme : str = "api/v1/auth/login"):
+        self._config = config
         self._secret_key: str = self._config.jwt_secret_key
         self._algorithm: str = self._config.jwt_algorithm
         self._access_token_expire_minutes = self._config.access_token_expire_minutes
         self._oauth_scheme = oauth_scheme
-
     @property
     def oauth_scheme(self) -> OAuth2PasswordBearer:
         """
