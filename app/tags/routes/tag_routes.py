@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.tags.schemas.tag_response import TagResponse
 from app.tags.schemas.tag_request import TagRequest
 from app.tags.exceptions.tag_exceptions import TagOperationException, TagNotFoundException, TagAlreadyExistsException
-from app.core.dependencies.services_depends import TagServiceDependency
-from app.core.dependencies.security_depends import AccessTokenDependency
+from app.core.dependencies import TagServiceDependency, AccessTokenDependency
+
 tag_router = APIRouter(
     prefix="/tags",
     tags=["tags"],

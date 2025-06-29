@@ -75,10 +75,9 @@ class TagRepository:
             TagOperationException: If there is a database error during creation.
         """
         try:
-            with self._db_session.begin():
-                self._db_session.add(tag)
-                self._db_session.commit()
-                self._db_session.refresh(tag)
+            self._db_session.add(tag)
+            self._db_session.commit()
+            self._db_session.refresh(tag)
             return tag
         except SQLAlchemyError as e:
             self._db_session.rollback()
@@ -104,11 +103,10 @@ class TagRepository:
             TagOperationException: If there is a database error during update.
         """
         try:
-            with self._db_session.begin():
-                self._db_session.query(TagModel).filter(
-                    TagModel.id == tag_id
-                ).update(tag_data)
-                self._db_session.commit()
+            self._db_session.query(TagModel).filter(
+                TagModel.id == tag_id
+            ).update(tag_data)
+            self._db_session.commit()
             return self.get_tag_by_id(tag_id)
         except SQLAlchemyError as e:
             self._db_session.rollback()
@@ -132,11 +130,10 @@ class TagRepository:
             TagOperationException: If there is a database error during deletion.
         """
         try:
-            with self._db_session.begin():
-                self._db_session.query(TagModel).filter(
-                    TagModel.id == tag_id
-                ).delete()
-                self._db_session.commit()
+            self._db_session.query(TagModel).filter(
+                TagModel.id == tag_id
+            ).delete()
+            self._db_session.commit()
             return self.get_tag_by_id(tag_id)
         except SQLAlchemyError as e:
             self._db_session.rollback()

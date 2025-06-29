@@ -5,8 +5,7 @@ from starlette import status
 from app.utils.enumns.user_roles import UserRole
 from app.users.schemas.user_response import UserResponse
 from app.users.schemas.user_request import UserRequest
-from app.core.dependencies.services_depends import UserServiceDependency
-from app.core.dependencies.security_depends import AccessTokenDependency
+from app.core.dependencies import UserServiceDependency, AccessTokenDependency
 from app.core.security.authentication_decorators import authentication_required, role_required
 from app.users.excepctions.user_exceptions import UserNotFoundException, UserAlreadyExistsException, UserOperationException
 

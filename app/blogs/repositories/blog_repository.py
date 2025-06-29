@@ -33,9 +33,8 @@ class BlogRepository:
 
     def update_blog(self, blog_data: dict, blog_id: int) -> BlogModel:
         try:
-            with self.__db.begin():
-                self.__db.query(BlogModel).filter(
-                    BlogModel.id == blog_id).update(blog_data)
+            self.__db.query(BlogModel).filter(
+                BlogModel.id == blog_id).update(blog_data)
             return self.get_blog_by_id(blog_id)
         except Exception as e:
             raise BlogOperationException(f"Error updating blog: {str(e)}")
@@ -57,10 +56,9 @@ class BlogRepository:
 
     def update_blog_visibility(self, blog_id: int, visibility: bool) -> Optional[BlogModel]:
         try:
-            with self.__db.begin():
-                self.__db.query(BlogModel).filter(BlogModel.id == blog_id).update(
-                    values={"is_published": visibility})
-                self.__db.commit()
+            self.__db.query(BlogModel).filter(BlogModel.id == blog_id).update(
+                values={"is_published": visibility})
+            self.__db.commit()
             return self.get_blog_by_id(id=blog_id)
         except SQLAlchemyError as e:
             self.__db.rollback()
