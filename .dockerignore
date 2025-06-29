@@ -8,3 +8,8 @@ Dockerfile
 *.log
 **/__pycache__/
 */__pycache__/
+alembic
+alembic.ini
+migrations
+tests
+.env-copy
