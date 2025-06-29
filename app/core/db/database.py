@@ -4,11 +4,15 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 from app.core.config.application_config import ApplicationConfig
 
+from app.utils.logger.application_logger import ApplicationLogger
+
+_logger: ApplicationLogger = ApplicationLogger(name=__name__, log_to_console=False)
+
 _database_configuration = ApplicationConfig()
 
 _engine: Engine = create_engine(url=_database_configuration.db_url)
 
-_SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=_engine)
+_SessionLocal: sessionmaker[Session] = sessionmaker(autocommit=False, autoflush=False, bind=_engine)
 
 Base = declarative_base()
 
@@ -32,4 +36,6 @@ def init_db() -> None:
     Initialize the database by creating all tables.
     This function should be called at the start of the application.
     """
+    _logger.log_info("Initializing the database...")
     Base.metadata.create_all(bind=_engine)
+    _logger.log_info("Database initialization complete.")
