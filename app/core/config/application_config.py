@@ -21,6 +21,8 @@ class ApplicationConfig:
         self._jwt_secret_key = os.getenv(
             key="JWT_SECRET_KEY", default="your_jwt_secret_key")
         self._jwt_algorithm = os.getenv(key="JWT_ALGORITHM", default="HS256")
+        self._redis_url = os.getenv(
+            key="REDIS_URL", default="redis://localhost:6379/0")
 
     @property
     def app_name(self) -> str:
@@ -47,6 +49,11 @@ class ApplicationConfig:
         """Get application host."""
         return self._host
 
+    @property
+    def redis_url(self) -> str:
+        """Get Redis URL."""
+        return self._redis_url
+    
     @property
     def db_url(self) -> str:
         """Get database URL."""
