@@ -123,7 +123,7 @@ def _provide_user_services(user_repository: _UserRepositoryDependency) -> UserSe
     return UserService(user_repository=user_repository)
 
 
-def __provide_auth_service(user_repository: _UserRepositoryDependency, jwt_handler: JWTHandlerDependency, password_service: _PasswordHasherDependency) -> AuthService:
+def _provide_auth_service(user_repository: _UserRepositoryDependency, jwt_handler: JWTHandlerDependency, password_service: _PasswordHasherDependency) -> AuthService:
     """
     Dependency that provides an AuthService instance for authentication.
 
@@ -136,7 +136,7 @@ def __provide_auth_service(user_repository: _UserRepositoryDependency, jwt_handl
     return AuthService(user_repository=user_repository, jwt_handler=jwt_handler, password_service=password_service)
 
 
-def __provide_tag_service(tag_repository: _TagRepositoryDependency) -> TagService:
+def _provide_tag_service(tag_repository: _TagRepositoryDependency) -> TagService:
     """
     Dependency that provides a TagService instance.
 
@@ -165,9 +165,9 @@ def __provide_blog_service(blog_repository: _BlogRepositoryDependency) -> BlogSe
 UserServiceDependency = Annotated[UserService,
                                   Depends(dependency=_provide_user_services)]
 AuthServiceDependency = Annotated[AuthService,
-                                  Depends(dependency=__provide_auth_service)]
+                                  Depends(dependency=_provide_auth_service)]
 TagServiceDependency = Annotated[TagService,
-                                 Depends(dependency=__provide_tag_service)]
+                                 Depends(dependency=_provide_tag_service)]
 BlogServiceDependency = Annotated[BlogService,
                                   Depends(dependency=__provide_blog_service)]
 
