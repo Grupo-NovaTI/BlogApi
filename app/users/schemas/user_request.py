@@ -3,14 +3,14 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from app.users.models.user_model import UserModel
 from app.core.security.password_hasher import PasswordHasher
-from app.utils.consts.consts import email_pattern
+from app.utils.consts.consts import EMAIL_PATTERN
 from app.utils.enumns.user_roles import UserRole
 
 class UserRequest(BaseModel):
     id: Optional[int] = Field(
         default=None, description="User ID, optional for new users", exclude=True)
     username: str = Field(..., min_length=5, max_length=50)
-    email: EmailStr = Field(..., examples=["user@example.com"], pattern=email_pattern)
+    email: EmailStr = Field(..., examples=["user@example.com"], pattern=EMAIL_PATTERN)
     name: str = Field(..., min_length=1, max_length=50, examples=[
         "John", "Jane"])
     last_name: str = Field(..., min_length=1, max_length=50, examples=[
