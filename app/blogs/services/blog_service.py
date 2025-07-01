@@ -26,13 +26,13 @@ class BlogService:
     def delete_blog(self, blog_id : int ) -> BlogModel:
         operation_result: BlogModel | None = self._blog_repository.delete_blog(blog_id=blog_id)
         if not operation_result:
-            raise BlogNotFoundException(f"Blog with id {blog_id} not found.")
+            raise BlogNotFoundException(not_found_message(instance="blog", identifier=blog_id))
         return operation_result
 
     def update_blog_visibility(self, id: int, visibility: bool) -> BlogModel:
         operation_result: BlogModel | None = self._blog_repository.update_blog_visibility(blog_id=id, visibility=visibility)
         if not operation_result:
-            raise BlogNotFoundException(f"Blog with id {id} not found.")
+            raise BlogNotFoundException(not_found_message(instance="blog", identifier=id))
         return operation_result
        
 
