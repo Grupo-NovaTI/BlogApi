@@ -9,14 +9,14 @@ class TagService:
     def __init__(self, tag_repository: TagRepository) -> None:
         self._repository: TagRepository = tag_repository
 
-    def get_tags(self) -> List[TagModel]:
+    def get_tags(self, limit: int, offset: int) -> List[TagModel]:
         """Retrieve all tags from the repository.
         Returns:
             List[TagModel]: A list of all tags.
         Raises:
             TagOperationException: If there is an error retrieving tags from the repository.
         """
-        return self._repository.get_all_tags()
+        return self._repository.get_all_tags(limit=limit, offset=offset)
 
     def get_tag_by_id(self, tag_id: int) -> Optional[TagModel]:
         """Retrieve a tag by its ID.
