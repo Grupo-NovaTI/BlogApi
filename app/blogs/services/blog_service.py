@@ -41,3 +41,16 @@ class BlogService:
 
     def get_blogs_by_user(self, user_id: int, limit: int = 10, offset: int = 0) -> List[BlogModel]:
         return self._blog_repository.get_blogs_by_user(user_id=user_id, limit=limit, offset=offset)
+    
+    def set_blog_as_public(self, blog_id : int) -> BlogModel:
+        operation_result: BlogModel | None = self._blog_repository.update_blog_visibility(blog_id=blog_id, visibility=True)
+        if not operation_result:
+            raise BlogNotFoundException(not_found_message(instance="blog", identifier=blog_id))
+        return operation_result
+    
+    def set_blog_as_private(self, blog_id : int) -> BlogModel:
+        operation_result: BlogModel | None = self._blog_repository.update_blog_visibility(blog_id=blog_id, visibility=False)
+        if not operation_result:
+            raise BlogNotFoundException(not_found_message(instance="blog", identifier=blog_id))
+        return operation_result
+    
