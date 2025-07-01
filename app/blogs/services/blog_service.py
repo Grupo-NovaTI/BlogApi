@@ -2,6 +2,7 @@ from typing import List, Optional
 from app.blogs.models.blog_model import BlogModel
 from app.blogs.repositories.blog_repository import BlogRepository
 from app.blogs.exceptions.blog_exceptions import BlogNotFoundException
+from app.utils.errors.error_messages import not_found_message
 class BlogService:
     def __init__(self, blog_repository: BlogRepository) -> None:
         self._blog_repository: BlogRepository = blog_repository
@@ -10,10 +11,8 @@ class BlogService:
         return self._blog_repository.get_all_blogs(limit=limit, offset=offset)
 
     def get_blog_by_id(self, id: int) -> Optional[BlogModel]:
-        blog: BlogModel | None = self._blog_repository.get_blog_by_id(id=id)
-        if not blog:
-            raise BlogNotFoundException(f"Blog with id {id} not found.")
-        return blog
+         return self._blog_repository.get_blog_by_id(id=id)
+        
 
     def create_blog(self, blog: BlogModel) -> BlogModel:
         return self._blog_repository.create_blog(blog=blog)
@@ -21,7 +20,7 @@ class BlogService:
     def update_blog(self, blog: dict, id : int) -> BlogModel:
         operation_result: BlogModel | None = self._blog_repository.update_blog(blog_data=blog, blog_id=id)
         if not operation_result:
-            raise BlogNotFoundException(f"Blog with id {id} not found.")
+            raise BlogNotFoundException(not_found_message(instance="blog", identifier=id))
         return operation_result
 
     def delete_blog(self, blog_id : int ) -> BlogModel:
