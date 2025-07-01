@@ -10,7 +10,10 @@ class BlogService:
         return self._blog_repository.get_all_blogs(limit=limit, offset=offset)
 
     def get_blog_by_id(self, id: int) -> Optional[BlogModel]:
-        return self._blog_repository.get_blog_by_id(id=id)
+        blog: BlogModel | None = self._blog_repository.get_blog_by_id(id=id)
+        if not blog:
+            raise BlogNotFoundException(f"Blog with id {id} not found.")
+        return blog
 
     def create_blog(self, blog: BlogModel) -> BlogModel:
         return self._blog_repository.create_blog(blog=blog)

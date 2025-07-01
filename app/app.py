@@ -23,7 +23,7 @@ from app.tags.routes.tag_routes import tag_router
 from app.core.config.application_config import ApplicationConfig
 from app.utils.logger.application_logger import ApplicationLogger
 from app.core.dependencies.dependencies import provide_application_config
-from app.core.middlewares.rate_limit_middleware import get_rate_limiter
+from app.core.middlewares.rate_limit_middleware import rate_limiter
 from app.status.status_routes import app as status_router
 
 _logger: ApplicationLogger = ApplicationLogger(name=__name__, log_to_console=False)
@@ -31,18 +31,17 @@ _logger: ApplicationLogger = ApplicationLogger(name=__name__, log_to_console=Fal
 application_config: ApplicationConfig = provide_application_config()
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     
     """Lifespan event handler to initialize Redis and FastAPI Cache."""
     
-    app.state.limiter = get_rate_limiter(storage_uri=application_config.redis_url)  # Set the rate limiter from the config
-    app.add_exception_handler(exc_class_or_status_code=RateLimitExceeded, handler=_rate_limit_exceeded_handler)  # Handle rate limit exceeded exceptions
     _logger.log_info(message=f"Starting application: {app.title} v{app.version} in {'debug' if app.debug else 'production'} mode.")
     init_db()
     # Initialize Redis connection
     redis: aioredis.Redis = aioredis.from_url(application_config.redis_url, encoding="utf-8", decode_responses=True)
-    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+    FastAPICache.init(backend=RedisBackend(redis=redis), prefix="fastapi-cache")
     
     _logger.log_info(message="Redis connection established and FastAPI Cache initialized.")
     yield
@@ -59,8 +58,12 @@ app = FastAPI(
     debug=application_config.debug,
 )
 
-# Add the rate limiter middleware to the FastAPI application
-app.add_middleware(SlowAPIMiddleware)  # Add SlowAPI middleware for rate limiting
+# Rate Limiting Configuration
+app.state.limiter = rate_limiter  # Set the rate limiter from the config
+
+app.add_exception_handler(exc_class_or_status_code=RateLimitExceeded, handler=_rate_limit_exceeded_handler)  # Handle rate limit exceeded exceptions
+
+app.add_middleware(middleware_class=SlowAPIMiddleware)  # Add SlowAPI middleware for rate limiting
 
 # Register routers for different modules
 app.include_router(user_router, prefix="/api/v1", tags=["users"])

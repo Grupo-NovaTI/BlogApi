@@ -1,6 +1,7 @@
 import time
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request, Path, Query
+from fastapi_cache.decorator import cache
 from app.blogs.exceptions.blog_exceptions import BlogNotFoundException, BlogOperationException
 from app.core.dependencies import BlogServiceDependency,AccessTokenDependency
 from app.blogs.schemas.blog_request import BlogRequest
@@ -8,7 +9,7 @@ from app.blogs.schemas.blog_response import BlogResponse, BlogResponseFull
 from app.blogs.models.blog_model import BlogModel
 from app.utils.consts.consts import DEFAULT_PAGE_SIZE, DEFAULT_OFFSET
 from app.core.security.authentication_decorators import authentication_required
-from fastapi_cache.decorator import cache
+from app.core.middlewares.rate_limit_middleware import rate_limiter as limiter
 
 blog_router = APIRouter(
     prefix="/blogs",
@@ -16,17 +17,17 @@ blog_router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-
 @blog_router.get(path="", response_model=List[BlogResponseFull], tags=["blogs"], description="Get all blogs")
+@limiter.limit("2/minute")  # Rate limit to 2 requests per minute
 @cache(expire=60)  # Cache for 60 seconds
 async def get_blogs(
+    request: Request,
     blog_service: BlogServiceDependency,
     jwt_payload: AccessTokenDependency,
-    limit: int = DEFAULT_PAGE_SIZE,
-    offset: int = DEFAULT_OFFSET,
+    limit: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=100),
+    offset: int = Query(default=DEFAULT_OFFSET, ge=0),
 ) -> List[BlogModel]:
     try:
-        time.sleep(2)  # Simulate a delay for demonstration purposes
         return blog_service.get_all_blogs(limit=limit, offset=offset)
     except BlogOperationException as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -35,10 +36,11 @@ async def get_blogs(
 
 
 @blog_router.get(path="/{id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")
+@cache(expire=60)  # Cache for 60 seconds
 async def get_blog_by_id(
-    id: int,
     blog_service: BlogServiceDependency,
     jwt_payload: AccessTokenDependency,
+    id: int = Path(default=..., description="The ID of the blog to retrieve", ge=1),
 ) -> Optional[BlogModel]:
     try:
         return blog_service.get_blog_by_id(id=id)
