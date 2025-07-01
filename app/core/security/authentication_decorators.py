@@ -5,6 +5,30 @@ from fastapi import HTTPException
 from app.utils.enumns.user_roles import UserRole
 
 
+def current_user_only():
+    """
+    Decorator to ensure that the user is accessing their own data.
+    """
+    def decorator(func: Callable):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            
+            authenticated_user_id = kwargs.get('jwt_payload', {}).get('user_id')
+            expected_user_id = kwargs.get("user_id", 0)
+            if not authenticated_user_id:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User ID not found in JWT payload")
+            if int(authenticated_user_id) != expected_user_id:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only access your own data.")
+            import inspect
+            if inspect.iscoroutinefunction(func):
+                return await func(*args, **kwargs)
+            else:
+                return func(*args, **kwargs)
+        
+        return wrapper
+    return decorator
+
+
 def admin_only():
     """
     Decorator to ensure that the user has the required role.

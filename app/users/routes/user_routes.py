@@ -6,10 +6,9 @@ from fastapi import APIRouter, HTTPException, Path
 from app.utils.enumns.user_roles import UserRole
 from app.users.schemas.user_response import UserResponse
 from app.core.dependencies import UserServiceDependency, AccessTokenDependency
-from app.core.security.authentication_decorators import authentication_required, role_required
+from app.core.security.authentication_decorators import admin_only, authentication_required, role_required, current_user_only
 from app.users.excepctions.user_exceptions import UserNotFoundException, UserOperationException
-from app.core.security.authentication_decorators import role_required
-from app.auth.exceptions.auth_exceptions import OperationNotAllowedException, UserPermissionDeniedException
+from app.auth.exceptions.auth_exceptions import OperationNotAllowedException
 
 user_router = APIRouter(
     prefix="/users",
@@ -87,7 +86,7 @@ async def get_users(service: UserServiceDependency):
 
 
 @user_router.delete(path="/{user_id}", summary="Delete user by ID", tags=["users"], status_code=status.HTTP_204_NO_CONTENT)
-@role_required(required_role=[UserRole.ADMIN, UserRole.USER])
+@current_user_only()
 async def delete_user(service: UserServiceDependency, jwt_payload: AccessTokenDependency, user_id: int = Path(ge=1, description="The unique identifier of the user to delete")):
     """
     Endpoint to delete a user by their ID.
@@ -139,7 +138,8 @@ async def reactivate_user_account(service: UserServiceDependency, jwt_payload: A
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-@user_router.patch("deactivate", summary="Deactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
+@user_router.patch("/deactivate", summary="Deactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
+@authentication_required()
 async def set_user_inactive(service: UserServiceDependency, jwt_payload: AccessTokenDependency):
     """
     Endpoint to deactivate a user account.
@@ -166,3 +166,4 @@ async def set_user_inactive(service: UserServiceDependency, jwt_payload: AccessT
     except UserOperationException as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+        
