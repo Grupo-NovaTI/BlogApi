@@ -25,6 +25,7 @@ from app.utils.logger.application_logger import ApplicationLogger
 from app.core.dependencies.dependencies import provide_application_config
 from app.core.middlewares.rate_limit_middleware import rate_limiter
 from app.status.status_routes import app as status_router
+from app.admin.routes.admin_routes import admin_router
 
 _logger: ApplicationLogger = ApplicationLogger(name=__name__, log_to_console=False)
 # Gets the application global configuration
@@ -72,4 +73,5 @@ app.include_router(blog_router, prefix="/api/v1", tags=["blogs"])
 app.include_router(tag_router, prefix="/api/v1", tags=["tags"])
 app.include_router(auth_router, prefix="/api/v1", tags=["auth"])
 app.include_router(status_router, prefix="", tags=["status"])
+app.include_router(admin_router, prefix="/api/v1", tags=["admin"])
 
