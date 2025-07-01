@@ -67,7 +67,7 @@ async def create_tag(tag_data: TagRequest, token: AccessTokenDependency, tag_ser
         HTTPException: If a tag with the same name already exists or if there is an error during creation.
     """
     try:
-        return tag_service.create_tag(tag_data=tag_data.to_model())
+        return tag_service.create_tag(tag=tag_data.to_model())
     except TagAlreadyExistsException as e:
         raise HTTPException(status_code=400, detail=str(e))
     except TagOperationException as e:
