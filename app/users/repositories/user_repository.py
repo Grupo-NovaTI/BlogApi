@@ -1,13 +1,19 @@
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.users.models.user_model import UserModel as User
 from app.users.excepctions.user_exceptions import UserOperationException
+from app.utils.errors.error_messages import database_error_message, unknown_error_message, integrity_error_message
+from app.utils.logger.application_logger import ApplicationLogger
+
+_logger = ApplicationLogger(__name__)
+
 
 class UserRepository:
     def __init__(self, db_session : Session) -> None:
         self._db_session:Session = db_session
 
-    def get_user_by_id(self, user_id: int) -> User | None:
+    def get_user_by_id(self, user_id: int) -> Optional[User]:
         """
         Retrieve a user by their ID from the database.
 
@@ -22,12 +28,20 @@ class UserRepository:
         """
         try:
             return self._db_session.query(User).filter(User.id == user_id).first()
-        except Exception as e:
+        except SQLAlchemyError as e:
+            _logger.log_error(database_error_message(
+                operation="retrieving", instance="user", exception=e))
             raise UserOperationException(
-                f"Error on retrieving user by ID: {str(e)}"
+                database_error_message(operation="retrieving", instance="user", exception=e)
+            )
+        except Exception as e:
+            _logger.log_error(unknown_error_message(
+                operation="retrieving", instance="user", exception=e))
+            raise UserOperationException(
+                unknown_error_message(operation="retrieving", instance="user", exception=e)
             )
 
-    def get_user_by_username(self, username: str) -> User | None:
+    def get_user_by_username(self, username: str) -> Optional[User]:
         """
         Retrieve a user by their username from the database.
 
@@ -42,9 +56,16 @@ class UserRepository:
         """
         try:
             return self._db_session.query(User).filter(User.username == username).first()
+        except SQLAlchemyError as e:
+            _logger.log_error(database_error_message(
+                operation="retrieving", instance="user by username", exception=e))
+            raise UserOperationException(database_error_message(
+                operation="retrieving", instance="user by username", exception=e))
         except Exception as e:
+            _logger.log_error(unknown_error_message(
+                operation="retrieving", instance="user by username", exception=e))
             raise UserOperationException(
-                f"Error on retrieving user by username: {str(e)}"
+                unknown_error_message(operation="retrieving", instance="user by username", exception=e)
             )
 
     def create_user(self, user: User) -> User:
@@ -66,12 +87,30 @@ class UserRepository:
             self._db_session.commit()
             self._db_session.refresh(user)
             return user
+        except IntegrityError as e:
+            self._db_session.rollback()
+            _logger.log_error(integrity_error_message(
+                operation="creating", instance="user", exception=e))
+            raise UserOperationException(
+                integrity_error_message(
+                    operation="creating", instance="user", exception=e
+                )
+            )
+        except SQLAlchemyError as e:
+            self._db_session.rollback()
+            _logger.log_error(database_error_message(
+                operation="creating", instance="user", exception=e))
+            raise UserOperationException(
+                database_error_message(operation="creating", instance="user", exception=e))    
         except Exception as e:
+            _logger.log_error(unknown_error_message(
+                operation="creating", instance="user", exception=e))
             self._db_session.rollback()
             raise UserOperationException(
-                f"User cannot be created due to: {str(e)}")
+                unknown_error_message(
+                    operation="creating", instance="user", exception=e))
 
-    def update_user(self, user: User) -> User:
+    def update_user(self, user_data: dict, user_id : int) -> Optional[User]:
         """
         Update an existing user's information in the database.
 
@@ -86,15 +125,35 @@ class UserRepository:
                                   such as user not found or duplicate unique fields.
         """
         try:
-            self._db_session.add(user)
+            rows_affected :int = self._db_session.query(User).filter(User.id == user_id).update(user_data)
+            if rows_affected == 0:
+                return None
             self._db_session.commit()
-            return user
+            return self.get_user_by_id(user_id=user_id)
+        except IntegrityError as e:
+            self._db_session.rollback()
+            _logger.log_error(integrity_error_message(
+                operation="updating", instance="user", exception=e))
+            raise UserOperationException(
+                integrity_error_message(
+                    operation="updating", instance="user", exception=e)
+            )
+        except SQLAlchemyError as e:
+            self._db_session.rollback()
+            _logger.log_error(database_error_message(
+                operation="updating", instance="user", exception=e))
+            raise UserOperationException(
+                database_error_message(operation="updating", instance="user", exception=e)
+            )
         except Exception as e:
             self._db_session.rollback()
+            _logger.log_error(unknown_error_message(
+                operation="updating", instance="user", exception=e))
             raise UserOperationException(
-                f"User cannot be updated due to: {str(e)}")
+                unknown_error_message(
+                    operation="updating", instance="user", exception=e))
 
-    def delete_user(self, user: User) -> User:
+    def delete_user(self, user_id : int) -> bool:
         """
         Delete a user from the database.
 
@@ -109,13 +168,36 @@ class UserRepository:
                                   such as user not found or constraint violations.
         """
         try:
+            user : Optional[User] = self.get_user_by_id(user_id=user_id)
+            if not user:
+                return False
             self._db_session.delete(user)
             self._db_session.commit()
-            return user
+            return True
+        except IntegrityError as e:
+            self._db_session.rollback()
+            _logger.log_error(integrity_error_message(
+                operation="deleting", instance="user", exception=e))
+            raise UserOperationException(
+                integrity_error_message(
+                    operation="deleting", instance="user", exception=e
+                )
+            )
+        except SQLAlchemyError as e:
+            self._db_session.rollback()
+            _logger.log_error(database_error_message(
+                operation="deleting", instance="user", exception=e))
+            raise UserOperationException(
+                database_error_message(operation="deleting", instance="user", exception=e)
+            )
         except Exception as e:
             self._db_session.rollback()
+            _logger.log_error(unknown_error_message(
+                operation="deleting", instance="user", exception=e))
             raise UserOperationException(
-                f"User cannot be deleted due to: {str(e)}"
+                unknown_error_message(
+                    operation="deleting", instance="user", exception=e
+                )
             )
 
     def get_all_users(self, offset: int=0 , limit: int=10) -> List[User]:
@@ -133,12 +215,19 @@ class UserRepository:
         """
         try:
             return self._db_session.query(User).offset(offset=offset).limit(limit=limit).all()
+        except SQLAlchemyError as e:
+            _logger.log_error(database_error_message(
+                operation="retrieving", instance="all users", exception=e))
+            raise UserOperationException(database_error_message(
+                operation="retrieving", instance="all users", exception=e))
         except Exception as e:
             raise UserOperationException(
-                f"Error on retrieving all users: {str(e)}"
+                unknown_error_message(
+                    operation="retrieving", instance="all users", exception=e
+                )
             )
 
-    def get_user_by_email(self, email: str) -> User | None:
+    def get_user_by_email(self, email: str) -> Optional[User]:
         """
         Retrieve a user by their email from the database.
 
@@ -153,7 +242,49 @@ class UserRepository:
         """
         try:
             return self._db_session.query(User).filter(User.email == email).first()
+        except SQLAlchemyError as e:
+            _logger.log_error(database_error_message(
+                operation="retrieving", instance="user by email", exception=e))
+            raise UserOperationException(database_error_message(
+                operation="retrieving", instance="user by email", exception=e))
         except Exception as e:
+            _logger.log_error(unknown_error_message(
+                operation="retrieving", instance="user by email", exception=e))
             raise UserOperationException(
-                f"Error on retrieving user by email: {str(e)}"
+                unknown_error_message(operation="retrieving", instance="user by email", exception=e)
+            )
+
+    def update_user_active_status(self, user_id: int, is_active: bool) -> Optional[User]:
+        """
+        Update the active status of a user in the database.
+
+        Args:
+            user_id (int): The unique identifier of the user to update.
+            is_active (bool): The new active status of the user.
+
+        Returns:
+            User: The updated user object.
+
+        Raises:
+            UserOperationException: If there is a database error during update.
+        """
+        try:
+            rows_affected :int = self._db_session.query(User).filter(User.id == user_id).update({"is_active": is_active})
+            if rows_affected == 0:
+                return None
+            self._db_session.commit()
+            return self.get_user_by_id(user_id=user_id)
+        except SQLAlchemyError as e:
+            self._db_session.rollback()
+            _logger.log_error(database_error_message(
+                operation="updating active status", instance="user", exception=e))
+            raise UserOperationException(
+                database_error_message(operation="updating active status", instance="user", exception=e)
+            )
+        except Exception as e:
+            self._db_session.rollback()
+            _logger.log_error(unknown_error_message(
+                operation="updating active status", instance="user", exception=e))
+            raise UserOperationException(
+                unknown_error_message(operation="updating active status", instance="user", exception=e)
             )

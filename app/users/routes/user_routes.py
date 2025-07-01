@@ -1,13 +1,15 @@
-from typing import List
-from fastapi import APIRouter, HTTPException
+from typing import List, Optional
 from starlette import status
+
+from fastapi import APIRouter, HTTPException, Path
 
 from app.utils.enumns.user_roles import UserRole
 from app.users.schemas.user_response import UserResponse
-from app.users.schemas.user_request import UserRequest
 from app.core.dependencies import UserServiceDependency, AccessTokenDependency
 from app.core.security.authentication_decorators import authentication_required, role_required
-from app.users.excepctions.user_exceptions import UserNotFoundException, UserAlreadyExistsException, UserOperationException
+from app.users.excepctions.user_exceptions import UserNotFoundException, UserOperationException
+from app.core.security.authentication_decorators import role_required
+from app.auth.exceptions.auth_exceptions import OperationNotAllowedException, UserPermissionDeniedException
 
 user_router = APIRouter(
     prefix="/users",
@@ -46,7 +48,7 @@ async def get_current_user(service: UserServiceDependency, jwt_payload: AccessTo
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@user_router.get(path="/{user_id}", response_model=UserResponse, summary="Get user by ID", tags=["users"])
+@user_router.get(path="/{user_id}", response_model=Optional[UserResponse], summary="Get user by ID", tags=["users"])
 @role_required(required_role=[UserRole.ADMIN, UserRole.USER])
 async def get_user_by_id(user_id: int, service: UserServiceDependency, jwt_payload: AccessTokenDependency):
     """
@@ -74,8 +76,7 @@ async def get_user_by_id(user_id: int, service: UserServiceDependency, jwt_paylo
 
 
 @user_router.get(path="", response_model=List[UserResponse], summary="Get all users", tags=["users"])
-@authentication_required()
-async def get_users(service: UserServiceDependency, jwt_payload: AccessTokenDependency):
+async def get_users(service: UserServiceDependency):
     """
     Endpoint to retrieve a list of users.
 
@@ -85,24 +86,83 @@ async def get_users(service: UserServiceDependency, jwt_payload: AccessTokenDepe
     return service.get_all_users()
 
 
-@user_router.post(path="", response_model=UserResponse, summary="Insert a new user", tags=["users"])
-async def insert_user(service: UserServiceDependency, user: UserRequest):
+@user_router.delete(path="/{user_id}", summary="Delete user by ID", tags=["users"], status_code=status.HTTP_204_NO_CONTENT)
+@role_required(required_role=[UserRole.ADMIN, UserRole.USER])
+async def delete_user(service: UserServiceDependency, jwt_payload: AccessTokenDependency, user_id: int = Path(ge=1, description="The unique identifier of the user to delete")):
     """
-    Endpoint to insert a new user.
+    Endpoint to delete a user by their ID.
 
     Args:
-        repo (UserRepositoryDependency): The user repository dependency.
-        user (UserRequest): The user data to insert.
+        user_id (int): The unique identifier of the user to delete.
+        service (UserServicesDependency): The user services dependency.
 
     Returns:
-        The inserted user.
+        None
+
+    Raises:
+        HTTPException: If the user is not found or if there is an error during deletion.
+    """
+    try: 
+         service.delete_user(user_id=user_id)
+    except UserNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except UserOperationException as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@user_router.patch(path="/reactivate", summary="Reactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
+async def reactivate_user_account(service: UserServiceDependency, jwt_payload: AccessTokenDependency):
+    """
+    Endpoint to activate a user account.
+
+    Args:
+        user_id (int): The unique identifier of the user to activate.
+        service (UserServicesDependency): The user services dependency.
+
+    Returns:
+        UserResponse: The activated user.
     """
     try:
-        user_orm = user.to_orm()
-        return service.create_user(user_data=user_orm)
-    except UserAlreadyExistsException as e:
+        user_id_from_token: Optional[str] = jwt_payload.get("user_id")
+        if not user_id_from_token:
+            raise OperationNotAllowedException(
+                "User ID not found in JWT payload or operation not allowed")
+        return service.reactivate_user_account(user_id=int(user_id_from_token))
+    except OperationNotAllowedException as e:
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail=str(e))
+            status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+    except UserNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except UserOperationException as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@user_router.patch("deactivate", summary="Deactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
+async def set_user_inactive(service: UserServiceDependency, jwt_payload: AccessTokenDependency):
+    """
+    Endpoint to deactivate a user account.
+
+    Args:
+        user_id (int): The unique identifier of the user to deactivate.
+        service (UserServicesDependency): The user services dependency.
+
+    Returns:
+        UserResponse: The deactivated user.
+    """
+    try:
+        user_id_from_token: Optional[str] = jwt_payload.get("user_id")
+        if not user_id_from_token:
+            raise OperationNotAllowedException(
+                "User ID not found in JWT payload or operation not allowed")
+        return service.set_user_inactive(user_id=int(user_id_from_token))
+    except UserNotFoundException as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except OperationNotAllowedException as e:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except UserOperationException as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
