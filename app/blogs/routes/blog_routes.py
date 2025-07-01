@@ -3,7 +3,7 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Request, Path, Query
 from fastapi_cache.decorator import cache
 from app.blogs.exceptions.blog_exceptions import BlogNotFoundException, BlogOperationException
-from app.core.dependencies import BlogServiceDependency,AccessTokenDependency
+from app.core.dependencies import BlogServiceDependency,AccessTokenDependency, UserIDFromTokenDependency
 from app.blogs.schemas.blog_request import BlogRequest
 from app.blogs.schemas.blog_response import BlogResponse, BlogResponseFull
 from app.blogs.models.blog_model import BlogModel
@@ -157,16 +157,12 @@ async def get_blogs_by_user(
 @authentication_required()
 async def get_blogs_by_current_user(
     blog_service: BlogServiceDependency,
-    jwt_payload: AccessTokenDependency,
+    user_id_payload: UserIDFromTokenDependency,
     limit: int = DEFAULT_PAGE_SIZE,
     offset: int = DEFAULT_OFFSET,
 ) -> List[BlogModel]:
     try:
-        user_id = jwt_payload.get("user_id", None)
-        if user_id is None:
-            raise HTTPException(
-                status_code=401, detail="Unauthorized: User ID not found in access token")
-        return blog_service.get_blogs_by_user(user_id=user_id, limit=limit, offset=offset)
+        return blog_service.get_blogs_by_user(user_id=user_id_payload, limit=limit, offset=offset)
     except BlogOperationException as e:
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:

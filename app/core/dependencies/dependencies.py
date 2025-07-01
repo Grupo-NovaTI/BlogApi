@@ -49,8 +49,18 @@ async def provide_token_payload(
 ) -> dict:
     return jwt_handler.decode_access_token(token=token)
 
-AccessTokenDependency = Annotated[dict, Depends(dependency=provide_token_payload)]
+async def provide_user_id_from_token(
+    jwt_handler: JWTHandlerDependency,
+    token: Annotated[str, Depends(dependency=_jwt_handler_instance.oauth_scheme)],
+) -> int:
+    payload = await provide_token_payload(jwt_handler=jwt_handler, token=token)
+    user_id = payload.get("user_id")
+    if user_id is None:
+        raise ValueError("User ID not found in JWT payload")
+    return int(user_id)
 
+AccessTokenDependency = Annotated[dict, Depends(dependency=provide_token_payload)]
+UserIDFromTokenDependency = Annotated[int, Depends(dependency=provide_user_id_from_token)]
 
 # Database Dependencies
 # This section provides dependencies for various repositories used in the application.
