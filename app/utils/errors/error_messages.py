@@ -31,7 +31,7 @@ Generates a standardized not found error message for database operations.
     return f"{instance.capitalize()} with identifier '{identifier}' not found." 
 
 def unknown_error_message(operation: str, instance: str, exception: Optional[Exception] = None) -> str:
-    """unknown_error_message 
+    """
 Generates a standardized unknown error message for database operations.
 
     Args:
@@ -62,3 +62,26 @@ def validation_error_message(field: str, message: str) -> str:
 def already_exists_message(instance: str, identifier: str | int) -> str:
     """already_exists_message"""
     return f"{instance.capitalize()} with identifier '{identifier}' already exists."
+
+def unauthorized_error_message() -> str:
+    """Generates a standardized unauthorized error message.
+
+    Returns:
+        str: A standardized unauthorized error message.
+    """
+    return "Unauthorized access. Please check your credentials."
+
+def integrity_error_message(operation: str, instance: str, exception: Optional[Exception] = None) -> str:
+    """Generates a standardized integrity error message for database operations.
+
+    Args:
+        operation (str): The database operation being performed (e.g., "creating", "updating").
+        instance (str): The specific instance being operated on (e.g., "tag", "user").
+        exception (Optional[Exception], optional): The exception raised during the operation, if any. Defaults to None.
+
+    Returns:
+        str: A standardized integrity error message.
+    """
+    if exception:
+        return f"Integrity error on {operation} {instance}: {str(exception)}"
+    return f"Integrity error on {operation} {instance}"
