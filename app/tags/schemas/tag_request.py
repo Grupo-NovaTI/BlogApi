@@ -29,7 +29,7 @@ class TagRequest(BaseModel):
             }
         }
 
-    def to_model(self) -> TagModel:
+    def to_orm(self) -> TagModel:
         """
         Convert the TagRequest schema to a TagModel instance.
         

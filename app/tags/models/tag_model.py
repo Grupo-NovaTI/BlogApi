@@ -7,6 +7,19 @@ from app.core.db.database import Base
 from app.tags.models.blog_tags import blog_tags
 
 class TagModel(Base):
+    """
+    Represents a tag entity for categorizing blog posts.
+
+    Attributes:
+        id (int): Primary key, unique identifier for the tag.
+        name (str): Unique name of the tag.
+        description (str, optional): Optional description of the tag.
+        blogs (List[BlogModel]): List of associated BlogModel instances via a many-to-many relationship.
+
+    Methods:
+        __repr__(): Returns a string representation for debugging.
+        __str__(): Returns a human-readable string representation.
+    """
     __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True, index=True)
