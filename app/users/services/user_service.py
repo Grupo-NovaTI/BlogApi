@@ -33,14 +33,16 @@ class UserService:
             username=str(user_data.username))
         if check_user_exists:
             raise UserAlreadyExistsException(
-                already_exists_message(
+                identifier=str(user_data.username),
+                message=already_exists_message(
                     instance="user",
                     identifier=str(user_data.username)))
         check_user_exists = self._user_repository.get_user_by_email(
             email=str(user_data.email))
         if check_user_exists:
             raise UserAlreadyExistsException(
-                already_exists_message(
+                identifier=str(user_data.email),
+                message=already_exists_message(
                     instance="user",
                     identifier=str(user_data.email)))
         return self._user_repository.create_user(user=user_data)
@@ -58,7 +60,7 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        return  self._user_repository.get_user_by_id(
+        return self._user_repository.get_user_by_id(
             user_id=user_id)
 
     def get_user_by_username(self, username: str) -> Optional[UserModel]:
@@ -95,7 +97,8 @@ class UserService:
         user_updated_result :  Optional[UserModel]= self._user_repository.update_user(user_id=user_id, user_data=user_data)
         if not user_updated_result:
             raise UserNotFoundException(
-                not_found_message(
+                identifier=user_id,
+                message=not_found_message(
                     instance="user",
                     identifier=user_id
                 )
@@ -118,7 +121,8 @@ class UserService:
         deletion_result: bool = self._user_repository.delete_user(user_id=user_id)
         if not deletion_result:
             raise UserNotFoundException(
-                not_found_message(
+                identifier=user_id,
+                message=not_found_message(
                     instance="user",
                     identifier=user_id
                 )
@@ -142,7 +146,8 @@ class UserService:
         activated_user: Optional[UserModel] = self._user_repository.update_user_active_status(user_id=user_id, is_active=True)
         if not activated_user:
             raise UserNotFoundException(
-                not_found_message(
+                identifier=user_id,
+                message=not_found_message(
                     instance="user",
                     identifier=user_id
                 )
@@ -165,7 +170,8 @@ class UserService:
         deactivated_user: Optional[UserModel] = self._user_repository.update_user_active_status(user_id=user_id, is_active=False)
         if not deactivated_user:
             raise UserNotFoundException(
-                not_found_message(
+                identifier=user_id,
+                message=not_found_message(
                     instance="user",
                     identifier=user_id
                 )

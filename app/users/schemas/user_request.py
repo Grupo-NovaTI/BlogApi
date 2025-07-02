@@ -35,7 +35,6 @@ class UserRequest(BaseModel):
         
     def to_orm(self) -> UserModel:
         return UserModel(
-            id=self.id,
             username=self.username,
             email=self.email,
             name=self.name,
