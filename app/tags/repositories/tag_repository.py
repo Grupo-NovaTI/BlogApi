@@ -5,7 +5,7 @@ from app.tags.exceptions.tag_exceptions import TagOperationException
 from app.tags.models.tag_model import TagModel
 from app.utils.logger.application_logger import ApplicationLogger
 from app.utils.errors.error_messages import database_error_message, unknown_error_message
-
+from sqlalchemy import or_
 _logger = ApplicationLogger(__name__)
 
 class TagRepository:
@@ -18,13 +18,14 @@ class TagRepository:
         except SQLAlchemyError as e:
             self._db_session.rollback()
             _logger.log_error(message=database_error_message(operation="retrieving", instance="all tags", exception=e))
-            raise TagOperationException(
-                database_error_message(operation="retrieving", instance="all tags", exception=e)
+            raise TagOperationException( operation="fetching", message=
+                str(e)
             )
         except Exception as e:
             _logger.log_error(message=unknown_error_message(operation="retrieving", instance="all tags", exception=e))
             raise TagOperationException(
-                unknown_error_message(operation="retrieving", instance="all tags")
+                operation="fetching",
+                message=str(e)
             )
 
     def get_tag_by_id(self, tag_id: int) -> Optional[TagModel]:
@@ -46,12 +47,14 @@ class TagRepository:
         except SQLAlchemyError as e:
             _logger.log_error(message=database_error_message(operation="retrieving", instance="tag", exception=e))
             raise TagOperationException(
-                database_error_message(operation="retrieving", instance="tag", exception=e)
+                operation="fetching",
+                message=str(e)
             )
         except Exception as e:
             _logger.log_error(message=unknown_error_message(operation="retrieving", instance="tag", exception=e))
             raise TagOperationException(
-                unknown_error_message(operation="retrieving", instance="tag", exception=e)
+                operation="fetching",
+                message=str(e)
             )
 
     def get_tag_by_name(self, tag_name: str) -> Optional[TagModel]:
@@ -74,12 +77,14 @@ class TagRepository:
         except SQLAlchemyError as e:
             _logger.log_error(message=database_error_message(operation="retrieving", instance="tag by name", exception=e))
             raise TagOperationException(
-                database_error_message(operation="retrieving", instance="tag by name", exception=e)
+                operation="retrieving",
+                message=str(e)
             )
         except Exception as e:
             _logger.log_error(message=unknown_error_message(operation="retrieving", instance="tag by name", exception=e))
             raise TagOperationException(
-                unknown_error_message(operation="retrieving", instance="tag by name", exception=e)
+                operation="fetching",
+                message=str(e)
             )
 
     def create_tag(self, tag: TagModel) -> TagModel:
@@ -104,13 +109,15 @@ class TagRepository:
             self._db_session.rollback()
             _logger.log_error(message=database_error_message(operation="creating", instance="tag", exception=e))
             raise TagOperationException(
-                database_error_message(operation="creating", instance="tag", exception=e)
+                operation="creating",
+                message=str(e)
             )
         except Exception as e:
             self._db_session.rollback()
             _logger.log_error(message=unknown_error_message(operation="creating", instance="tag", exception=e))
             raise TagOperationException(
-                unknown_error_message(operation="creating", instance="tag", exception=e)
+                operation="creating",
+                message= str(e)
             )
 
     def update_tag(self, tag_id : int, tag_data: dict) -> Optional[TagModel]:
@@ -138,13 +145,15 @@ class TagRepository:
             self._db_session.rollback()
             _logger.log_error(message=database_error_message(operation="updating", instance="tag", exception=e))
             raise TagOperationException(
-                database_error_message(operation="updating", instance="tag", exception=e)
+                operation="updating",
+                message=str(e)
             )
         except Exception as e:
             self._db_session.rollback()
             _logger.log_error(message=unknown_error_message(operation="updating", instance="tag", exception=e))
             raise TagOperationException(
-                unknown_error_message(operation="updating", instance="tag", exception=e)
+                operation="updating",
+                message= str(e)
             )
 
     def delete_tag(self, tag_id: int) -> Optional[TagModel]:
@@ -170,13 +179,29 @@ class TagRepository:
             self._db_session.rollback()
             _logger.log_error(message=database_error_message(operation="deleting", instance="tag", exception=e))
             raise TagOperationException(
-                database_error_message(operation="deleting", instance="tag", exception=e)
+                operation="deleting",
+                message= str(e)
             )
         except Exception as e:
             self._db_session.rollback()
             _logger.log_error(message=unknown_error_message(operation="deleting", instance="tag", exception=e))
             raise TagOperationException(
-                unknown_error_message(operation="deleting", instance="tag", exception=e)
+                operation="deleting",
+                message=str(e)
             )
-
     
+    def get_tag_by_id_or_name(self, tag_id: int, tag_name: str) -> Optional[TagModel]:
+        try:
+            return self._db_session.query(TagModel).filter(or_(TagModel.id == tag_id, TagModel.name == tag_name)).first()
+        except SQLAlchemyError as e:
+            _logger.log_error(message=database_error_message(operation="retrieving", instance="tag by id or name", exception=e))
+            raise TagOperationException(
+                operation="retrieving",
+                message=str(e)
+            )
+        except Exception as e:
+            _logger.log_error(message=unknown_error_message(operation="retrieving", instance="tag by id or name", exception=e))
+            raise TagOperationException(
+                operation="retrieving",
+                message=str(e)
+            )

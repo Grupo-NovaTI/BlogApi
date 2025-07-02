@@ -34,9 +34,8 @@ class TagAlreadyExistsException(AlreadyExistsException):
 
 class TagInvalidException(ValidationException):
     """Exception raised when a tag is invalid or does not meet the required criteria."""
-    def __init__(self, message: str = "Tag is invalid") -> None:
-        super().__init__(model=_MODEL, message=message)
+    def __init__(self, identifier : str ,message: str = "Tag is invalid") -> None:
+        super().__init__(model=_MODEL, identifier=identifier, message=message)
         self.message: str = message
         self.model: str = _MODEL
-        
-        
+        self.identifier: str = identifier

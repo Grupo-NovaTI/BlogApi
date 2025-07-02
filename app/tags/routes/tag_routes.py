@@ -3,7 +3,6 @@ from fastapi import APIRouter, Path, Query, HTTPException
 from starlette import status
 from app.tags.schemas.tag_response import TagResponse
 from app.tags.schemas.tag_request import TagRequest
-from app.tags.exceptions.tag_exceptions import TagOperationException, TagNotFoundException, TagAlreadyExistsException
 from app.core.dependencies import TagServiceDependency, AccessTokenDependency
 from app.utils.consts.consts import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
 
@@ -22,14 +21,7 @@ async def get_tags(tag_service: TagServiceDependency, limit: int = Query(DEFAULT
     Raises:
         HTTPException: If there is an error during retrieval.
     """
-    try:
-        return tag_service.get_tags(limit=limit, offset=offset)
-
-    except TagOperationException as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
+    return tag_service.get_tags(limit=limit, offset=offset)
 
 
 @tag_router.get(path="/{tag_name}", response_model=Optional[TagResponse], summary="Get a tag by Name", tags=["tags"], status_code=status.HTTP_200_OK)
@@ -46,13 +38,7 @@ async def get_tag_by_name(jwt_payload: AccessTokenDependency, tag_service: TagSe
     Raises:
         HTTPException: If there is an error during counting.
     """
-    try:
-        return tag_service.get_tag_by_name(tag_name=tag_name)
-    except TagOperationException as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail="An unexpected error occurred.")
+    return tag_service.get_tag_by_name(tag_name=tag_name)
 
 
 @tag_router.get(path="/{tag_id}", response_model=TagResponse, summary="Get tag by ID", tags=["tags"], status_code=status.HTTP_200_OK)
@@ -69,14 +55,7 @@ async def get_tag_by_id(jwt_payload: AccessTokenDependency, tag_service: TagServ
     Raises:
         HTTPException: If the tag is not found or if there is an error during retrieval.
     """
-    try:
-        return tag_service.get_tag_by_id(tag_id=tag_id)
-    except TagNotFoundException as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except TagOperationException as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    return tag_service.get_tag_by_id(tag_id=tag_id)
 
 
 @tag_router.post(path="", response_model=TagResponse, summary="Create a new tag", tags=["tags"], status_code=status.HTTP_201_CREATED)
@@ -93,14 +72,7 @@ async def create_tag(tag: TagRequest, jwt_payload: AccessTokenDependency, tag_se
     Raises:
         HTTPException: If a tag with the same name already exists or if there is an error during creation.
     """
-    try:
-        return tag_service.create_tag(tag=tag.to_orm())
-    except TagAlreadyExistsException as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except TagOperationException as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    return tag_service.create_tag(tag=tag.to_orm())
 
 
 @tag_router.put(path="/{tag_id}", response_model=TagResponse, summary="Update an existing tag", tags=["tags"], status_code=status.HTTP_200_OK)
@@ -118,14 +90,7 @@ async def update_tag(tag_data: TagRequest, jwt_payload: AccessTokenDependency, t
     Raises:
         HTTPException: If the tag is not found or if there is an error during update.
     """
-    try:
-        return tag_service.update_tag(tag_data=tag_data.to_orm(), tag_id=tag_id)
-    except TagNotFoundException as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except TagOperationException as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    return tag_service.update_tag(tag_data=tag_data.to_orm(), tag_id=tag_id)
 
 
 @tag_router.delete(path="/{tag_id}", response_model=TagResponse, summary="Delete a tag", tags=["tags"], status_code=status.HTTP_200_OK)
@@ -142,11 +107,4 @@ async def delete_tag(jwt_payload: AccessTokenDependency, tag_service: TagService
     Raises:
         HTTPException: If the tag is not found or if there is an error during deletion.
     """
-    try:
-        return tag_service.delete_tag(tag_id=tag_id)
-    except TagNotFoundException as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except TagOperationException as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    return tag_service.delete_tag(tag_id=tag_id)

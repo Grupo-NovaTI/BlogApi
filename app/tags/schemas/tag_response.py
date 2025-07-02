@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
-
+from datetime import datetime
 
 class TagResponse(BaseModel):
     """
@@ -9,6 +9,8 @@ class TagResponse(BaseModel):
     id: int
     name: str
     description: Optional[str]
+    updated_at: datetime
+    created_at: datetime
 
     class Config:
         from_attributes = True
