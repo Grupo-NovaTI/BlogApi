@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
+from datetime import datetime
 from app.users.schemas.user_response import UserResponse
 from app.tags.schemas.tag_response import TagResponse
 class BlogResponse(BaseModel):
@@ -10,7 +11,8 @@ class BlogResponse(BaseModel):
     title: str
     content: str
     author_id: int
-
+    updated_at: datetime
+    created_at: datetime
     is_published: bool
 
     class Config:

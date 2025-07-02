@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from app.blogs.models.blog_model import BlogModel
 
 class BlogRequest(BaseModel):
     title: str = Field(..., description="Title of the blog post")
@@ -17,3 +18,13 @@ class BlogRequest(BaseModel):
                 "is_published": True
             }
         }
+        
+    def to_orm(self) -> BlogModel:
+        """ Convert the BlogRequest schema to a BlogModel instance."""
+        from app.blogs.models.blog_model import BlogModel
+        return BlogModel(
+            title=self.title,
+            content=self.content,
+            author_id=self.author_id,
+            is_published=self.is_published
+        )

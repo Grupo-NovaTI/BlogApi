@@ -1,3 +1,4 @@
+from email.mime import message
 from typing import List, Optional
 from sqlalchemy.orm.session import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -22,10 +23,10 @@ class BlogRepository:
             _logger.log_error(
                 message=database_error_message(operation="fetching", instance="all blogs", exception=e))
             raise BlogOperationException(
-                database_error_message(operation="fetching", instance="all blogs"))
+                operation="fetching", message=str(e))
         except Exception as e:
             _logger.log_error(message=unknown_error_message(operation="fetching", instance="all blogs", exception=e))
-            raise BlogOperationException(unknown_error_message(operation="fetching", instance="all blogs"))
+            raise BlogOperationException(operation="fetching", message=str(e))
 
     def get_blog_by_id(self, id: int) -> Optional[BlogModel]:
         try:
@@ -35,11 +36,11 @@ class BlogRepository:
             _logger.log_error(
                 message=database_error_message(operation="fetching", instance="blog", exception=e))
             raise BlogOperationException(
-                database_error_message(operation="fetching", instance="blog"))
+                operation="fetching", message=str(e))
         except Exception as e:
             _logger.log_error(message=unknown_error_message(operation="fetching", instance="blog", exception=e))
-            raise BlogOperationException(
-                unknown_error_message(operation="fetching", instance="blog"))
+            raise BlogOperationException( operation="fetching",
+                message=str(e))
 
     def create_blog(self, blog: BlogModel) -> BlogModel:
         try:
@@ -51,12 +52,12 @@ class BlogRepository:
             self._db_session.rollback()
             _logger.log_error(message=database_error_message(operation="creating", instance="blog", exception=e))
             raise BlogOperationException(
-                database_error_message(operation="creating", instance="blog", exception=e))
+                operation="creating", message=str(e))
         except Exception as e:
             self._db_session.rollback()
             _logger.log_error(message=unknown_error_message(operation="creating", instance="blog", exception=e))
             raise BlogOperationException(
-                unknown_error_message(operation="creating", instance="blog", exception=e))
+                operation="creating", message=str(e))
 
     def update_blog(self, blog_data: dict, blog_id: int) -> Optional[BlogModel]:
         try:
@@ -71,13 +72,13 @@ class BlogRepository:
             _logger.log_error(message=database_error_message(
                 operation="updating", instance="blog", exception=e))
             raise BlogOperationException(
-                database_error_message(operation="updating", instance="blog", exception=e))
+                operation="updating", message=str(e))
         except Exception as e:
             self._db_session.rollback()
             _logger.log_error(message=unknown_error_message(
                 operation="updating", instance="blog", exception=e))
             raise BlogOperationException(
-                unknown_error_message(operation="updating", instance="blog", exception=e))
+                operation="updating", message=str(e))
 
     def delete_blog(self, blog_id: int) -> Optional[BlogModel]:
         try:
@@ -93,13 +94,13 @@ class BlogRepository:
             _logger.log_error(message=database_error_message(
                 operation="deleting", instance="blog", exception=e))
             raise BlogOperationException(
-                database_error_message(operation="deleting", instance="blog", exception=e))
+                operation="deleting", message=str(e))
         except Exception as e:
             self._db_session.rollback()
             _logger.log_error(message=unknown_error_message(
                 operation="deleting", instance="blog", exception=e))
             raise BlogOperationException(
-                unknown_error_message(operation="deleting", instance="blog", exception=e))
+                operation="deleting", message=str(e))
 
     def update_blog_visibility(self, blog_id: int, visibility: bool) -> Optional[BlogModel]:
         try:
@@ -115,40 +116,40 @@ class BlogRepository:
                 database_error_message(
                     operation="updating visibility", instance="blog", exception=e))
             raise BlogOperationException(
-                database_error_message(operation="updating visibility", instance="blog", exception=e))
+                operation="updating visibility", message=str(e))
         except Exception as e:
             self._db_session.rollback()
             raise BlogOperationException(
-                unknown_error_message(operation="updating visibility", instance="blog", exception=e))
+                operation="updating visibility", message=str(e))
 
     def get_public_blogs(self, limit: int = 10, offset: int = 0) -> List[BlogModel]:
         try:
-            return self._db_session.query(BlogModel).filter(BlogModel.is_published == True).limit(limit).offset(offset).all()
+            return self._db_session.query(BlogModel).filter(BlogModel.is_published == True).limit(limit=limit).offset(offset=offset).all()
         except SQLAlchemyError as e:
             _logger.log_error(
                 database_error_message(operation="fetching public blogs", instance="blog", exception=e))
             raise BlogOperationException(
-                database_error_message(operation="fetching public blogs", instance="blog", exception=e))
+                operation="fetching public blogs", message=str(e))
         except Exception as e:
             _logger.log_error(
                 unknown_error_message(operation="fetching public blogs", instance="blog", exception=e))
             raise BlogOperationException(
-                unknown_error_message(operation="fetching public blogs", instance="blog", exception=e))
+                operation="fetching public blogs", message=str(e))
 
     def get_blogs_by_user(self, user_id: int, limit: int, offset: int) -> List[BlogModel]:
         try:
-            return self._db_session.query(BlogModel).filter(BlogModel.author_id == user_id).limit(limit).offset(offset).all()
+            return self._db_session.query(BlogModel).filter(BlogModel.author_id == user_id).limit(limit=limit).offset(offset=offset).all()
         except SQLAlchemyError as e:
             _logger.log_error(
                 database_error_message(
                     operation="fetching blogs by user", instance="blog", exception=e))
             raise BlogOperationException(
-                database_error_message(operation="fetching blogs by user", instance="blog", exception=e))
+                operation="fetching blogs by user", message=str(e))
         except Exception as e:
             _logger.log_error(
                 unknown_error_message(operation="fetching blogs by user", instance="blog", exception=e))
             raise BlogOperationException(
-                unknown_error_message(operation="fetching blogs by user", instance="blog", exception=e))
+                operation="fetching blogs by user", message=str(e))
             
     def count_blogs_by_user(self, user_id: int) -> int:
         try:
@@ -157,12 +158,12 @@ class BlogRepository:
             _logger.log_error(
                 message=database_error_message(operation="counting blogs by user", instance="blog", exception=e))
             raise BlogOperationException(
-                database_error_message(operation="counting blogs by user", instance="blog", exception=e))
+                operation="counting blogs by user", message=str(e))
         except Exception as e:
             _logger.log_error(
                 message=unknown_error_message(operation="counting blogs by user", instance="blog", exception=e))
             raise BlogOperationException(
-                unknown_error_message(operation="counting blogs by user", instance="blog", exception=e))
+                operation="counting blogs by user", message=str(e))
 
     def count_public_blogs(self) -> int:
         try:
@@ -171,9 +172,9 @@ class BlogRepository:
             _logger.log_error(
                 database_error_message(operation="counting public blogs", instance="blog", exception=e))
             raise BlogOperationException(
-                database_error_message(operation="counting public blogs", instance="blog", exception=e))
+                operation="counting public blogs", message=str(e))
         except Exception as e:
             _logger.log_error(
                 unknown_error_message(operation="counting public blogs", instance="blog", exception=e))
             raise BlogOperationException(
-                unknown_error_message(operation="counting public blogs", instance="blog", exception=e))
+                operation="counting public blogs", message=str(e))

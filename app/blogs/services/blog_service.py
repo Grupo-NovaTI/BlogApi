@@ -20,19 +20,19 @@ class BlogService:
     def update_blog(self, blog: dict, id : int) -> BlogModel:
         operation_result: BlogModel | None = self._blog_repository.update_blog(blog_data=blog, blog_id=id)
         if not operation_result:
-            raise BlogNotFoundException(not_found_message(instance="blog", identifier=id))
+            raise BlogNotFoundException(identifier=id, message=not_found_message(instance="blog", identifier=id))
         return operation_result
 
     def delete_blog(self, blog_id : int ) -> BlogModel:
         operation_result: BlogModel | None = self._blog_repository.delete_blog(blog_id=blog_id)
         if not operation_result:
-            raise BlogNotFoundException(not_found_message(instance="blog", identifier=blog_id))
+            raise BlogNotFoundException(identifier=blog_id, message=not_found_message(instance="blog", identifier=blog_id))
         return operation_result
 
     def update_blog_visibility(self, id: int, visibility: bool) -> BlogModel:
         operation_result: BlogModel | None = self._blog_repository.update_blog_visibility(blog_id=id, visibility=visibility)
         if not operation_result:
-            raise BlogNotFoundException(not_found_message(instance="blog", identifier=id))
+            raise BlogNotFoundException(identifier=id, message=not_found_message(instance="blog", identifier=id))
         return operation_result
        
 
@@ -45,12 +45,12 @@ class BlogService:
     def set_blog_as_public(self, blog_id : int) -> BlogModel:
         operation_result: BlogModel | None = self._blog_repository.update_blog_visibility(blog_id=blog_id, visibility=True)
         if not operation_result:
-            raise BlogNotFoundException(not_found_message(instance="blog", identifier=blog_id))
+            raise BlogNotFoundException(identifier=blog_id, message=not_found_message(instance="blog", identifier=blog_id))
         return operation_result
     
     def set_blog_as_private(self, blog_id : int) -> BlogModel:
         operation_result: BlogModel | None = self._blog_repository.update_blog_visibility(blog_id=blog_id, visibility=False)
         if not operation_result:
-            raise BlogNotFoundException(not_found_message(instance="blog", identifier=blog_id))
+            raise BlogNotFoundException(identifier=blog_id, message=not_found_message(instance="blog", identifier=blog_id))
         return operation_result
     
