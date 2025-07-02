@@ -12,7 +12,7 @@ class NotFoundException(Exception):
     def __init__(self, model: str, identifier: str | int, message: str = "Resource not found") -> None:
         super().__init__(message)
         self.message: str = message
-        self.model: str = model
+        self.model: str = model.capitalize()
         self.identifier: str | int = identifier
 
 class OperationException(Exception):
@@ -26,7 +26,7 @@ class OperationException(Exception):
     def __init__(self, model :str, operation: str, message: str = "Operation failed") -> None:
         super().__init__(message)
         self.model : str = model
-        self.operation: str = operation
+        self.operation: str = operation.lower()
         self.message: str = message
 
 class AlreadyExistsException(Exception):
@@ -39,7 +39,7 @@ class AlreadyExistsException(Exception):
     """
     def __init__(self, model: str, identifier: str, message: str = "Resource already exists") -> None:
         super().__init__(message)
-        self.model: str = model
+        self.model: str = model.capitalize()
         self.identifier: str = identifier
         self.message: str = message
     
@@ -55,5 +55,5 @@ class ValidationException(Exception):
     def __init__(self, model: str, message: str = "Validation error") -> None:
         super().__init__(message)
         self.message: str = message
-        self.model: str = model
+        self.model: str = model.capitalize()
 
