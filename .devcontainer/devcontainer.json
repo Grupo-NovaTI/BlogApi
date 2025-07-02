@@ -37,14 +37,18 @@
 				"mgesbert.python-path",
 				"tal7aouy.rainbow-bracket",
 				"mongodb.mongodb-vscode",
-				"dbcode.dbcode",
 				"Redis.redis-for-vscode",
 				"Syler.ignore",
 				"njpwerner.autodocstring",
 				"usernamehw.errorlens",
 				"tamasfe.even-better-toml",
 				"ms-python.isort",
-				"GitHub.copilot-chat"
+				"GitHub.copilot-chat",
+				"ms-ossdata.vscode-pgsql",
+				"njqdev.vscode-python-typehint",
+				"wraith13.zoombar-vscode",
+				"redhat.vscode-yaml",
+				"VisualStudioExptTeam.vscodeintellicode"
 			]
 		}
 	}
