@@ -15,13 +15,13 @@ from app.core.db.database import get_db
 from app.users.repositories.user_repository import UserRepository
 from app.tags.repositories.tag_repository import TagRepository
 from app.blogs.repositories.blog_repository import BlogRepository
-
+from app.comments.repositories.comment_repository import CommentRepository
+from app.comments.services.comment_service import CommentService
+from app.utils.errors.error_messages import validation_error_message
+from app.auth.exceptions.auth_exceptions import InvalidUserCredentialsException
 
 # Global Dependencies
 # This section provides global dependencies that can be used across the application.
-
-
-
 @lru_cache
 def provide_application_config() -> ApplicationConfig:
     return ApplicationConfig()
@@ -56,7 +56,7 @@ async def provide_user_id_from_token(
     payload = await provide_token_payload(jwt_handler=jwt_handler, token=token)
     user_id = payload.get("user_id")
     if user_id is None:
-        raise ValueError("User ID not found in JWT payload")
+        raise InvalidUserCredentialsException(validation_error_message(field="user_id", message="User ID not found in token payload."))
     return int(user_id)
 
 AccessTokenDependency = Annotated[dict, Depends(dependency=provide_token_payload)]
@@ -82,6 +82,18 @@ def _provide_user_repository(db: _DatabaseSession) -> UserRepository:
     """
     return UserRepository(db_session=db)
 
+
+def _provide_comment_repository(db: _DatabaseSession) -> CommentRepository:
+    """
+    Dependency that provides a CommentRepository instance.
+
+    Args:
+        db (Session): The database session dependency.
+
+    Returns:
+        CommentRepository: Instance of the comment repository
+    """
+    return CommentRepository(db_session=db)
 
 def _provide_tag_repository(db: _DatabaseSession) -> TagRepository:
     """
@@ -115,6 +127,8 @@ _TagRepositoryDependency = Annotated[TagRepository, Depends(
     dependency=_provide_tag_repository)]
 _BlogRepositoryDependency = Annotated[BlogRepository, Depends(
     dependency=_provide_blog_repository)]
+_CommentRepositoryDependency = Annotated[CommentRepository, Depends(
+    dependency=_provide_comment_repository)]
 
 # Service Dependencies
 # This section provides dependencies for various services such as user, tag, blog, and authentication services.
@@ -132,6 +146,17 @@ def _provide_user_services(user_repository: _UserRepositoryDependency) -> UserSe
     """
     return UserService(user_repository=user_repository)
 
+def _provide_comment_service(comment_repository: _CommentRepositoryDependency) -> CommentService:
+    """
+    Dependency that provides a CommentService instance.
+
+    Args:
+        comment_repository (CommentRepositoryDependency): The comment repository dependency.
+
+    Returns:
+        CommentService: Instance of the comment services
+    """
+    return CommentService(comment_repository=comment_repository)
 
 def _provide_auth_service(user_repository: _UserRepositoryDependency, jwt_handler: JWTHandlerDependency, password_service: _PasswordHasherDependency) -> AuthService:
     """
@@ -159,7 +184,7 @@ def _provide_tag_service(tag_repository: _TagRepositoryDependency) -> TagService
     return TagService(tag_repository=tag_repository)
 
 
-def __provide_blog_service(blog_repository: _BlogRepositoryDependency) -> BlogService:
+def _provide_blog_service(blog_repository: _BlogRepositoryDependency) -> BlogService:
     """
     Dependency that provides a BlogService instance.
 
@@ -171,7 +196,8 @@ def __provide_blog_service(blog_repository: _BlogRepositoryDependency) -> BlogSe
     """
     return BlogService(blog_repository=blog_repository)
 
-
+CommentServiceDependency = Annotated[CommentService,
+                                        Depends(dependency=_provide_comment_service)]
 UserServiceDependency = Annotated[UserService,
                                   Depends(dependency=_provide_user_services)]
 AuthServiceDependency = Annotated[AuthService,
@@ -179,5 +205,5 @@ AuthServiceDependency = Annotated[AuthService,
 TagServiceDependency = Annotated[TagService,
                                  Depends(dependency=_provide_tag_service)]
 BlogServiceDependency = Annotated[BlogService,
-                                  Depends(dependency=__provide_blog_service)]
+                                  Depends(dependency=_provide_blog_service)]
 

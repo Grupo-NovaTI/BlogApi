@@ -4,7 +4,8 @@ from .dependencies import (UserServiceDependency,
                            BlogServiceDependency,
                            AccessTokenDependency,
                            provide_application_config,
-                           UserIDFromTokenDependency)
+                           UserIDFromTokenDependency,
+                           CommentServiceDependency)
 
 __all__: list[str] = [
     "UserServiceDependency",
@@ -13,5 +14,6 @@ __all__: list[str] = [
     "BlogServiceDependency",
     "AccessTokenDependency",
     "provide_application_config",
-    "UserIDFromTokenDependency"
+    "UserIDFromTokenDependency",
+    "CommentServiceDependency",
 ]
