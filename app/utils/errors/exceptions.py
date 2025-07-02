@@ -52,8 +52,20 @@ class ValidationException(Exception):
         Exception (str): The error message.
         model (str): The name of the model or resource that failed validation.
     """
-    def __init__(self, model: str, message: str = "Validation error") -> None:
+    def __init__(self, model: str, identifier: str, message: str = "Validation error") -> None:
         super().__init__(message)
         self.message: str = message
         self.model: str = model.capitalize()
+        self.identifier: str = identifier
 
+class UnknownException(Exception):
+    """UnknownException is raised when an unknown error occurs.
+
+    Args:
+        Exception (str): The error message.
+        model (str): The name of the model or resource where the error occurred.
+    """
+    def __init__(self, model: str, message: str = "An unknown error occurred") -> None:
+        super().__init__(message)
+        self.message: str = message
+        self.model: str = model.capitalize()
