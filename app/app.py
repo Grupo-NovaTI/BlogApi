@@ -22,19 +22,9 @@ from app.core.dependencies.dependencies import provide_application_config
 from app.core.middlewares import rate_limiter, clear_redis_cache, init_redis_cache
 from app.status.status_routes import app as status_router
 from app.admin.routes.admin_routes import admin_router
-from app.auth.exceptions.auth_exceptions import (
-    InvalidUserCredentialsException,
-    OperationFailedException,
-    OperationNotAllowedException,
-    UserPermissionDeniedException
+from app.auth.exceptions.auth_exceptions import InvalidUserCredentialsException, OperationFailedException, OperationNotAllowedException, UserPermissionDeniedException
+from app.utils.errors.exceptions import NotFoundException, OperationException, AlreadyExistsException, ValidationException, UnknownException, IntegrityErrorException
 
-)
-from app.utils.errors.exceptions import (
-    NotFoundException,
-    OperationException,
-    AlreadyExistsException,
-    ValidationException
-)
 
 _logger: ApplicationLogger = ApplicationLogger(
     name=__name__, log_to_console=False)
@@ -152,7 +142,7 @@ async def validation_exception_handler(request: Request, exc: ValidationExceptio
     """Custom handler for ValidationException."""
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"message": f"{exc.model} Validation error: {exc.message}" },
+        content={"message": f"{exc.model} Validation error on {exc.identifier}: {exc.message}"},
     )
 
 # Handle ResponseValidationError
@@ -177,6 +167,32 @@ async def request_validation_error_handler(request: Request, exc: RequestValidat
         content={"message": "Invalid request data."},
     )
 
+@app.exception_handler(IntegrityErrorException)
+async def integrity_error_exception_handler(request: Request, exc: IntegrityErrorException) -> JSONResponse:
+    """Custom handler for IntegrityErrorException.""" 
+    _logger.log_error(message=f"{exc.model} integrity error: {exc.message}")
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"message": f"{exc.model} integrity error: {exc.message}"},
+    )
+    
+@app.exception_handler(UnknownException)
+async def unknown_exception_handler(request: Request, exc: UnknownException) -> JSONResponse:
+    """Custom handler for UnknownException."""
+    _logger.log_error(message=f"Unknown error: {exc.message}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"message": f"An unknown error occurred. {exc.message}"},
+    )
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Custom handler for generic exceptions."""
+    _logger.log_error(message=f"Unexpected error: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"message": f"Internal server error. {exc}"},
+    )
 
 
 

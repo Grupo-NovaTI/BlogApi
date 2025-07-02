@@ -51,6 +51,7 @@ class ValidationException(Exception):
     Args:
         Exception (str): The error message.
         model (str): The name of the model or resource that failed validation.
+        identifier (str): The identifier of the resource that failed validation.
     """
     def __init__(self, model: str, identifier: str, message: str = "Validation error") -> None:
         super().__init__(message)
@@ -66,6 +67,18 @@ class UnknownException(Exception):
         model (str): The name of the model or resource where the error occurred.
     """
     def __init__(self, model: str, message: str = "An unknown error occurred") -> None:
+        super().__init__(message)
+        self.message: str = message
+        self.model: str = model.capitalize()
+        
+class IntegrityErrorException(Exception):
+    """IntegrityErrorException is raised when a database integrity error occurs.
+
+    Args:
+        Exception (str): The error message.
+        model (str): The name of the model or resource where the integrity error occurred.
+    """
+    def __init__(self, model: str, message: str = "Database integrity error") -> None:
         super().__init__(message)
         self.message: str = message
         self.model: str = model.capitalize()
