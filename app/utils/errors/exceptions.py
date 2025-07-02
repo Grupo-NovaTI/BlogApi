@@ -78,7 +78,8 @@ class IntegrityErrorException(Exception):
         Exception (str): The error message.
         model (str): The name of the model or resource where the integrity error occurred.
     """
-    def __init__(self, model: str, message: str = "Database integrity error") -> None:
+    def __init__(self, model: str, operation: str, message: str = "Database integrity error") -> None:
         super().__init__(message)
         self.message: str = message
         self.model: str = model.capitalize()
+        self.operation: str = operation

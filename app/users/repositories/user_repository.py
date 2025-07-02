@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.users.models.user_model import UserModel as User
-from app.users.excepctions.user_exceptions import UserOperationException
+from app.users.excepctions.user_exceptions import UserOperationException, UserIntegrityErrorException, UserUnknownException
 from app.utils.errors.error_messages import database_error_message, unknown_error_message, integrity_error_message
 from app.utils.logger.application_logger import ApplicationLogger
 
@@ -35,7 +35,7 @@ class UserRepository:
         except Exception as e:
             _logger.log_error(unknown_error_message(
                 operation="retrieving", instance="user", exception=e))
-            raise UserOperationException(operation="fetching", message=str(e))
+            raise UserUnknownException(message=str(e))
 
     def get_user_by_username(self, username: str) -> Optional[User]:
         """
@@ -60,8 +60,7 @@ class UserRepository:
         except Exception as e:
             _logger.log_error(unknown_error_message(
                 operation="retrieving", instance="user by username", exception=e))
-            raise UserOperationException(
-                operation="fetching by username", message=str(e))
+            raise UserUnknownException(message=str(e))
 
     def create_user(self, user: User) -> User:
         """
@@ -86,7 +85,7 @@ class UserRepository:
             self._db_session.rollback()
             _logger.log_error(integrity_error_message(
                 operation="creating", instance="user", exception=e))
-            raise UserOperationException(operation="creating", message=str(e))
+            raise UserIntegrityErrorException(message=str(e), operation="creating")
         except SQLAlchemyError as e:
             self._db_session.rollback()
             _logger.log_error(database_error_message(
@@ -96,7 +95,7 @@ class UserRepository:
             _logger.log_error(unknown_error_message(
                 operation="creating", instance="user", exception=e))
             self._db_session.rollback()
-            raise UserOperationException(operation="creating", message=str(e))
+            raise UserUnknownException(message=str(e))
 
     def update_user(self, user_data: dict, user_id: int) -> Optional[User]:
         """
@@ -123,7 +122,7 @@ class UserRepository:
             self._db_session.rollback()
             _logger.log_error(integrity_error_message(
                 operation="updating", instance="user", exception=e))
-            raise UserOperationException(operation="updating", message=str(e))
+            raise UserIntegrityErrorException(message=str(e), operation="updating")
         except SQLAlchemyError as e:
             self._db_session.rollback()
             _logger.log_error(database_error_message(
@@ -160,7 +159,7 @@ class UserRepository:
             self._db_session.rollback()
             _logger.log_error(integrity_error_message(
                 operation="deleting", instance="user", exception=e))
-            raise UserOperationException(operation="deleting", message=str(e))
+            raise UserIntegrityErrorException(message=str(e), operation="deleting")
         except SQLAlchemyError as e:
             self._db_session.rollback()
             _logger.log_error(database_error_message(
@@ -170,7 +169,7 @@ class UserRepository:
             self._db_session.rollback()
             _logger.log_error(unknown_error_message(
                 operation="deleting", instance="user", exception=e))
-            raise UserOperationException(operation="deleting", message=str(e))
+            raise UserUnknownException(message=str(e))
 
     def get_all_users(self, offset: int = 0, limit: int = 10) -> List[User]:
         """
@@ -192,7 +191,7 @@ class UserRepository:
                 operation="retrieving", instance="all users", exception=e))
             raise UserOperationException(operation="fetching", message=str(e))
         except Exception as e:
-            raise UserOperationException(operation="fetching", message=str(e))
+            raise UserUnknownException(message=str(e))
 
     def get_user_by_email(self, email: str) -> Optional[User]:
         """
@@ -217,8 +216,7 @@ class UserRepository:
         except Exception as e:
             _logger.log_error(unknown_error_message(
                 operation="retrieving", instance="user by email", exception=e))
-            raise UserOperationException(
-                operation="fetching by email", message=str(e))
+            raise UserUnknownException(message=str(e))
 
     def update_user_active_status(self, user_id: int, is_active: bool) -> Optional[User]:
         """
@@ -241,6 +239,11 @@ class UserRepository:
                 return None
             self._db_session.commit()
             return self.get_user_by_id(user_id=user_id)
+        except IntegrityError as e:
+            self._db_session.rollback()
+            _logger.log_error(integrity_error_message(
+                operation="updating active status", instance="user", exception=e))
+            raise UserIntegrityErrorException(message=str(e), operation="updating active status")
         except SQLAlchemyError as e:
             self._db_session.rollback()
             _logger.log_error(database_error_message(
@@ -251,5 +254,4 @@ class UserRepository:
             self._db_session.rollback()
             _logger.log_error(unknown_error_message(
                 operation="updating active status", instance="user", exception=e))
-            raise UserOperationException(
-                operation="updating active status", message=str(e))
+            raise UserUnknownException(message=str(e))
