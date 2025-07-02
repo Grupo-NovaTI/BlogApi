@@ -2,7 +2,7 @@ from functools import wraps
 from typing import Callable, List
 from starlette import status
 from fastapi import HTTPException
-from app.utils.enumns.user_roles import UserRole
+from app.utils.enums.user_roles import UserRole
 
 
 def current_user_only():

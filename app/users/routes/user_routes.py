@@ -3,11 +3,11 @@ from starlette import status
 
 from fastapi import APIRouter
 
-from app.utils.enumns.user_roles import UserRole
+from app.utils.enums.user_roles import UserRole
 from app.users.schemas.user_response import UserResponse
 from app.core.dependencies import UserServiceDependency, UserIDFromTokenDependency, AccessTokenDependency
 from app.core.security.authentication_decorators import role_required
-from app.users.excepctions.user_exceptions import UserNotFoundException, UserOperationException
+from app.users.exceptions.user_exceptions import UserNotFoundException, UserOperationException
 from app.auth.exceptions.auth_exceptions import OperationNotAllowedException
 
 user_router = APIRouter(

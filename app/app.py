@@ -9,6 +9,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
+## TODO: ADD EXCEPTIONS TO ALL REMAINING MODULES. 
 # Application Imports
 from app.core.db.database import init_db
 from app.users.routes.user_routes import user_router

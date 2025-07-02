@@ -3,8 +3,8 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from app.users.models.user_model import UserModel
 from app.core.security.password_hasher import PasswordHasher
-from app.utils.consts.consts import EMAIL_PATTERN
-from app.utils.enumns.user_roles import UserRole
+from app.utils.constants.consts import EMAIL_PATTERN
+from app.utils.enums.user_roles import UserRole
 
 class UserRequest(BaseModel):
     id: Optional[int] = Field(

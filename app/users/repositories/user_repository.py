@@ -2,7 +2,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.users.models.user_model import UserModel as User
-from app.users.excepctions.user_exceptions import UserOperationException, UserIntegrityErrorException, UserUnknownException
+from app.users.exceptions.user_exceptions import UserOperationException, UserIntegrityErrorException, UserUnknownException
 from app.utils.errors.error_messages import database_error_message, unknown_error_message, integrity_error_message
 from app.utils.logger.application_logger import ApplicationLogger
 

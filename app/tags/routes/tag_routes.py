@@ -4,7 +4,7 @@ from starlette import status
 from app.tags.schemas.tag_response import TagResponse
 from app.tags.schemas.tag_request import TagRequest
 from app.core.dependencies import TagServiceDependency, AccessTokenDependency
-from app.utils.consts.consts import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
+from app.utils.constants.consts import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
 
 tag_router = APIRouter(
     prefix="/tags",

@@ -5,7 +5,7 @@ from app.core.dependencies import BlogServiceDependency, AccessTokenDependency, 
 from app.blogs.schemas.blog_request import BlogRequest
 from app.blogs.schemas.blog_response import BlogResponse, BlogResponseFull
 from app.blogs.models.blog_model import BlogModel
-from app.utils.consts.consts import DEFAULT_PAGE_SIZE, DEFAULT_OFFSET
+from app.utils.constants.consts import DEFAULT_PAGE_SIZE, DEFAULT_OFFSET
 from app.core.security.authentication_decorators import authentication_required
 from app.core.middlewares.rate_limit_middleware import rate_limiter as limiter
 

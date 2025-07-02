@@ -1,6 +1,6 @@
 from typing import List, Optional
 from app.users.repositories.user_repository import UserRepository
-from app.users.excepctions.user_exceptions import UserNotFoundException, UserAlreadyExistsException
+from app.users.exceptions.user_exceptions import UserNotFoundException, UserAlreadyExistsException
 from app.utils.errors.error_messages import not_found_message, already_exists_message
 from app.users.models.user_model import UserModel
 
