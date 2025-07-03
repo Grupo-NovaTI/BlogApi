@@ -2,14 +2,13 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import ResponseValidationError, RequestValidationError, HTTPException
+from fastapi.exceptions import ResponseValidationError, RequestValidationError
 from starlette import status
 # Rate Limiting
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-## TODO: ADD EXCEPTIONS TO ALL REMAINING MODULES. 
 # Application Imports
 from app.core.db.database import init_db
 from app.users.routes.user_routes import user_router
@@ -23,8 +22,7 @@ from app.core.dependencies.dependencies import provide_application_config
 from app.core.middlewares import rate_limiter, clear_redis_cache, init_redis_cache
 from app.status.status_routes import app as status_router
 from app.admin.routes.admin_routes import admin_router
-from app.auth.exceptions.auth_exceptions import InvalidUserCredentialsException, OperationFailedException, OperationNotAllowedException, UserPermissionDeniedException
-from app.utils.errors.exceptions import NotFoundException, OperationException, AlreadyExistsException, ValidationException, UnknownException, IntegrityErrorException
+from app.utils.errors.exceptions import BaseApplicationException, BaseAuthenticationException, BaseIdentifierException
 
 
 _logger: ApplicationLogger = ApplicationLogger(
@@ -68,87 +66,54 @@ app.state.limiter = rate_limiter  # Set the rate limiter from the config
 
 
 # Handle rate limit exceeded exceptions
-
-@app.exception_handler(InvalidUserCredentialsException)
-async def invalid_user_credentials_exception_handler(request: Request, exc: InvalidUserCredentialsException):
-    """Custom handler for invalid user credentials exceptions."""
-    return JSONResponse(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        content={"message": exc.message},
-    )
-
-
-@app.exception_handler(OperationFailedException)
-async def operation_failed_exception_handler(request: Request, exc: OperationFailedException):
-    """Custom handler for operation failed exceptions."""
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"message": exc.message},
-    )
-
-
-@app.exception_handler(OperationNotAllowedException)
-async def operation_not_allowed_exception_handler(request: Request, exc: OperationNotAllowedException):
-    """Custom handler for operation not allowed exceptions."""
-    return JSONResponse(
-        status_code=status.HTTP_403_FORBIDDEN,
-        content={"message": exc.message},
-    )
-
-
-@app.exception_handler(UserPermissionDeniedException)
-async def user_permission_denied_exception_handler(request: Request, exc: UserPermissionDeniedException):
-    """Custom handler for user permission denied exceptions."""
-    return JSONResponse(
-        status_code=status.HTTP_403_FORBIDDEN,
-        content={"message": exc.message},
-    )
-
-
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     """Custom handler for rate limit exceeded exceptions."""
     return _rate_limit_exceeded_handler(request, exc)
 
 
-@app.exception_handler(NotFoundException)  # Handle NotFoundException
-async def not_found_exception_handler(request: Request, exc: NotFoundException):
-    """Custom handler for NotFoundException."""
-    return JSONResponse(
-        status_code=status.HTTP_404_NOT_FOUND,
-        content={"message": f"{exc.model} with identifier '{exc.identifier}' not found."},
-    )
-
-
-@app.exception_handler(OperationException)  # Handle OperationException
-async def operation_exception_handler(request: Request, exc: OperationException):
-    """Custom handler for OperationException."""
+# Handle BaseApplicationException
+@app.exception_handler(BaseApplicationException)
+async def base_application_exception_handler(request: Request, exc: BaseApplicationException) -> JSONResponse:
+    """Custom handler for BaseApplicationException."""
+    _logger.log_error(
+        message=f"[{exc.id}]: {exc.message}. Details: {exc.details}.")
+    # Log the error with the logger
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"message": f"{exc.model} {exc.operation} failed: {exc.message}"},
+        content={
+            "error_id": exc.id,
+            "message": f"An error occurred in the application. {exc.message}",
+        },
     )
 
-
-@app.exception_handler(AlreadyExistsException)  # Handle AlreadyExistsException
-async def already_exists_exception_handler(request: Request, exc: AlreadyExistsException):
-    """Custom handler for AlreadyExistsException."""
+# Handle BaseAuthenticationException
+@app.exception_handler(BaseAuthenticationException)
+async def base_authentication_exception_handler(request: Request, exc: BaseAuthenticationException) -> JSONResponse:
+    """Custom handler for BaseAuthenticationException."""
+    _logger.log_error(message=f"Authentication error: {exc.message}")
     return JSONResponse(
-        status_code=status.HTTP_409_CONFLICT,
-        content={"message": f"{exc.model} with identifier '{exc.identifier}' already exists."},
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content={
+            "error_id": exc.id,
+            "message": f"Authentication error: {exc.message}",
+        },
     )
 
-
-@app.exception_handler(ValidationException)  # Handle ValidationException
-async def validation_exception_handler(request: Request, exc: ValidationException) -> JSONResponse:
-    """Custom handler for ValidationException."""
+# Handle BaseIdentifierException
+@app.exception_handler(BaseIdentifierException)
+async def base_identifier_exception_handler(request: Request, exc: BaseIdentifierException) -> JSONResponse:
+    """Custom handler for BaseIdentifierException."""
+    _logger.log_error(message=f"[{exc.id}]: {exc.message}. Details:{exc.details}")
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"message": f"{exc.model} Validation error on {exc.identifier}: {exc.message}"},
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={
+            "error_id": exc.id,
+            "message": f"Identifier error: {exc.message}",
+        },
     )
 
 # Handle ResponseValidationError
-
-
 @app.exception_handler(ResponseValidationError)
 async def response_validation_error_handler(request: Request, exc: ResponseValidationError) -> JSONResponse:
     """Custom handler for ResponseValidationError."""
@@ -168,23 +133,6 @@ async def request_validation_error_handler(request: Request, exc: RequestValidat
         content={"message": "Invalid request data."},
     )
 
-@app.exception_handler(IntegrityErrorException)
-async def integrity_error_exception_handler(request: Request, exc: IntegrityErrorException) -> JSONResponse:
-    """Custom handler for IntegrityErrorException.""" 
-    _logger.log_error(message=f"{exc.model} integrity error: {exc.message}")
-    return JSONResponse(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        content={"message": f"{exc.model} integrity error: {exc.message}"},
-    )
-    
-@app.exception_handler(UnknownException)
-async def unknown_exception_handler(request: Request, exc: UnknownException) -> JSONResponse:
-    """Custom handler for UnknownException."""
-    _logger.log_error(message=f"Unknown error: {exc.message}")
-    return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"message": f"An unknown error occurred. {exc.message}"},
-    )
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
