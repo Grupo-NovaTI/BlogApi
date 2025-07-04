@@ -61,10 +61,9 @@ class BlogRepository:
     )
     def delete_blog(self, blog_id: int) -> Optional[BlogModel]:
         blog: BlogModel | None = self.get_blog_by_id(blog_id)
-        rows_affected: int = self._db_session.query(
-            BlogModel).filter(BlogModel.id == blog_id).delete()
-        if rows_affected == 0 or not blog:
+        if not blog:
             return None
+        self._db_session.delete(instance=blog)
         self._db_session.commit()
         return blog
 

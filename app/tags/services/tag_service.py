@@ -76,7 +76,7 @@ class TagService:
             raise TagNotFoundException(identifier=str(tag_id), model=self.model_name)
         return updated_tag
 
-    def delete_tag(self, tag_id: int) -> TagModel:
+    def delete_tag(self, tag_id: int):
         """
         Delete a tag from the repository.
         Args:

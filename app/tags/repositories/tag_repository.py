@@ -120,11 +120,9 @@ class TagRepository:
             TagOperationException: If there is a database error during deletion.
         """
         target_tag: Optional[TagModel] = self.get_tag_by_id(tag_id=tag_id)
-        rows_affected :int = self._db_session.query(TagModel).filter(
-            TagModel.id == tag_id
-        ).delete()
-        if rows_affected == 0 or not target_tag:
-            return None 
+        if not target_tag:
+            return None
+        self._db_session.delete(instance=target_tag)
         self._db_session.commit()
         return target_tag
     @handle_repository_exception(
