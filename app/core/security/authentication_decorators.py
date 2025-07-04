@@ -3,6 +3,7 @@ from typing import Callable, List
 from starlette import status
 from fastapi import HTTPException
 from app.utils.enums.user_roles import UserRole
+from app.utils.errors.exceptions import InvalidUserCredentialsException, UserPermissionDeniedException
 
 
 def current_user_only():
@@ -16,9 +17,9 @@ def current_user_only():
             authenticated_user_id = kwargs.get('jwt_payload', {}).get('user_id')
             expected_user_id = kwargs.get("user_id", 0)
             if not authenticated_user_id:
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User ID not found in JWT payload")
+                raise InvalidUserCredentialsException(message="User ID not found in JWT payload")
             if int(authenticated_user_id) != expected_user_id:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can only access your own data.")
+                raise UserPermissionDeniedException(message="You can only access your own data.")
             import inspect
             if inspect.iscoroutinefunction(func):
                 return await func(*args, **kwargs)
@@ -41,7 +42,7 @@ def admin_only():
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JWT payload")
             user_role = user_role.get('role')
             if not user_role or user_role != UserRole.ADMIN:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You must be an admin to perform this action.")
+                raise UserPermissionDeniedException(message="You must be an admin to perform this action.")
             import inspect
             if inspect.iscoroutinefunction(func):
                 return await func(*args, **kwargs)
@@ -65,7 +66,7 @@ def authentication_required():
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JWT payload")
             user_role = user_role.get('role')
             if not user_role or user_role == UserRole.GUEST:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You must be authenticated to perform this action.")
+                raise UserPermissionDeniedException(message="You must be authenticated to perform this action.")
             import inspect
             if inspect.iscoroutinefunction(func):
                 return await func(*args, **kwargs)
@@ -90,7 +91,7 @@ def role_required(required_role : List[UserRole]):
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JWT payload")
             user_role = user_role.get('role')
             if not user_role or user_role not in required_role:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"You must have one of the roles {required_role} to perform this action.")
+                raise UserPermissionDeniedException(message=f"You must have one of the roles {required_role} to perform this action.")
             import inspect
             if inspect.iscoroutinefunction(func):
                 return await func(*args, **kwargs)

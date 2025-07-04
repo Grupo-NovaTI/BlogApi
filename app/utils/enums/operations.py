@@ -11,6 +11,8 @@ class Operations(Enum):
     """
     CREATE = "Creating"
     FETCH = "Fetching"
+    FETCH_ALL = "Fetching All"
+    FETCH_BY = "Fetching By Specific Identifier"
     UPDATE = "Updating"
     DELETE = "Deleting"
     PATCH = "Patching"    

@@ -83,7 +83,7 @@ async def base_application_exception_handler(request: Request, exc: BaseApplicat
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "error_id": exc.id,
-            "message": f"An error occurred in the application. {exc.message}",
+            "message": exc.message,
         },
     )
 
@@ -96,7 +96,7 @@ async def base_authentication_exception_handler(request: Request, exc: BaseAuthe
         status_code=status.HTTP_401_UNAUTHORIZED,
         content={
             "error_id": exc.id,
-            "message": f"Authentication error: {exc.message}",
+            "message": exc.message,
         },
     )
 
@@ -109,7 +109,7 @@ async def base_identifier_exception_handler(request: Request, exc: BaseIdentifie
         status_code=status.HTTP_404_NOT_FOUND,
         content={
             "error_id": exc.id,
-            "message": f"Identifier error: {exc.message}",
+            "message": exc.message,
         },
     )
 
@@ -120,7 +120,7 @@ async def response_validation_error_handler(request: Request, exc: ResponseValid
     _logger.log_error(message=f"Response validation error: {exc.errors()}")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"message": "Invalid response data. "},
+        content={"message": "Invalid response data."},
     )
 
 
@@ -130,7 +130,7 @@ async def request_validation_error_handler(request: Request, exc: RequestValidat
     _logger.log_error(message=f"Request validation error: {exc.errors()}")
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"message": "Invalid request data."},
+        content={"message": "Invalid request data: " + str(exc.errors()[0]["msg"])},
     )
 
 

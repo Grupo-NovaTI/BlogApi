@@ -1,13 +1,13 @@
 from typing import List, Optional
 from app.tags.models.tag_model import TagModel
 from app.tags.repositories.tag_repository import TagRepository
-from app.tags.exceptions.tag_exceptions import TagNotFoundException, TagAlreadyExistsException, TagInvalidException
+from app.utils.errors.exceptions import NotFoundException as TagNotFoundException, AlreadyExistsException as TagAlreadyExistsException, ValidationException as TagInvalidException
 from app.utils.errors.error_messages import not_found_message, already_exists_message, validation_error_message
-
 
 class TagService:
     def __init__(self, tag_repository: TagRepository) -> None:
         self._repository: TagRepository = tag_repository
+        self.model_name = "Tag"
 
     def get_tags(self, limit: int, offset: int) -> List[TagModel]:
         """Retrieve all tags from the repository.
@@ -43,9 +43,7 @@ class TagService:
         check_tag_exists: Optional[TagModel] = self._repository.get_tag_by_name(
             tag_name=str(tag.name))
         if check_tag_exists:
-            raise TagAlreadyExistsException(identifier=str(tag.name), message=already_exists_message(
-                instance="tag",
-                identifier=str(tag.name)))
+            raise TagAlreadyExistsException(identifier=str(tag.name), model=self.model_name)
 
         return self._repository.create_tag(tag=tag)
 
@@ -59,28 +57,23 @@ class TagService:
         """
         tag_name: Optional[str] = tag_data.get("name")
         if not tag_name:
-            raise TagInvalidException(identifier="name", message=validation_error_message("name", "Tag name is required."))
+            raise TagInvalidException(identifier="name", model=self.model_name)
         if not isinstance(tag_name, str):
             raise TagInvalidException(
                 identifier=str(tag_name),
-                message=validation_error_message("name", "Tag name must be a string."))
-        check_tag_exists_by_name: Optional[TagModel] = self._repository.get_tag_by_id_or_name(
-            tag_id=tag_id, tag_name=str(tag_name))
+                model=self.model_name)
+        check_tag_exists_by_name: Optional[TagModel] = self._repository.get_tag_by_name(
+            tag_name=str(tag_name))
         if check_tag_exists_by_name:
             raise TagAlreadyExistsException(
                 identifier=str(tag_name),
-                message=already_exists_message(
-                    instance="tag",
-                    identifier=str(tag_name)
-                )
+                model=self.model_name,
             )
+
         updated_tag: Optional[TagModel] = self._repository.update_tag(
             tag_data=tag_data, tag_id=tag_id)
         if not updated_tag:
-            raise TagNotFoundException(identifier=str(tag_id), message=not_found_message(
-                instance="tag",
-                identifier=str(tag_id)
-            ))
+            raise TagNotFoundException(identifier=str(tag_id), model=self.model_name)
         return updated_tag
 
     def delete_tag(self, tag_id: int) -> TagModel:
@@ -94,10 +87,7 @@ class TagService:
         
         tag_result: Optional[TagModel] = self._repository.delete_tag(tag_id=tag_id)
         if not tag_result:
-            raise TagNotFoundException(identifier=str(tag_id), message=not_found_message(
-                instance="tag",
-                identifier=str(tag_id)
-            ))
+            raise TagNotFoundException(identifier=str(tag_id), model=self.model_name)
         return tag_result
 
     def get_tag_by_id_or_name(self, tag_id: int, tag_name: str) -> Optional[TagModel]:

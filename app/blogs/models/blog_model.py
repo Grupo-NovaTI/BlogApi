@@ -9,7 +9,17 @@ from app.tags.models.blog_tags import blog_tags
 
 class BlogModel(Base):
     __tablename__ = "blogs"
+    """BlogModel represents a blog post in the system.
 
+    Attributes:
+        id (int): Unique identifier for the blog post.
+        title (str): Title of the blog post.
+        content (str): Content of the blog post.
+        author_id (int): Foreign key referencing the user who authored the blog post.
+        is_published (bool): Indicates whether the blog post is published or not.
+        created_at (datetime): Timestamp when the blog post was created.
+        updated_at (datetime): Timestamp when the blog post was last updated.   
+    """
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)

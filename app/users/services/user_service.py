@@ -1,13 +1,13 @@
 from typing import List, Optional
 from app.users.repositories.user_repository import UserRepository
-from app.users.exceptions.user_exceptions import UserNotFoundException, UserAlreadyExistsException
-from app.utils.errors.error_messages import not_found_message, already_exists_message
+from app.utils.errors.exceptions import NotFoundException as  UserNotFoundException, AlreadyExistsException as UserAlreadyExistsException
 from app.users.models.user_model import UserModel
 
 
 class UserService:
     def __init__(self, user_repository: UserRepository) -> None:
         self._user_repository: UserRepository = user_repository
+        self.model_name = "Users"
 
     def get_all_users(self) -> List[UserModel]:
         """
@@ -34,17 +34,15 @@ class UserService:
         if check_user_exists:
             raise UserAlreadyExistsException(
                 identifier=str(user_data.username),
-                message=already_exists_message(
-                    instance="user",
-                    identifier=str(user_data.username)))
+                model=self.model_name
+            )
         check_user_exists = self._user_repository.get_user_by_email(
             email=str(user_data.email))
         if check_user_exists:
             raise UserAlreadyExistsException(
                 identifier=str(user_data.email),
-                message=already_exists_message(
-                    instance="user",
-                    identifier=str(user_data.email)))
+                model=self.model_name
+            )
         return self._user_repository.create_user(user=user_data)
 
     def get_user_by_id(self, user_id: int) -> Optional[UserModel]:
@@ -98,11 +96,9 @@ class UserService:
         if not user_updated_result:
             raise UserNotFoundException(
                 identifier=user_id,
-                message=not_found_message(
-                    instance="user",
-                    identifier=user_id
-                )
+                model=self.model_name
             )
+        
         return user_updated_result
     
     def delete_user(self, user_id: int) -> bool:
@@ -122,10 +118,7 @@ class UserService:
         if not deletion_result:
             raise UserNotFoundException(
                 identifier=user_id,
-                message=not_found_message(
-                    instance="user",
-                    identifier=user_id
-                )
+                model=self.model_name
             )
         return deletion_result
     
@@ -147,10 +140,7 @@ class UserService:
         if not activated_user:
             raise UserNotFoundException(
                 identifier=user_id,
-                message=not_found_message(
-                    instance="user",
-                    identifier=user_id
-                )
+                model=self.model_name,
             )
         return activated_user
     
@@ -171,9 +161,6 @@ class UserService:
         if not deactivated_user:
             raise UserNotFoundException(
                 identifier=user_id,
-                message=not_found_message(
-                    instance="user",
-                    identifier=user_id
-                )
+                model=self.model_name,
             )
         return deactivated_user

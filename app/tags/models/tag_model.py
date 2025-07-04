@@ -25,6 +25,10 @@ class TagModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True, nullable=False)
     description = Column(String, nullable=True)
+    created_at = Column(
+        String, default=datetime.now(timezone.utc).isoformat(), nullable=False)
+    updated_at = Column(
+        String, default=datetime.now(timezone.utc).isoformat(), onupdate=datetime.now(timezone.utc).isoformat(), nullable=False)
     blogs = relationship("BlogModel", secondary=blog_tags, back_populates="tags")
     def __repr__(self):
         return f"<Tag(id={self.id}, name={self.name})>"

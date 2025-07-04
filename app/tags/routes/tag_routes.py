@@ -4,7 +4,7 @@ from starlette import status
 from app.tags.schemas.tag_response import TagResponse
 from app.tags.schemas.tag_request import TagRequest
 from app.core.dependencies import TagServiceDependency, AccessTokenDependency
-from app.utils.constants.consts import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
+from app.utils.constants.constants import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
 
 tag_router = APIRouter(
     prefix="/tags",
@@ -90,7 +90,7 @@ async def update_tag(tag_data: TagRequest, jwt_payload: AccessTokenDependency, t
     Raises:
         HTTPException: If the tag is not found or if there is an error during update.
     """
-    return tag_service.update_tag(tag_data=tag_data.to_orm(), tag_id=tag_id)
+    return tag_service.update_tag(tag_data=tag_data.model_dump(), tag_id=tag_id)
 
 
 @tag_router.delete(path="/{tag_id}", response_model=TagResponse, summary="Delete a tag", tags=["tags"], status_code=status.HTTP_200_OK)

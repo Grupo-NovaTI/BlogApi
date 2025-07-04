@@ -19,10 +19,10 @@ class BlogRequest(BaseModel):
             }
         }
         
-    def to_orm(self) -> BlogModel:
+    def to_orm(self, blog_id : Optional[int] = None) -> BlogModel:
         """ Convert the BlogRequest schema to a BlogModel instance."""
-        from app.blogs.models.blog_model import BlogModel
         return BlogModel(
+            id=blog_id,
             title=self.title,
             content=self.content,
             author_id=self.author_id,

@@ -1,14 +1,13 @@
 from typing import List, Optional
 from starlette import status
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Path, Query
 
 from app.utils.enums.user_roles import UserRole
 from app.users.schemas.user_response import UserResponse
 from app.core.dependencies import UserServiceDependency, UserIDFromTokenDependency, AccessTokenDependency
 from app.core.security.authentication_decorators import role_required
-from app.users.exceptions.user_exceptions import UserNotFoundException, UserOperationException
-from app.auth.exceptions.auth_exceptions import OperationNotAllowedException
+from app.utils.constants.constants import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
 
 user_router = APIRouter(
     prefix="/users",
@@ -37,7 +36,8 @@ async def get_current_user(service: UserServiceDependency, user_id_payload: User
 
 @user_router.get(path="/{user_id}", response_model=Optional[UserResponse], summary="Get user by ID", tags=["users"])
 @role_required(required_role=[UserRole.ADMIN, UserRole.USER])
-async def get_user_by_id(user_id: int, service: UserServiceDependency, jwt_payload: AccessTokenDependency):
+async def get_user_by_id(service: UserServiceDependency, jwt_payload: AccessTokenDependency, user_id: int = Path(
+        ..., description="The unique identifier of the user to retrieve", ge=1, le=1000000)):
     """
     Endpoint to retrieve a user by their ID.
 
@@ -55,8 +55,8 @@ async def get_user_by_id(user_id: int, service: UserServiceDependency, jwt_paylo
     return service.get_user_by_id(user_id=user_id)
 
 
-@ user_router.get(path="", response_model=List[UserResponse], summary="Get all users", tags=["users"])
-async def get_users(service: UserServiceDependency):
+@user_router.get(path="", response_model=List[UserResponse], summary="Get all users", tags=["users"])
+async def get_users(service: UserServiceDependency, limit: int = Query(DEFAULT_PAGE_SIZE, ge=1), offset: int = Query(DEFAULT_OFFSET, ge=0)):
     """
     Endpoint to retrieve a list of users.
 
@@ -66,7 +66,7 @@ async def get_users(service: UserServiceDependency):
     return service.get_all_users()
 
 
-@ user_router.delete(path="/me", summary="Delete user by ID", tags=["users"], status_code=status.HTTP_204_NO_CONTENT)
+@user_router.delete(path="/me", summary="Delete user by ID", tags=["users"], status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(service: UserServiceDependency, user_id_payload: UserIDFromTokenDependency):
     """
     Endpoint to delete a user by their ID.
@@ -84,7 +84,7 @@ async def delete_user(service: UserServiceDependency, user_id_payload: UserIDFro
     service.delete_user(user_id=user_id_payload)
 
 
-@ user_router.patch(path="/reactivate", summary="Reactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
+@user_router.patch(path="/reactivate", summary="Reactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
 async def reactivate_user_account(service: UserServiceDependency, user_id_payload: UserIDFromTokenDependency):
     """
     Endpoint to activate a user account.
@@ -100,7 +100,7 @@ async def reactivate_user_account(service: UserServiceDependency, user_id_payloa
     return service.reactivate_user_account(user_id=user_id_payload)
 
 
-@ user_router.patch("/deactivate", summary="Deactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
+@user_router.patch("/deactivate", summary="Deactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
 async def set_user_inactive(service: UserServiceDependency, user_id_payload: UserIDFromTokenDependency):
     """
     Endpoint to deactivate a user account.

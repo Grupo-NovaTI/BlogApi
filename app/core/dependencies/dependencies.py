@@ -18,7 +18,7 @@ from app.blogs.repositories.blog_repository import BlogRepository
 from app.comments.repositories.comment_repository import CommentRepository
 from app.comments.services.comment_service import CommentService
 from app.utils.errors.error_messages import validation_error_message
-from app.auth.exceptions.auth_exceptions import InvalidUserCredentialsException
+from app.utils.errors.exceptions import InvalidUserCredentialsException
 
 # Global Dependencies
 # This section provides global dependencies that can be used across the application.

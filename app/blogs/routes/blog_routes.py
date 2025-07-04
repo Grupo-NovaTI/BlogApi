@@ -5,7 +5,7 @@ from app.core.dependencies import BlogServiceDependency, AccessTokenDependency, 
 from app.blogs.schemas.blog_request import BlogRequest
 from app.blogs.schemas.blog_response import BlogResponse, BlogResponseFull
 from app.blogs.models.blog_model import BlogModel
-from app.utils.constants.consts import DEFAULT_PAGE_SIZE, DEFAULT_OFFSET
+from app.utils.constants.constants import DEFAULT_PAGE_SIZE, DEFAULT_OFFSET
 from app.core.security.authentication_decorators import authentication_required
 from app.core.middlewares.rate_limit_middleware import rate_limiter as limiter
 
@@ -50,7 +50,7 @@ async def create_blog(
 Create a new blog post.
 This endpoint allows users to create a new blog post by providing the necessary details in the request body.
 """
-    return blog_service.create_blog(blog=BlogModel(**blog.model_dump()))
+    return blog_service.create_blog(blog=blog.to_orm())
 
 
 @blog_router.put(path="/{id}", response_model=BlogResponseFull, tags=["blogs"], description="Update a blog")
@@ -104,7 +104,6 @@ async def get_blogs_by_user(
 
 
 @blog_router.get(path="/users/me", response_model=List[BlogResponseFull], tags=["blogs"], description="Get blogs by current user")
-@authentication_required()
 async def get_blogs_by_current_user(
     blog_service: BlogServiceDependency,
     user_id_payload: UserIDFromTokenDependency,

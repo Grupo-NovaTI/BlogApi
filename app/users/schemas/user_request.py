@@ -3,8 +3,9 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, field_validator
 from app.users.models.user_model import UserModel
 from app.core.security.password_hasher import PasswordHasher
-from app.utils.constants.consts import EMAIL_PATTERN
+from app.utils.constants.constants import EMAIL_PATTERN
 from app.utils.enums.user_roles import UserRole
+from app.utils.errors.exceptions import ValidationException
 
 class UserRequest(BaseModel):
     id: Optional[int] = Field(
@@ -32,7 +33,17 @@ class UserRequest(BaseModel):
 
     class Config:
         from_attributes = True
-        
+        json_schema_extra = {
+            "example": {
+                "username": "johndoe",
+                "email": "johndoe@example.com",
+                "name": "John",
+                "last_name": "Doe",
+                "password": "Password123!",
+                "role": "user"
+            }
+        }
+
     def to_orm(self) -> UserModel:
         return UserModel(
             username=self.username,

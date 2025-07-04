@@ -7,28 +7,33 @@ from app.utils.errors.exceptions import IntegrityException, OperationException, 
 def handle_repository_exception(
     model: str,
     operation: operations.Operations,
-    db_session: Session,
 ):
+    """handle_repository_exception Handle Repository exceptions
+
+    Args:
+        model (str): _description_
+        operation (operations.Operations): _description_
+    """
     def decorator(func):
-        def wrapper(*args, **kwargs):
+        def wrapper(self,*args, **kwargs):
             try:
-                return func(*args, **kwargs)
+                return func(self, *args, **kwargs)
             except IntegrityError as e:
-                db_session.rollback()
+                self._db_session.rollback()
                 raise IntegrityException(
                     model=model,
                     operation=operation,
-                    details=str(e)
+                    details=str(e._message())
                 )
             except SQLAlchemyError as e:
-                db_session.rollback()
+                self.db_session.rollback()
                 raise OperationException(
                     model=model,
                     operation=operation,
                     details=str(e)
                 )
             except Exception as e:
-                db_session.rollback()
+                self._db_session.rollback()
                 raise UnknownException(
                     model=model,
                     operation=operation,
