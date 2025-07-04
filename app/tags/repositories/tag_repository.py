@@ -9,8 +9,8 @@ _logger = ApplicationLogger(__name__)
 
 _MODEL = "Tag"
 class TagRepository:
-    def __init__(self, db: Session) -> None:
-        self._db_session: Session = db
+    def __init__(self, db_session: Session) -> None:
+        self._db_session: Session = db_session
 
     @handle_repository_exception(
         model = _MODEL,

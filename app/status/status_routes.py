@@ -1,8 +1,6 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import HTMLResponse
-from app.core.config.application_config import ApplicationConfig
-from app.core.dependencies import provide_application_config
-
+import app.core.config.application_config as config
 from app.utils.logger.application_logger import ApplicationLogger
 
 _logger: ApplicationLogger = ApplicationLogger(name=__name__, log_to_console=False)
@@ -14,7 +12,7 @@ app = APIRouter(
 
 
 @app.get(path="/", description="Root endpoint", tags=["status"], include_in_schema=False)
-async def home(config: ApplicationConfig = Depends(provide_application_config)) -> HTMLResponse:
+async def home() -> HTMLResponse:
     return HTMLResponse(content=f"""
 <!DOCTYPE html>
 <html>
@@ -55,8 +53,8 @@ async def home(config: ApplicationConfig = Depends(provide_application_config)) 
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to {config.app_version}!!</h1>
-        <p>Version: {config.app_version}</p>
+        <h1>Welcome to {config.APP_VERSION}!!</h1>
+        <p>Version: {config.APP_VERSION}</p>
         <p>Welcome to the FastAPI application. Use the endpoints to interact with the service.</p>
         <p>Check the <a href="/docs">API documentation</a> for more details.</p>
         <p>For a quick overview, visit the <a href="/redoc">ReDoc documentation</a>.</p>
@@ -65,11 +63,11 @@ async def home(config: ApplicationConfig = Depends(provide_application_config)) 
 </html>
 """)
 @app.get(path="/info", description="Get application information", tags=["status"])
-async def get_info(config: ApplicationConfig = Depends(provide_application_config)):
+async def get_info():
     return {
-        "name": config.app_name,
-        "version": config.app_version,
-        "debug": config.debug
+        "name": config.APP_NAME,
+        "version": config.APP_VERSION,
+        "debug": config.DEBUG
     }
 
 

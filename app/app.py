@@ -16,19 +16,16 @@ from app.comments.routes.comment_routes import comment_router
 from app.blogs.routes.blog_routes import blog_router
 from app.auth.routes.auth_routes import auth_router
 from app.tags.routes.tag_routes import tag_router
-from app.core.config.application_config import ApplicationConfig
 from app.utils.logger.application_logger import ApplicationLogger
-from app.core.dependencies.dependencies import provide_application_config
 from app.core.middlewares import rate_limiter, clear_redis_cache, init_redis_cache
 from app.status.status_routes import app as status_router
 from app.admin.routes.admin_routes import admin_router
 from app.utils.errors.exceptions import BaseApplicationException, BaseAuthenticationException, BaseIdentifierException
-
+from app.core.config.application_config import APP_NAME, APP_VERSION, DEBUG
 
 _logger: ApplicationLogger = ApplicationLogger(
     name=__name__, log_to_console=False)
 # Gets the application global configuration
-application_config: ApplicationConfig = provide_application_config()
 
 
 @asynccontextmanager
@@ -56,9 +53,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     lifespan=lifespan,
-    title=application_config.app_name,
-    version=application_config.app_version,
-    debug=application_config.debug,
+    title=APP_NAME,
+    version=APP_VERSION,
+    debug=DEBUG,
 )
 
 # Rate Limiting Configuration

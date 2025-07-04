@@ -2,8 +2,7 @@ from .dependencies import (UserServiceDependency,
                            AuthServiceDependency,
                            TagServiceDependency,
                            BlogServiceDependency,
-                           AccessTokenDependency,
-                           provide_application_config,
+                           AccessTokenPayloadDependency as AccessTokenDependency,
                            UserIDFromTokenDependency,
                            CommentServiceDependency)
 
@@ -13,7 +12,6 @@ __all__: list[str] = [
     "TagServiceDependency",
     "BlogServiceDependency",
     "AccessTokenDependency",
-    "provide_application_config",
     "UserIDFromTokenDependency",
     "CommentServiceDependency",
 ]
