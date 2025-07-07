@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.orm.session import Session
-from app.utils.errors.exception_handlers import handle_repository_exception
+from app.utils.errors.exception_handlers import handle_database_exception
 from app.tags.models.tag_model import TagModel
 from app.utils.logger.application_logger import ApplicationLogger
 from app.utils.enums.operations import Operations
@@ -12,14 +12,14 @@ class TagRepository:
     def __init__(self, db_session: Session) -> None:
         self._db_session: Session = db_session
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model = _MODEL,
         operation=Operations.FETCH
     )
     def get_all_tags(self, limit: int = 10, offset: int = 0) -> List[TagModel]:
         return self._db_session.query(TagModel).limit(limit=limit).offset(offset=offset).all()
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model = _MODEL,
         operation=Operations.FETCH_BY
     )
@@ -39,7 +39,7 @@ class TagRepository:
         return self._db_session.query(
                 TagModel).filter(TagModel.id == tag_id).first()
         
-    @handle_repository_exception(
+    @handle_database_exception(
          model = _MODEL,
         operation=Operations.FETCH
     )
@@ -59,7 +59,7 @@ class TagRepository:
         return self._db_session.query(
             TagModel).filter(TagModel.name == tag_name).first()
     
-    @handle_repository_exception(
+    @handle_database_exception(
          model = _MODEL,
         operation=Operations.CREATE
     )
@@ -80,7 +80,7 @@ class TagRepository:
         self._db_session.commit()
         self._db_session.refresh(tag)
         return tag
-    @handle_repository_exception(
+    @handle_database_exception(
          model = _MODEL,
         operation=Operations.UPDATE
     )
@@ -105,7 +105,7 @@ class TagRepository:
         self._db_session.commit()
         return self.get_tag_by_id(tag_id)
 
-    @handle_repository_exception(
+    @handle_database_exception(
          model = _MODEL,
         operation=Operations.DELETE
     )
@@ -125,7 +125,7 @@ class TagRepository:
         self._db_session.delete(instance=target_tag)
         self._db_session.commit()
         return target_tag
-    @handle_repository_exception(
+    @handle_database_exception(
          model = _MODEL,
         operation=Operations.FETCH
     )

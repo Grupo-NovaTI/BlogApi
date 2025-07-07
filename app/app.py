@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+from uuid import uuid4
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import ResponseValidationError, RequestValidationError
@@ -77,7 +78,7 @@ async def base_application_exception_handler(request: Request, exc: BaseApplicat
         message=f"[{exc.id}]: {exc.message}. Details: {exc.details}.")
     # Log the error with the logger
     return JSONResponse(
-        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        status_code=exc.status_code,
         content={
             "error_id": exc.id,
             "message": exc.message,
@@ -103,8 +104,9 @@ async def base_identifier_exception_handler(request: Request, exc: BaseIdentifie
     """Custom handler for BaseIdentifierException."""
     _logger.log_error(message=f"[{exc.id}]: {exc.message}. Details:{exc.details}")
     return JSONResponse(
-        status_code=status.HTTP_404_NOT_FOUND,
+        status_code=exc.status_code,
         content={
+            "status": exc.status_code,
             "error_id": exc.id,
             "message": exc.message,
         },
@@ -114,30 +116,34 @@ async def base_identifier_exception_handler(request: Request, exc: BaseIdentifie
 @app.exception_handler(ResponseValidationError)
 async def response_validation_error_handler(request: Request, exc: ResponseValidationError) -> JSONResponse:
     """Custom handler for ResponseValidationError."""
-    _logger.log_error(message=f"Response validation error: {exc.errors()}")
+    exception_id = str(uuid4())
+    _logger.log_error(message=f"[{exception_id}]: Response validation error: {exc.errors()}")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"message": "Invalid response data."},
+        content={"message": "Invalid response data.", "error_id": exception_id},
     )
 
 
 @app.exception_handler(RequestValidationError)  # Handle RequestValidationError
 async def request_validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
     """Custom handler for RequestValidationError."""
-    _logger.log_error(message=f"Request validation error: {exc.errors()}")
+    exception_id = str(uuid4())
+    _logger.log_error(message=f"[{exception_id}]: Request validation error: {exc.errors()}")
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"message": "Invalid request data: " + str(exc.errors()[0]["msg"])},
+        content={"message": "Invalid request data: " + str(exc.errors()[0]["msg"]), "error_id": exception_id},
     )
 
 
 @app.exception_handler(Exception)
+
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Custom handler for generic exceptions."""
-    _logger.log_error(message=f"Unexpected error: {exc}")
+    exception_id = str(uuid4())
+    _logger.log_error(message=f"[{exception_id}]: Unexpected error: {exc}")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"message": f"Internal server error. {exc}"},
+        content={"message": f"Internal server error.", "error_id": exception_id},
     )
 
 

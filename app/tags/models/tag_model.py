@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.core.db.database import Base
-from app.tags.models.blog_tags import blog_tags
+from app.blog_tags.models.blog_tags import blog_tags
 
 class TagModel(Base):
     """

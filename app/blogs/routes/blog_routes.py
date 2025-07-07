@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from typing import List, Optional
 from fastapi import APIRouter, Request, Path, Query
 from fastapi_cache.decorator import cache
@@ -6,8 +8,6 @@ from app.blogs.schemas.blog_request import BlogRequest, BlogPatchRequest
 from app.blogs.schemas.blog_response import BlogResponse, BlogResponseFull
 from app.blogs.models.blog_model import BlogModel
 from app.utils.constants.constants import DEFAULT_PAGE_SIZE, DEFAULT_OFFSET
-from app.core.security.authentication_decorators import authentication_required
-from app.core.middlewares.rate_limit_middleware import rate_limiter as limiter
 
 blog_router = APIRouter(
     prefix="/blogs",
@@ -43,13 +43,13 @@ async def get_public_blogs(
 async def create_blog(
     blog: BlogRequest,
     blog_service: BlogServiceDependency,
-    jwt_payload: AccessTokenDependency,
+    user_id: UserIDFromTokenDependency,
 ) -> BlogModel:
     """
 Create a new blog post.
 This endpoint allows users to create a new blog post by providing the necessary details in the request body.
 """
-    return blog_service.create_blog(blog=blog.to_orm())
+    return blog_service.create_blog(blog=blog.model_dump(exclude_unset=True), author_id=user_id)
 
 
 @blog_router.put(path="/{id}", response_model=BlogResponseFull, tags=["blogs"], description="Update a blog")
@@ -57,18 +57,18 @@ async def update_blog(
     id: int,
     blog: BlogRequest,
     blog_service: BlogServiceDependency,
-    jwt_payload: AccessTokenDependency,
+    user_id: UserIDFromTokenDependency,
 ) -> BlogModel:
-    return blog_service.update_blog(blog=blog.model_dump(), id=id)
+    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), id=id, author_id=user_id)
 
 
 @blog_router.delete(path="/{id}", response_model=BlogResponse, tags=["blogs"], description="Delete a blog")
 async def delete_blog(
     id: int,
     blog_service: BlogServiceDependency,
-    jwt_payload: AccessTokenDependency,
+    user_id: UserIDFromTokenDependency,
 ) -> BlogModel:
-    return blog_service.delete_blog(blog_id=id)
+    return blog_service.delete_blog(blog_id=id, user_id=user_id)
 
 
 @blog_router.patch(path="/{id}/visibility", response_model=BlogResponseFull, tags=["blogs"], description="Update blog visibility")
@@ -76,9 +76,9 @@ async def update_blog_visibility(
     id: int,
     visibility: bool,
     blog_service: BlogServiceDependency,
-    jwt_payload: AccessTokenDependency,
+    user_id: UserIDFromTokenDependency,
 ) -> Optional[BlogModel]:
-    return blog_service.update_blog_visibility(id=id, visibility=visibility)
+    return blog_service.update_blog_visibility(id=id, visibility=visibility, user_id=user_id)
 
 
 
@@ -108,10 +108,10 @@ async def get_blogs_by_current_user(
 async def update_blog_content(
     blog: BlogPatchRequest,
     blog_service: BlogServiceDependency,
-    jwt_payload: AccessTokenDependency,
+    author_id: UserIDFromTokenDependency,
     id: int = Path(..., description="The ID of the blog to update", gt=0),
 ) -> BlogModel:
-    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), id=id)
+    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), id=id, author_id=author_id)
 
 @blog_router.get(path="/{id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")
 @cache(expire=60)  # Cache for 60 seconds

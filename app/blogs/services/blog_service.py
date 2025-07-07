@@ -1,56 +1,96 @@
+# -*- coding: utf-8 -*-
 from typing import Any, List, Optional
+from sqlalchemy.orm import Session
 from app.blogs.models.blog_model import BlogModel
 from app.blogs.repositories.blog_repository import BlogRepository
 from app.utils.errors.exceptions import NotFoundException as BlogNotFoundException
+from app.blog_tags.repositories.blog_tag_repository import BlogTagRepository
+from app.utils.errors.exception_handlers import handle_database_exception
+from app.utils.enums.operations import Operations
+
+
 class BlogService:
-    def __init__(self, blog_repository: BlogRepository) -> None:
+    def __init__(self, blog_repository: BlogRepository, blog_tag_repository: BlogTagRepository, db_session: Session) -> None:
         self._blog_repository: BlogRepository = blog_repository
+        self._blog_tag_repository: BlogTagRepository = blog_tag_repository
+        self._db_session: Session = db_session
         self.model_name = "Blogs"
 
-    def get_all_blogs(self, limit: int = 10, offset: int = 0) -> List[BlogModel]:   
+    def get_all_blogs(self, limit: int = 10, offset: int = 0) -> List[BlogModel]:
         return self._blog_repository.get_all_blogs(limit=limit, offset=offset)
 
     def get_blog_by_id(self, id: int) -> Optional[BlogModel]:
-         return self._blog_repository.get_blog_by_id(id=id)
+        return self._blog_repository.get_blog_by_id(id=id)
+
+    @handle_database_exception(
+        model="Blogs",
+        operation=Operations.CREATE
+    )
+    def create_blog(self, blog: dict[str, Any], author_id: int) -> BlogModel:
+        tags: Optional[List[int]] = blog.pop("tags", [])
+        blog_model = BlogModel(**blog, author_id=author_id)
+        created_blog: BlogModel = self._blog_repository.create_blog(
+            blog=blog_model)
+        if tags:
+            self._blog_tag_repository.link_blog_tags(
+                blog_id=int(str(created_blog.id)), tag_ids=tags)
+        self._db_session.commit()
+        self._db_session.refresh(created_blog)
         
+        return created_blog
 
-    def create_blog(self, blog: BlogModel) -> BlogModel:
-        return self._blog_repository.create_blog(blog=blog)
-
-    def update_blog(self, blog: dict[str, Any], id : int) -> BlogModel:
-        operation_result: BlogModel | None = self._blog_repository.update_blog(blog_data=blog, blog_id=id)
+    @handle_database_exception(
+        model="Blogs",
+        operation=Operations.UPDATE
+    )
+    def update_blog(self, blog: dict[str, Any], id: int, author_id: int) -> BlogModel:
+        tags: Optional[List[int]] = blog.pop("tags", [])
+        operation_result: Optional[BlogModel] = self._blog_repository.update_blog(
+            blog_data=blog, blog_id=id, user_id=author_id)
         if not operation_result:
             raise BlogNotFoundException(identifier=id, model=self.model_name)
+        if tags:
+            self._blog_tag_repository.unlink_blog_tags_by_blog_id(
+                blog_id=id, tag_ids_to_unlink=tags)
+            self._blog_tag_repository.link_blog_tags(
+                blog_id=int(str(operation_result.id)), tag_ids=tags)
+        self._db_session.commit()
         return operation_result
 
-    def delete_blog(self, blog_id : int ) -> BlogModel:
-        operation_result: BlogModel | None = self._blog_repository.delete_blog(blog_id=blog_id)
+    @handle_database_exception(
+        model="Blogs",
+        operation=Operations.DELETE
+    )
+    def delete_blog(self, blog_id: int, user_id : int) -> BlogModel:
+        operation_result: Optional[BlogModel] = self._blog_repository.delete_blog(
+            blog_id=blog_id, user_id=user_id)
         if not operation_result:
-            raise BlogNotFoundException(identifier=blog_id, model=self.model_name)
+            raise BlogNotFoundException(
+                identifier=blog_id, model=self.model_name)
         return operation_result
 
-    def update_blog_visibility(self, id: int, visibility: bool) -> BlogModel:
-        operation_result: BlogModel | None = self._blog_repository.update_blog_visibility(blog_id=id, visibility=visibility)
+    @handle_database_exception(
+        model="Blogs",
+        operation=Operations.UPDATE
+    )
+    def update_blog_visibility(self, id: int, visibility: bool, user_id : int) -> BlogModel:
+        operation_result: Optional[BlogModel] = self._blog_repository.update_blog_visibility(
+            blog_id=id, visibility=visibility, user_id=user_id)
         if not operation_result:
             raise BlogNotFoundException(identifier=id, model=self.model_name)
+        self._db_session.commit()
         return operation_result
-       
 
+    @handle_database_exception(
+        model="Blogs",
+        operation=Operations.FETCH
+    )
     def get_public_blogs(self, limit: int = 10, offset: int = 0) -> List[BlogModel]:
         return self._blog_repository.get_public_blogs(limit=limit, offset=offset)
 
+    @handle_database_exception(
+        model="Blogs",
+        operation=Operations.FETCH_BY
+    )
     def get_blogs_by_user(self, user_id: int, limit: int = 10, offset: int = 0) -> List[BlogModel]:
         return self._blog_repository.get_blogs_by_user(user_id=user_id, limit=limit, offset=offset)
-    
-    def set_blog_as_public(self, blog_id : int) -> BlogModel:
-        operation_result: BlogModel | None = self._blog_repository.update_blog_visibility(blog_id=blog_id, visibility=True)
-        if not operation_result:
-            raise BlogNotFoundException(identifier=blog_id, model=self.model_name)
-        return operation_result
-    
-    def set_blog_as_private(self, blog_id : int) -> BlogModel:
-        operation_result: BlogModel | None = self._blog_repository.update_blog_visibility(blog_id=blog_id, visibility=False)
-        if not operation_result:
-            raise BlogNotFoundException(identifier=blog_id, model=self.model_name)
-        return operation_result
-    

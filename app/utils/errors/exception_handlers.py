@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Session
+# -*- coding: utf-8 -*-
+
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.utils.enums import operations
-from app.utils.errors.exceptions import IntegrityException, OperationException, UnknownException
+from app.utils.errors.exceptions import IntegrityException, OperationException, UnknownException, NotFoundException, AlreadyExistsException, ForbiddenException
 
 
-def handle_repository_exception(
+def handle_database_exception(
     model: str,
     operation: operations.Operations,
 ):
@@ -32,6 +33,9 @@ def handle_repository_exception(
                     operation=operation,
                     details=str(e)
                 )
+            except (NotFoundException, AlreadyExistsException, ForbiddenException) as e:
+                self._db_session.rollback()
+                raise e
             except Exception as e:
                 self._db_session.rollback()
                 raise UnknownException(

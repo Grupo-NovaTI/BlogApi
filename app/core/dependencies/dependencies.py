@@ -19,6 +19,7 @@ from app.blogs.repositories.blog_repository import BlogRepository
 from app.comments.repositories.comment_repository import CommentRepository
 from app.utils.errors.error_messages import validation_error_message
 from app.utils.errors.exceptions import InvalidUserCredentialsException
+from app.blog_tags.repositories.blog_tag_repository import BlogTagRepository
 
 # Security Dependencies
 
@@ -78,10 +79,15 @@ def _provide_blog_repository(db: _DatabaseSession) -> BlogRepository:
     # Standardized to use 'db_session' for consistency
     return BlogRepository(db_session=db)
 
+def _provide_blog_tag_repository(db: _DatabaseSession) -> BlogTagRepository:
+    # Standardized to use 'db_session' for consistency
+    return BlogTagRepository(db_session=db)
+
 _UserRepositoryDependency = Annotated[UserRepository, Depends(dependency=_provide_user_repository)]
 _TagRepositoryDependency = Annotated[TagRepository, Depends(dependency=_provide_tag_repository)]
 _BlogRepositoryDependency = Annotated[BlogRepository, Depends(dependency=_provide_blog_repository)]
 _CommentRepositoryDependency = Annotated[CommentRepository, Depends(dependency=_provide_comment_repository)]
+_BlogTagRepositoryDepedency = Annotated[BlogTagRepository, Depends(dependency=_provide_blog_tag_repository)]
 
 # Service Dependencies
 def _provide_user_services(user_repository: _UserRepositoryDependency) -> UserService:
@@ -100,8 +106,8 @@ def _provide_auth_service(
 def _provide_tag_service(tag_repository: _TagRepositoryDependency) -> TagService:
     return TagService(tag_repository=tag_repository)
 
-def _provide_blog_service(blog_repository: _BlogRepositoryDependency) -> BlogService:
-    return BlogService(blog_repository=blog_repository)
+def _provide_blog_service(blog_repository: _BlogRepositoryDependency, blog_tag_repository : _BlogTagRepositoryDepedency, db : _DatabaseSession) -> BlogService:
+    return BlogService(blog_repository=blog_repository, blog_tag_repository=blog_tag_repository, db_session=db)
 
 # Final annotated dependencies for easy use in route handlers
 CommentServiceDependency = Annotated[CommentService, Depends(dependency=_provide_comment_service)]

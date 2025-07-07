@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.users.models.user_model import UserModel as User
 from app.utils.errors.error_messages import database_error_message, unknown_error_message, integrity_error_message
 from app.utils.logger.application_logger import ApplicationLogger
-from app.utils.errors.exception_handlers import handle_repository_exception
+from app.utils.errors.exception_handlers import handle_database_exception
 from app.utils.enums.operations import Operations
 _logger = ApplicationLogger(__name__)
 
@@ -14,7 +14,7 @@ class UserRepository:
     def __init__(self, db_session: Session) -> None:
         self._db_session: Session = db_session
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.FETCH_ALL
     )
@@ -35,7 +35,7 @@ class UserRepository:
         return self._db_session.query(User).filter(User.id == user_id).first()
 
 
-    @handle_repository_exception(
+    @handle_database_exception(
        model = _MODEL,
         operation=Operations.FETCH_BY
     )
@@ -55,7 +55,7 @@ class UserRepository:
         return self._db_session.query(User).filter(User.username == username).first()
 
 
-    @handle_repository_exception(
+    @handle_database_exception(
          model = _MODEL,
         operation=Operations.CREATE
     )
@@ -78,7 +78,7 @@ class UserRepository:
         self._db_session.refresh(user)
         return user
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.UPDATE
     )
@@ -103,7 +103,7 @@ class UserRepository:
         self._db_session.commit()
         return self.get_user_by_id(user_id=user_id)
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.DELETE
     )
@@ -128,7 +128,7 @@ class UserRepository:
         self._db_session.commit()
         return True
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.FETCH_ALL
     )
@@ -147,7 +147,7 @@ class UserRepository:
         """
         return self._db_session.query(User).offset(offset=offset).limit(limit=limit).all()
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.FETCH_BY
     )
@@ -166,7 +166,7 @@ class UserRepository:
         """
         return self._db_session.query(User).filter(User.email == email).first()
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.PATCH
     )

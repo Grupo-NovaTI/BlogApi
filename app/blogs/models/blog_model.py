@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.core.db.database import Base
-from app.tags.models.blog_tags import blog_tags
+from app.blog_tags.models.blog_tags import blog_tags
 
 class BlogModel(Base):
     __tablename__ = "blogs"

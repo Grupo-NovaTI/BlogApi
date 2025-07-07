@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.comments.models.comment_model import CommentModel
-from app.utils.errors.exception_handlers import handle_repository_exception
+from app.utils.errors.exception_handlers import handle_database_exception
 from app.utils.logger.application_logger import ApplicationLogger
 from app.utils.enums.operations import Operations
 _logger = ApplicationLogger(__name__)
@@ -17,7 +17,7 @@ class CommentRepository:
     def __init__(self, db_session: Session):
         self._db_session: Session = db_session
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.CREATE
     )
@@ -28,7 +28,7 @@ class CommentRepository:
         self._db_session.refresh(instance=comment)
         return comment
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.FETCH
     )
@@ -36,7 +36,7 @@ class CommentRepository:
         """Get all comments for a specific blog by its ID."""
         return self._db_session.query(CommentModel).filter(CommentModel.blog_id == blog_id).all()
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.FETCH
     )
@@ -48,7 +48,7 @@ class CommentRepository:
         """Get a comment by its ID."""
         return self._db_session.get(entity=CommentModel, ident=comment_id)
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.UPDATE
     )
@@ -63,7 +63,7 @@ class CommentRepository:
         self._db_session.commit()
         return self.get_comment_by_id(comment_id=comment_id)
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.DELETE
     )
@@ -76,7 +76,7 @@ class CommentRepository:
             return True
         return False
 
-    @handle_repository_exception(
+    @handle_database_exception(
         model=_MODEL,
         operation=Operations.DELETE
     )
