@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
         message=f"Starting application: {app.title} v{app.version} in {'debug' if app.debug else 'production'} mode.")
     init_db()
     # Initialize Redis connection
-    redis_initialized = await init_redis_cache()
+    redis_initialized: bool = await init_redis_cache()
     if not redis_initialized:
         _logger.log_error(
             message="Failed to connect to Redis. Please check your Redis configuration.")
@@ -146,7 +146,7 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
 app.add_middleware(middleware_class=SlowAPIMiddleware)
 
 # Register routers for different modules
-app.include_router(user_router, prefix="/api/v1", tags=["users"])
+app.include_router(user_router, prefix="/api/v1", tags=["authors"])
 app.include_router(comment_router, prefix="/api/v1", tags=["comments"])
 app.include_router(blog_router, prefix="/api/v1", tags=["blogs"])
 app.include_router(tag_router, prefix="/api/v1", tags=["tags"])
