@@ -13,3 +13,4 @@ alembic.ini
 migrations
 tests
 .env-copy
+.venv
