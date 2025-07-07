@@ -21,7 +21,7 @@ class TagRepository:
 
     @handle_repository_exception(
         model = _MODEL,
-        operation=Operations.FETCH
+        operation=Operations.FETCH_BY
     )
     def get_tag_by_id(self, tag_id: int) -> Optional[TagModel]:
         """

@@ -28,3 +28,17 @@ class BlogRequest(BaseModel):
             author_id=self.author_id,
             is_published=self.is_published
         )
+        
+class BlogPatchRequest(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    is_published: Optional[bool] = None
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "title": "Updated Blog Post Title",
+                "content": "Updated content for the blog post.",
+                "is_published": False
+            }
+        }

@@ -2,7 +2,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Request, Path, Query
 from fastapi_cache.decorator import cache
 from app.core.dependencies import BlogServiceDependency, AccessTokenDependency, UserIDFromTokenDependency
-from app.blogs.schemas.blog_request import BlogRequest
+from app.blogs.schemas.blog_request import BlogRequest, BlogPatchRequest
 from app.blogs.schemas.blog_response import BlogResponse, BlogResponseFull
 from app.blogs.models.blog_model import BlogModel
 from app.utils.constants.constants import DEFAULT_PAGE_SIZE, DEFAULT_OFFSET
@@ -28,17 +28,16 @@ async def get_blogs(
 
     return blog_service.get_all_blogs(limit=limit, offset=offset)
 
-
-@blog_router.get(path="/{id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")
-@cache(expire=60)  # Cache for 60 seconds
-async def get_blog_by_id(
+@blog_router.get(path="/public", response_model=List[BlogResponseFull], tags=["blogs"], description="Get public blogs")
+async def get_public_blogs(
     blog_service: BlogServiceDependency,
-    jwt_payload: AccessTokenDependency,
-    id: int = Path(
-        default=..., description="The ID of the blog to retrieve", ge=1),
-) -> Optional[BlogModel]:
-    return blog_service.get_blog_by_id(id=id)
-
+    limit: int = DEFAULT_PAGE_SIZE,
+    offset: int = DEFAULT_OFFSET,
+) -> List[BlogModel]:
+    """
+    Fetch public blogs with pagination.
+    """
+    return blog_service.get_public_blogs(limit=limit, offset=offset)
 
 @blog_router.post(path="", response_model=BlogResponseFull, tags=["blogs"], description="Create a new blog")
 async def create_blog(
@@ -82,19 +81,12 @@ async def update_blog_visibility(
     return blog_service.update_blog_visibility(id=id, visibility=visibility)
 
 
-@blog_router.get(path="/public", response_model=List[BlogResponseFull], tags=["blogs"], description="Get public blogs")
-async def get_public_blogs(
-    blog_service: BlogServiceDependency,
-    limit: int = DEFAULT_PAGE_SIZE,
-    offset: int = DEFAULT_OFFSET,
-) -> List[BlogModel]:
-    return blog_service.get_public_blogs(limit=limit, offset=offset)
+
 
 
 @blog_router.get(path="/user/{user_id}", response_model=List[BlogResponseFull], tags=["blogs"], description="Get blogs by user")
 async def get_blogs_by_user(
     user_id: int,
-
     blog_service: BlogServiceDependency,
     jwt_payload: AccessTokenDependency,
     limit: int = DEFAULT_PAGE_SIZE,
@@ -111,3 +103,22 @@ async def get_blogs_by_current_user(
     offset: int = DEFAULT_OFFSET,
 ) -> List[BlogModel]:
     return blog_service.get_blogs_by_user(user_id=user_id_payload, limit=limit, offset=offset)
+
+@blog_router.patch(path="/{id}", response_model=BlogResponseFull, tags=["blogs"], description="Patch blog")
+async def update_blog_content(
+    blog: BlogPatchRequest,
+    blog_service: BlogServiceDependency,
+    jwt_payload: AccessTokenDependency,
+    id: int = Path(..., description="The ID of the blog to update", gt=0),
+) -> BlogModel:
+    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), id=id)
+
+@blog_router.get(path="/{id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")
+@cache(expire=60)  # Cache for 60 seconds
+async def get_blog_by_id(
+    blog_service: BlogServiceDependency,
+    jwt_payload: AccessTokenDependency,
+    id: int = Path(
+        default=..., description="The ID of the blog to retrieve", ge=1),
+) -> Optional[BlogModel]:
+    return blog_service.get_blog_by_id(id=id)

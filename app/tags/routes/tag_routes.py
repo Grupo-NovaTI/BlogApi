@@ -24,24 +24,7 @@ async def get_tags(tag_service: TagServiceDependency, limit: int = Query(DEFAULT
     return tag_service.get_tags(limit=limit, offset=offset)
 
 
-@tag_router.get(path="/{tag_name}", response_model=Optional[TagResponse], summary="Get a tag by Name", tags=["tags"], status_code=status.HTTP_200_OK)
-async def get_tag_by_name(jwt_payload: AccessTokenDependency, tag_service: TagServiceDependency, tag_name: str = Path(..., description="The name of the tag to retrieve", min_length=1, max_length=100)):
-    """
-    Get a tag by its name.
-
-    Args:
-        tag_name (str): The name of the tag to retrieve.
-
-    Returns:
-        int: The total count of tags.
-
-    Raises:
-        HTTPException: If there is an error during counting.
-    """
-    return tag_service.get_tag_by_name(tag_name=tag_name)
-
-
-@tag_router.get(path="/{tag_id}", response_model=TagResponse, summary="Get tag by ID", tags=["tags"], status_code=status.HTTP_200_OK)
+@tag_router.get(path="/{tag_id}", response_model=Optional[TagResponse], summary="Get tag by ID", tags=["tags"], status_code=status.HTTP_200_OK)
 async def get_tag_by_id(jwt_payload: AccessTokenDependency, tag_service: TagServiceDependency, tag_id: int = Path(..., description="The unique identifier of the tag to retrieve")):
     """
     Retrieve a tag by its ID.

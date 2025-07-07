@@ -82,9 +82,9 @@ class JwtHandler:
                 "role": payload.get("role"),
                 "exp": payload.get("exp"),
             }
-        except JWTError:
+        except JWTError as e:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials.",
+                detail=f"Could not validate credentials: {e}",
                 headers={"WWW-Authenticate": "Bearer"},
             )

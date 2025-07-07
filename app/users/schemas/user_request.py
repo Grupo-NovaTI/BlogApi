@@ -8,8 +8,6 @@ from app.utils.enums.user_roles import UserRole
 from app.utils.errors.exceptions import ValidationException
 
 class UserRequest(BaseModel):
-    id: Optional[int] = Field(
-        default=None, description="User ID, optional for new users", exclude=True)
     username: str = Field(..., min_length=5, max_length=50)
     email: EmailStr = Field(..., examples=["user@example.com"], pattern=EMAIL_PATTERN)
     name: str = Field(..., min_length=1, max_length=50, examples=[
@@ -44,8 +42,9 @@ class UserRequest(BaseModel):
             }
         }
 
-    def to_orm(self) -> UserModel:
+    def to_orm(self, user_id: Optional[int] = None) -> UserModel:
         return UserModel(
+            id=user_id,
             username=self.username,
             email=self.email,
             name=self.name,

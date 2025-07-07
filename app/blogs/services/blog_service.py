@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 from app.blogs.models.blog_model import BlogModel
 from app.blogs.repositories.blog_repository import BlogRepository
 from app.utils.errors.exceptions import NotFoundException as BlogNotFoundException
@@ -17,7 +17,7 @@ class BlogService:
     def create_blog(self, blog: BlogModel) -> BlogModel:
         return self._blog_repository.create_blog(blog=blog)
 
-    def update_blog(self, blog: dict, id : int) -> BlogModel:
+    def update_blog(self, blog: dict[str, Any], id : int) -> BlogModel:
         operation_result: BlogModel | None = self._blog_repository.update_blog(blog_data=blog, blog_id=id)
         if not operation_result:
             raise BlogNotFoundException(identifier=id, model=self.model_name)
