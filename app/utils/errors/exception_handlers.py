@@ -26,7 +26,7 @@ def handle_repository_exception(
                     details=str(e._message())
                 )
             except SQLAlchemyError as e:
-                self.db_session.rollback()
+                self._db_session.rollback()
                 raise OperationException(
                     model=model,
                     operation=operation,
