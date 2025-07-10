@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import APIRouter, Path, Query, HTTPException
+from fastapi import APIRouter, Path, Query
 from starlette import status
 from app.tags.schemas.tag_response import TagResponse
 from app.tags.schemas.tag_request import TagRequest
@@ -55,7 +55,7 @@ async def create_tag(tag: TagRequest, jwt_payload: AccessTokenDependency, tag_se
     Raises:
         HTTPException: If a tag with the same name already exists or if there is an error during creation.
     """
-    return tag_service.create_tag(tag=tag.to_orm())
+    return tag_service.create_tag(tag=tag.model_dump(exclude_unset=True))
 
 
 @tag_router.put(path="/{tag_id}", response_model=TagResponse, summary="Update an existing tag", tags=["tags"], status_code=status.HTTP_200_OK)
@@ -73,7 +73,7 @@ async def update_tag(tag_data: TagRequest, jwt_payload: AccessTokenDependency, t
     Raises:
         HTTPException: If the tag is not found or if there is an error during update.
     """
-    return tag_service.update_tag(tag_data=tag_data.model_dump(), tag_id=tag_id)
+    return tag_service.update_tag(tag_data=tag_data.model_dump(exclude_defaults=True), tag_id=tag_id)
 
 
 @tag_router.delete(path="/{tag_id}", response_model=TagResponse, summary="Delete a tag", tags=["tags"], status_code=status.HTTP_200_OK)

@@ -1,15 +1,17 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 from sqlalchemy.orm import Session
 from app.tags.models.tag_model import TagModel
 from app.tags.repositories.tag_repository import TagRepository
 from app.utils.errors.exceptions import NotFoundException as TagNotFoundException, AlreadyExistsException as TagAlreadyExistsException, ValidationException as TagInvalidException
 from app.utils.errors.exception_handlers import handle_read_exceptions, handle_service_transaction
 from app.utils.enums.operations import Operations
-_MODEL_NAME = "Tags"    
+_MODEL_NAME = "Tags"
+
+
 class TagService:
     def __init__(self, tag_repository: TagRepository, db_session: Session) -> None:
         self._repository: TagRepository = tag_repository
-        self._db_session : Session = db_session
+        self._db_session: Session = db_session
 
     @handle_read_exceptions(
         model=_MODEL_NAME,
@@ -23,6 +25,7 @@ class TagService:
             TagOperationException: If there is an error retrieving tags from the repository.
         """
         return self._repository.get_all_tags(limit=limit, offset=offset)
+
     @handle_read_exceptions(
         model=_MODEL_NAME,
         operation=Operations.FETCH_BY
@@ -42,7 +45,7 @@ class TagService:
         model=_MODEL_NAME,
         operation=Operations.CREATE
     )
-    def create_tag(self, tag: TagModel) -> TagModel:
+    def create_tag(self, tag: dict[str, Any]) -> TagModel:
         """
         Create a new tag in the repository.
         Args:
@@ -52,13 +55,14 @@ class TagService:
         Raises:
             TagAlreadyExistsException: If a tag with the same name already exists.
         """
-        
+        tag_model = TagModel(**tag)
         check_tag_exists: Optional[TagModel] = self._repository.get_tag_by_name(
-            tag_name=str(tag.name))
+            tag_name=str(tag_model.name))
         if check_tag_exists:
-            raise TagAlreadyExistsException(identifier=str(tag.name), model=_MODEL_NAME)
+            raise TagAlreadyExistsException(
+                identifier=str(tag_model.name), model=_MODEL_NAME)
 
-        return self._repository.create_tag(tag=tag)
+        return self._repository.create_tag(tag=tag_model)
 
     @handle_service_transaction(
         model=_MODEL_NAME,
@@ -90,7 +94,8 @@ class TagService:
         updated_tag: Optional[TagModel] = self._repository.update_tag(
             tag_data=tag_data, tag_id=tag_id)
         if not updated_tag:
-            raise TagNotFoundException(identifier=str(tag_id), model=_MODEL_NAME)
+            raise TagNotFoundException(
+                identifier=str(tag_id), model=_MODEL_NAME)
         return updated_tag
 
     @handle_service_transaction(
@@ -105,10 +110,12 @@ class TagService:
         Returns:
             TagModel: The deleted tag.
         """
-        
-        tag_result: Optional[TagModel] = self._repository.delete_tag(tag_id=tag_id)
+
+        tag_result: Optional[TagModel] = self._repository.delete_tag(
+            tag_id=tag_id)
         if not tag_result:
-            raise TagNotFoundException(identifier=str(tag_id), model=_MODEL_NAME)
+            raise TagNotFoundException(
+                identifier=str(tag_id), model=_MODEL_NAME)
         return tag_result
 
     @handle_read_exceptions(
