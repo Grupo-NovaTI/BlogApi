@@ -1,15 +1,23 @@
+from sqlalchemy.orm import Session
 from app.users.models.user_model import UserModel
 from app.core.security.jwt_handler import JwtHandler
 from app.users.repositories.user_repository import UserRepository
 from app.utils.errors.exceptions import InvalidUserCredentialsException
 from app.core.security.password_hasher import PasswordHasher
+from app.utils.errors.exception_handlers import handle_service_transaction, handle_read_exceptions
+from app.utils.enums.operations import Operations
 
 class AuthService:
-    def __init__(self, user_repository: UserRepository, jwt_handler: JwtHandler, password_service : PasswordHasher) -> None:
+    def __init__(self, user_repository: UserRepository, jwt_handler: JwtHandler, password_service : PasswordHasher, db_session : Session) -> None:
         self._user_repository: UserRepository = user_repository
         self._jwt_handler: JwtHandler = jwt_handler
         self._password_hasher_service: PasswordHasher = password_service
+        self._db_session: Session = db_session
 
+    @handle_read_exceptions(
+        model="Users",
+        operation=Operations.FETCH_BY
+    )
     def login(self, username, password) -> str:
         """
         Authenticate user with username and password.
@@ -22,6 +30,10 @@ class AuthService:
                 "Invalid username or password")
         return self._jwt_handler.create_access_token(data={"sub": str(user.id), "role": user.role})
 
+    @handle_service_transaction(
+        model="Users",
+        operation=Operations.CREATE
+    )
     def register(self, user: UserModel) -> str:
         registered_user: UserModel = self._user_repository.create_user(user=user)
         return self._jwt_handler.create_access_token(data={"sub": str(registered_user.id), "role": str(registered_user.role)})
