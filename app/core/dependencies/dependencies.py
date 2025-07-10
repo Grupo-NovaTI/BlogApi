@@ -17,7 +17,7 @@ from app.users.repositories.user_repository import UserRepository
 from app.tags.repositories.tag_repository import TagRepository
 from app.blogs.repositories.blog_repository import BlogRepository
 from app.comments.repositories.comment_repository import CommentRepository
-from app.utils.errors.exceptions import InvalidUserCredentialsException
+from app.utils.errors.exceptions import UnauthorizedException
 from app.blog_tags.repositories.blog_tag_repository import BlogTagRepository
 
 # Security Dependencies
@@ -52,8 +52,8 @@ async def provide_user_id_from_token(
     """Dependency to extract the user ID from the token payload."""
     user_id = payload.get("user_id")
     if user_id is None:
-        raise InvalidUserCredentialsException(
-            message="Invalid token: user_id not found in payload."
+        raise UnauthorizedException(
+            details="Invalid token: user_id not found in payload."
         )
     return int(user_id)
 

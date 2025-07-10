@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 from sqlalchemy.orm import Session
 from app.users.repositories.user_repository import UserRepository
-from app.utils.errors.exceptions import NotFoundException as UserNotFoundException, AlreadyExistsException as UserAlreadyExistsException
+from app.utils.errors.exceptions import NotFoundException as UserNotFoundException, ConflictException as UserAlreadyExistsException
 from app.users.models.user_model import UserModel
 from app.utils.errors.exception_handlers import handle_read_exceptions, handle_service_transaction
 from app.utils.enums.operations import Operations
@@ -42,7 +42,8 @@ class UserService:
         if check_user_exists:
             raise UserAlreadyExistsException(
                 identifier="email or username",
-                model=_MODEL_NAME
+                resource_type=_MODEL_NAME,
+                details="A user with this email or username already exists."
             )
         return self._user_repository.create_user(user=user_model)
 
@@ -109,7 +110,7 @@ class UserService:
         if not user_updated_result:
             raise UserNotFoundException(
                 identifier=user_id,
-                model=_MODEL_NAME
+                resource_type=_MODEL_NAME
             )
 
         return user_updated_result
@@ -133,7 +134,7 @@ class UserService:
         if not deletion_result:
             raise UserNotFoundException(
                 identifier=user_id,
-                model=_MODEL_NAME
+                resource_type=_MODEL_NAME
             )
 
     @handle_service_transaction(
@@ -159,6 +160,6 @@ class UserService:
         if not updated_user:
             raise UserNotFoundException(
                 identifier=user_id,
-                model=_MODEL_NAME
+                resource_type=_MODEL_NAME
             )
         return updated_user

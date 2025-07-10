@@ -5,7 +5,7 @@ from app.users.models.user_model import UserModel
 from app.core.security.password_hasher import PasswordHasher
 from app.utils.constants.constants import EMAIL_PATTERN
 from app.utils.enums.user_roles import UserRole
-from app.utils.errors.exceptions import ValidationException
+
 
 class UserRequest(BaseModel):
     username: str = Field(..., min_length=5, max_length=50)

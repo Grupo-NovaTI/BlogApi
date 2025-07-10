@@ -1,11 +1,17 @@
-# app/utils/errors/exception_handlers.py (Versión Refactorizada)
+
 
 from functools import wraps
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.utils.enums.operations import Operations
 from app.utils.errors.exceptions import (
-    IntegrityException, OperationException, UnknownException, 
-    NotFoundException, AlreadyExistsException, ForbiddenException, ValidationException, InvalidUserCredentialsException
+    NotFoundException,
+    IntegrityConstraintException,
+    ConflictException,
+    DatabaseException,
+    ForbiddenException,
+    UnknownException,
+    UnauthorizedException,
+    
 )
 # Asumiendo que tienes un logger configurado
 # import logging
@@ -24,21 +30,21 @@ def handle_service_transaction(model: str, operation: Operations):
                 result = func(self, *args, **kwargs)
                 self._db_session.commit()
                 return result
-            except (NotFoundException, AlreadyExistsException, ForbiddenException, ValidationException) as e:
+            except (NotFoundException, ConflictException, ForbiddenException, IntegrityConstraintException) as e:
                 self._db_session.rollback()
                 raise e
             except IntegrityError as e:
                 self._db_session.rollback()
                 # logger.error(f"Integrity Error on {model} {operation}: {e.orig}")
-                raise IntegrityException(
+                raise IntegrityConstraintException(
                     model=model,
                     operation=operation,
-                    details=str(e)
+                    original_exception=e,
                 )
             except SQLAlchemyError as e:
                 self._db_session.rollback()
                 # logger.error(f"Database Error on {model} {operation}: {e}")
-                raise OperationException(model=model, operation=operation, details=str(e))
+                raise DatabaseException(model=model, operation=operation, original_exception=e)
             except Exception as e:
                 self._db_session.rollback()
                 # logger.error(f"Unknown Error on {model} {operation}: {e}", exc_info=True)
@@ -60,8 +66,8 @@ def handle_read_exceptions(model: str, operation: Operations):
             # No se necesita rollback, no hay cambios pendientes
             except SQLAlchemyError as e:
                 # logger.error(f"Database Read Error on {model} {operation}: {e}")
-                raise OperationException(model=model, operation=operation, details=str(e))
-            except InvalidUserCredentialsException as e:
+                raise DatabaseException(model=model, operation=operation, original_exception=e)
+            except (UnauthorizedException, ForbiddenException) as e:
                 raise e
             except Exception as e:
                 # logger.error(f"Unknown Read Error on {model} {operation}: {e}", exc_info=True)

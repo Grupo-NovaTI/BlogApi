@@ -2,7 +2,7 @@ from typing import Any, List, Optional
 from sqlalchemy.orm import Session
 from app.tags.models.tag_model import TagModel
 from app.tags.repositories.tag_repository import TagRepository
-from app.utils.errors.exceptions import NotFoundException as TagNotFoundException, AlreadyExistsException as TagAlreadyExistsException, ValidationException as TagInvalidException
+from app.utils.errors.exceptions import NotFoundException as TagNotFoundException, ConflictException as TagAlreadyExistsException, UnprocessableContentException as TagInvalidException
 from app.utils.errors.exception_handlers import handle_read_exceptions, handle_service_transaction
 from app.utils.enums.operations import Operations
 _MODEL_NAME = "Tags"
@@ -60,7 +60,8 @@ class TagService:
             tag_name=str(tag_model.name))
         if check_tag_exists:
             raise TagAlreadyExistsException(
-                identifier=str(tag_model.name), model=_MODEL_NAME)
+                identifier=str(tag_model.name), resource_type=_MODEL_NAME, details=f"A tag with the name {tag_model.name} already exists."
+            )
 
         return self._repository.create_tag(tag=tag_model)
 
@@ -78,24 +79,23 @@ class TagService:
         """
         tag_name: Optional[str] = tag_data.get("name")
         if not tag_name:
-            raise TagInvalidException(identifier="name", model=_MODEL_NAME)
+            raise TagInvalidException(details="Tag name is required")
         if not isinstance(tag_name, str):
             raise TagInvalidException(
-                identifier=str(tag_name),
-                model=_MODEL_NAME)
+                details="Tag name must be a string")
         check_tag_exists_by_name: Optional[TagModel] = self._repository.get_tag_by_name(
             tag_name=str(tag_name))
         if check_tag_exists_by_name:
             raise TagAlreadyExistsException(
                 identifier=str(tag_name),
-                model=_MODEL_NAME,
+                resource_type=_MODEL_NAME,
             )
 
         updated_tag: Optional[TagModel] = self._repository.update_tag(
             tag_data=tag_data, tag_id=tag_id)
         if not updated_tag:
             raise TagNotFoundException(
-                identifier=str(tag_id), model=_MODEL_NAME)
+                identifier=str(tag_id), resource_type=_MODEL_NAME)
         return updated_tag
 
     @handle_service_transaction(
@@ -115,8 +115,7 @@ class TagService:
             tag_id=tag_id)
         if not tag_result:
             raise TagNotFoundException(
-                identifier=str(tag_id), model=_MODEL_NAME)
-        
+                identifier=str(tag_id), resource_type=_MODEL_NAME)
 
     @handle_read_exceptions(
         model=_MODEL_NAME,

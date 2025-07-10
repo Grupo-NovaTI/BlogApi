@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.users.models.user_model import UserModel
 from app.core.security.jwt_handler import JwtHandler
 from app.users.repositories.user_repository import UserRepository
-from app.utils.errors.exceptions import InvalidUserCredentialsException, AlreadyExistsException as UserAlreadyExistsException
+from app.utils.errors.exceptions import ConflictException as UserAlreadyExistsException, UnauthorizedException
 from app.core.security.password_hasher import PasswordHasher
 from app.utils.errors.exception_handlers import handle_service_transaction, handle_read_exceptions
 from app.utils.enums.operations import Operations
@@ -27,8 +27,7 @@ class AuthService:
         user: Optional[UserModel] = self._user_repository.get_user_by_username(username=username)
         if not user or not self._password_hasher_service.verify_password(
                 plain_password=password, hashed_password=str(user.hashed_password)):
-            raise InvalidUserCredentialsException(
-                "Invalid username or password")
+            raise UnauthorizedException()
         return self._jwt_handler.create_access_token(data={"sub": str(user.id), "role": user.role})
 
     @handle_service_transaction(
@@ -41,7 +40,8 @@ class AuthService:
         if check_user_exists:
             raise UserAlreadyExistsException(
                 identifier="email or username",
-                model="Users"
+                resource_type="Users",
+                details="A user with this email or username already exists."
             )
         registered_user: UserModel = self._user_repository.create_user(user=user)
         return self._jwt_handler.create_access_token(data={"sub": str(registered_user.id), "role": str(registered_user.role)})
