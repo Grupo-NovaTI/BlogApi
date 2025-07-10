@@ -1,9 +1,9 @@
-from typing import Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
-from app.comments.models.comment_model import CommentModel
-from app.utils.enums.operations import Operations
+from typing import List, Optional
 
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
+from app.comments.models.comment_model import CommentModel
 
 
 class CommentRepository:
@@ -18,17 +18,17 @@ class CommentRepository:
         self._db_session.flush()
         return comment
 
-    def get_all_comments_by_blog_id(self, blog_id: int) -> list[CommentModel]:
+    def get_all_comments_by_blog(self, blog_id: int) -> List[CommentModel]:
         """Get all comments for a specific blog by its ID."""
         return self._db_session.query(CommentModel).filter(CommentModel.blog_id == blog_id).all()
 
-    def get_all_comments_by_user(self, user_id: int) -> list[CommentModel]:
+    def get_all_comments_by_user(self, user_id: int) -> List[CommentModel]:
         """Get all comments made by a specific user by their ID."""
         return self._db_session.query(CommentModel).filter(CommentModel.user_id == user_id).all()
 
-    def get_comment_by_id(self, comment_id: int) -> Optional[CommentModel]:
+    def get_comment_by_id(self, id: int) -> Optional[CommentModel]:
         """Get a comment by its ID."""
-        return self._db_session.get(entity=CommentModel, ident=comment_id)
+        return self._db_session.get(entity=CommentModel, ident=id)
 
     def update_comment_content(self, comment_id: int, user_id: int, content: str) -> Optional[CommentModel]:
         """Update a comment's content by its ID."""
@@ -38,7 +38,7 @@ class CommentRepository:
         ).update(values={"content": content})
         if rows_updated == 0:
             return None
-        return self.get_comment_by_id(comment_id=comment_id)
+        return self.get_comment_by_id(id=comment_id)
 
     def delete_comment(self, comment_id: int) -> bool:
         """Delete a comment by its ID."""

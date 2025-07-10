@@ -30,7 +30,7 @@ class CommentService:
     )
     def get_comments_by_blog_id(self, blog_id: int) -> list[CommentModel]:
         """Retrieve all comments for a specific blog by its ID."""
-        return self._repository.get_all_comments_by_blog_id(blog_id=blog_id)
+        return self._repository.get_all_comments_by_blog(blog_id=blog_id)
 
     @handle_read_exceptions(
         model=_MODEL_NAME,
@@ -44,9 +44,9 @@ class CommentService:
         model=_MODEL_NAME,
         operation=Operations.FETCH_BY
     )
-    def get_comment_by_id(self, comment_id: int) -> Optional[CommentModel]:
+    def get_comment_by_id(self, id: int) -> Optional[CommentModel]:
         """Retrieve a comment by its ID."""
-        return self._repository.get_comment_by_id(comment_id=comment_id)
+        return self._repository.get_comment_by_id(id=id)
 
     @handle_service_transaction(
         model=_MODEL_NAME,
