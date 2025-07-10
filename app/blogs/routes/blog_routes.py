@@ -64,7 +64,7 @@ async def update_blog(
     return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), id=id, author_id=user_id)
 
 
-@blog_router.delete(path="/{id}", response_model=BlogResponse, tags=["blogs"], description="Delete a blog", status_code=status.HTTP_204_NO_CONTENT)
+@blog_router.delete(path="/{id}", tags=["blogs"], description="Delete a blog", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_blog(
     id: int,
     blog_service: BlogServiceDependency,
