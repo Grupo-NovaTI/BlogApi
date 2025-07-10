@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 from sqlalchemy.orm import Session
 from app.users.repositories.user_repository import UserRepository
 from app.utils.errors.exceptions import NotFoundException as  UserNotFoundException, AlreadyExistsException as UserAlreadyExistsException
@@ -24,7 +24,7 @@ class UserService:
         model=_MODEL_NAME,
         operation=Operations.CREATE
     )
-    def create_user(self, user_data: UserModel) -> UserModel:
+    def create_user(self, user_data: dict[str, Any]) -> UserModel:
         """
         Create a new user in the repository.
 
@@ -34,22 +34,15 @@ class UserService:
         Returns:
             The created user.
         """
-
-        check_user_exists: Optional[UserModel] = self._user_repository.get_user_by_username(
-            username=str(user_data.username))
+        user_model = UserModel(**user_data)
+        check_user_exists: Optional[UserModel] = self._user_repository.get_user_by_email_or_username(
+            email=str(user_model.email), username=str(user_model.username))
         if check_user_exists:
             raise UserAlreadyExistsException(
-                identifier=str(user_data.username),
+                identifier="email or username",
                 model=_MODEL_NAME
             )
-        check_user_exists = self._user_repository.get_user_by_email(
-            email=str(user_data.email))
-        if check_user_exists:
-            raise UserAlreadyExistsException(
-                identifier=str(user_data.email),
-                model=_MODEL_NAME
-            )
-        return self._user_repository.create_user(user=user_data)
+        return self._user_repository.create_user(user=user_model)
 
     @handle_read_exceptions(
         model=_MODEL_NAME,
@@ -143,52 +136,24 @@ class UserService:
             )
         return deletion_result
 
-    @handle_service_transaction(
-        model=_MODEL_NAME,
-        operation=Operations.UPDATE
-    )
-    def reactivate_user_account(self, user_id: int) -> UserModel:
+    def update_user_active_status(self, user_id: int, is_active: bool) -> UserModel:
         """
-        Activate a user by their ID.
+        Update the active status of a user.
 
         Args:
-            user_id (int): The unique identifier of the user to activate.
+            user_id (int): The unique identifier of the user.
+            is_active (bool): The new active status of the user.
 
         Returns:
-            UserModel: The activated user.
+            UserModel: The updated user object.
 
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        activated_user: Optional[UserModel] = self._user_repository.update_user_active_status(user_id=user_id, is_active=True)
-        if not activated_user:
+        updated_user: Optional[UserModel] = self._user_repository.update_user_active_status(user_id=user_id, is_active=is_active)
+        if not updated_user:
             raise UserNotFoundException(
                 identifier=user_id,
-                model=_MODEL_NAME,
+                model=_MODEL_NAME
             )
-        return activated_user
-
-    @handle_service_transaction(
-        model=_MODEL_NAME,
-        operation=Operations.UPDATE
-    )
-    def set_user_inactive(self, user_id: int) -> UserModel:
-        """
-        Deactivate a user by their ID.
-
-        Args:
-            user_id (int): The unique identifier of the user to deactivate.
-
-        Returns:
-            UserModel: The deactivated user.
-
-        Raises:
-            UserNotFoundException: If the user with the given ID does not exist.
-        """
-        deactivated_user: Optional[UserModel] = self._user_repository.update_user_active_status(user_id=user_id, is_active=False)
-        if not deactivated_user:
-            raise UserNotFoundException(
-                identifier=user_id,
-                model=_MODEL_NAME,
-            )
-        return deactivated_user
+        return updated_user

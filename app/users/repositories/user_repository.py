@@ -1,8 +1,7 @@
 from typing import List, Optional
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from app.users.models.user_model import UserModel as User
-from app.utils.enums.operations import Operations
-
 class UserRepository:
     
     def __init__(self, db_session: Session) -> None:
@@ -115,7 +114,23 @@ class UserRepository:
         """
         return self._db_session.query(User).offset(offset=offset).limit(limit=limit).all()
 
+    def get_user_by_email_or_username(self, email: str, username: str) -> Optional[User]:
+        """
+        Retrieve a user by their email or username from the database.
 
+        Args:
+            email (str): The email of the user to retrieve.
+            username (str): The username of the user to retrieve.
+
+        Returns:
+            User: The user object if found.
+
+        Raises:
+            UserOperationException: If there is a database error during retrieval.
+        """
+        return self._db_session.query(User).filter(
+            or_(User.email == email, User.username == username)).first()
+        
     def get_user_by_email(self, email: str) -> Optional[User]:
         """
         Retrieve a user by their email from the database.

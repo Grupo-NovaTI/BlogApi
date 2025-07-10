@@ -97,7 +97,7 @@ async def reactivate_user_account(service: UserServiceDependency, user_id_payloa
         UserResponse: The activated user.
     """
 
-    return service.reactivate_user_account(user_id=user_id_payload)
+    return service.update_user_active_status(user_id=user_id_payload, is_active=True)
 
 
 @user_router.patch("/deactivate", summary="Deactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
@@ -112,4 +112,4 @@ async def set_user_inactive(service: UserServiceDependency, user_id_payload: Use
     Returns:
         UserResponse: The deactivated user.
     """
-    return service.set_user_inactive(user_id=user_id_payload)
+    return service.update_user_active_status(user_id=user_id_payload, is_active=False)
