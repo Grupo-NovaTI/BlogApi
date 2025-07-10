@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.utils.enums.operations import Operations
 from app.utils.errors.exceptions import (
     IntegrityException, OperationException, UnknownException, 
-    NotFoundException, AlreadyExistsException, ForbiddenException, ValidationException
+    NotFoundException, AlreadyExistsException, ForbiddenException, ValidationException, InvalidUserCredentialsException
 )
 # Asumiendo que tienes un logger configurado
 # import logging
@@ -61,8 +61,11 @@ def handle_read_exceptions(model: str, operation: Operations):
             except SQLAlchemyError as e:
                 # logger.error(f"Database Read Error on {model} {operation}: {e}")
                 raise OperationException(model=model, operation=operation, details=str(e))
+            except InvalidUserCredentialsException as e:
+                raise e
             except Exception as e:
                 # logger.error(f"Unknown Read Error on {model} {operation}: {e}", exc_info=True)
                 raise UnknownException(model=model, operation=operation, details=str(e))
+            
         return wrapper
     return decorator
