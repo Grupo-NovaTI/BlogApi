@@ -152,7 +152,7 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
 app.add_middleware(middleware_class=SlowAPIMiddleware)
 
 # Register routers for different modules
-app.include_router(user_router, prefix="/api/v1", tags=["authors"])
+app.include_router(user_router, prefix="/api/v1", tags=["users"])
 app.include_router(comment_router, prefix="/api/v1", tags=["comments"])
 app.include_router(blog_router, prefix="/api/v1", tags=["blogs"])
 app.include_router(tag_router, prefix="/api/v1", tags=["tags"])
