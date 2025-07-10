@@ -60,7 +60,7 @@ async def create_tag(tag: TagRequest, jwt_payload: AccessTokenDependency, tag_se
 
 @tag_router.put(path="/{tag_id}", response_model=TagResponse, summary="Update an existing tag", tags=["tags"], status_code=status.HTTP_200_OK)
 @admin_only()
-async def update_tag(tag_data: TagRequest, jwt_payload: AccessTokenDependency, tag_service: TagServiceDependency, tag_id: int = Path(..., description="The unique identifier of the tag to update")):
+async def update_tag(tag: TagRequest, jwt_payload: AccessTokenDependency, tag_service: TagServiceDependency, tag_id: int = Path(..., description="The unique identifier of the tag to update")):
     """
     Update an existing tag.
 
@@ -74,7 +74,7 @@ async def update_tag(tag_data: TagRequest, jwt_payload: AccessTokenDependency, t
     Raises:
         HTTPException: If the tag is not found or if there is an error during update.
     """
-    return tag_service.update_tag(tag_data=tag_data.model_dump(exclude_defaults=True), tag_id=tag_id)
+    return tag_service.update_tag(tag_data=tag.model_dump(exclude_defaults=True), tag_id=tag_id)
 
 @tag_router.delete(path="/{tag_id}", summary="Delete a tag", tags=["tags"], status_code=status.HTTP_204_NO_CONTENT)
 @admin_only()
