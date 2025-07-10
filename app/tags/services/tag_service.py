@@ -102,7 +102,7 @@ class TagService:
         model=_MODEL_NAME,
         operation=Operations.DELETE
     )
-    def delete_tag(self, tag_id: int):
+    def delete_tag(self, tag_id: int) ->  None:
         """
         Delete a tag from the repository.
         Args:
@@ -111,12 +111,12 @@ class TagService:
             TagModel: The deleted tag.
         """
 
-        tag_result: Optional[TagModel] = self._repository.delete_tag(
+        tag_result: bool = self._repository.delete_tag(
             tag_id=tag_id)
         if not tag_result:
             raise TagNotFoundException(
                 identifier=str(tag_id), model=_MODEL_NAME)
-        return tag_result
+        
 
     @handle_read_exceptions(
         model=_MODEL_NAME,

@@ -82,7 +82,7 @@ class TagRepository:
             return None
         return self.get_tag_by_id(tag_id=tag_id)
 
-    def delete_tag(self, tag_id: int) -> Optional[TagModel]:
+    def delete_tag(self, tag_id: int) -> bool:
         """
         Delete a tag by its ID from the database.
 
@@ -94,10 +94,9 @@ class TagRepository:
         """
         target_tag: Optional[TagModel] = self.get_tag_by_id(tag_id=tag_id)
         if not target_tag:
-            return None
+            return False
         self._db_session.delete(instance=target_tag)
-        self._db_session.flush()
-        return target_tag
-    
+        return True
+
     def get_tag_by_id_or_name(self, tag_id: int, tag_name: str) -> Optional[TagModel]:
         return self._db_session.query(TagModel).filter(or_(TagModel.id == tag_id, TagModel.name == tag_name)).first()
