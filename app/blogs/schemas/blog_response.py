@@ -10,7 +10,7 @@ class BlogResponse(BaseModel):
     id: int
     title: str
     content: str
-    author_id: int
+    user_id: int
     updated_at: datetime
     created_at: datetime
     is_published: bool
@@ -22,14 +22,14 @@ class BlogResponse(BaseModel):
                 "id": 1,
                 "title": "My First Blog Post",
                 "content": "This is the content of my first blog post.",
-                "author_id": 1,
+                "user_id": 1,
                 "is_published": True
             }
         }
         
 class BlogResponseFull(BlogResponse):
     """
-    Full blog response schema including author and tags.
+    Full blog response schema including user and tags.
     """
-    author: UserResponse
+    user: UserResponse
     tags: List[TagResponse]

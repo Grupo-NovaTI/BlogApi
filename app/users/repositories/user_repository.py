@@ -1,7 +1,11 @@
 from typing import List, Optional
+
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
+
 from app.users.models.user_model import UserModel as User
+
+
 class UserRepository:
     
     def __init__(self, db_session: Session) -> None:

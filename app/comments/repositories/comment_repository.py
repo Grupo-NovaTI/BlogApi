@@ -22,9 +22,9 @@ class CommentRepository:
         """Get all comments for a specific blog by its ID."""
         return self._db_session.query(CommentModel).filter(CommentModel.blog_id == blog_id).all()
 
-    def get_all_comments_by_author_id(self, author_id: int) -> list[CommentModel]:
-        """Get all comments made by a specific author by their ID."""
-        return self._db_session.query(CommentModel).filter(CommentModel.author_id == author_id).all()
+    def get_all_comments_by_user(self, user_id: int) -> list[CommentModel]:
+        """Get all comments made by a specific user by their ID."""
+        return self._db_session.query(CommentModel).filter(CommentModel.user_id == user_id).all()
 
     def get_comment_by_id(self, comment_id: int) -> Optional[CommentModel]:
         """Get a comment by its ID."""
@@ -34,7 +34,7 @@ class CommentRepository:
         """Update a comment's content by its ID."""
         rows_updated: int = self._db_session.query(CommentModel).filter(
             and_(CommentModel.id == comment_id,
-                 CommentModel.author_id == user_id)
+                 CommentModel.user_id == user_id)
         ).update(values={"content": content})
         if rows_updated == 0:
             return None
@@ -48,11 +48,11 @@ class CommentRepository:
             return True
         return False
 
-    def delete_comment_by_author(self, author_id: int, comment_id: int) -> bool:
+    def delete_comment_by_user(self, user_id: int, comment_id: int) -> bool:
         """Delete a comment by its ID and user ID."""
         comment: Optional[CommentModel] = self._db_session.query(CommentModel).filter(
             and_(CommentModel.id == comment_id,
-                 CommentModel.author_id == author_id)
+                 CommentModel.user_id == user_id)
         ).first()
         if comment:
             self._db_session.delete(instance=comment)

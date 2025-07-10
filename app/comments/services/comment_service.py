@@ -20,7 +20,7 @@ class CommentService:
         operation=Operations.CREATE
     )
     def create_comment(self, comment: dict[str, Any], user_id: int) -> CommentModel:
-        comment_model = CommentModel(**comment, author_id=user_id)
+        comment_model = CommentModel(**comment, user_id=user_id)
         """Create a new comment in the repository."""
         return self._repository.create_comment(comment=comment_model)
 
@@ -36,9 +36,9 @@ class CommentService:
         model=_MODEL_NAME,
         operation=Operations.FETCH
     )
-    def get_comments_by_author_id(self, author_id: int) -> list[CommentModel]:
-        """Retrieve all comments made by a specific author by their ID."""
-        return self._repository.get_all_comments_by_author_id(author_id=author_id)
+    def get_comments_by_user(self, user_id: int) -> list[CommentModel]:
+        """Retrieve all comments made by a specific user by their ID."""
+        return self._repository.get_all_comments_by_user(user_id=user_id)
 
     @handle_read_exceptions(
         model=_MODEL_NAME,
@@ -58,7 +58,7 @@ class CommentService:
             comment_id=comment_id, user_id=user_id, content=content)
         if not comment:
             raise CommentNotFoundException(
-                identifier=comment_id, model="Comment")
+                identifier=comment_id, resource_type="Comment")
         return comment
 
     @handle_service_transaction(
@@ -70,16 +70,16 @@ class CommentService:
         deleted = self._repository.delete_comment(comment_id=comment_id)
         if not deleted:
             raise CommentNotFoundException(
-                identifier=comment_id, model="Comment")
+                identifier=comment_id, resource_type="Comment")
 
     @handle_service_transaction(
         model=_MODEL_NAME,
         operation=Operations.DELETE
     )
-    def delete_comment_by_author(self, comment_id: int, author_id: int) -> None:
+    def delete_comment_by_user(self, comment_id: int, user_id: int) -> None:
         """Delete a comment by its ID and author ID."""
-        deleted: bool = self._repository.delete_comment_by_author(
-            author_id=author_id, comment_id=comment_id)
+        deleted: bool = self._repository.delete_comment_by_user(
+            user_id=user_id, comment_id=comment_id)
         if not deleted:
             raise CommentNotFoundException(
-                identifier=comment_id, model="Comment")
+                identifier=comment_id, resource_type="Comment")

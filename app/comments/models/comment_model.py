@@ -12,18 +12,18 @@ class CommentModel(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     content = Column(String, nullable=False)
-    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     blog_id = Column(Integer, ForeignKey("blogs.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(
     ), default=datetime.now(tz=timezone.utc))
     updated_at = Column(DateTime(timezone=True), server_default=func.now(
     ), onupdate=func.now(), default=datetime.now(tz=timezone.utc))
 
-    author = relationship("UserModel", back_populates="comments")
+    user = relationship("UserModel", back_populates="comments")
     blog = relationship("BlogModel", back_populates="comments")
 
     def __repr__(self):
-        return f"<Comment(id={self.id}, content={self.content}, author_id={self.author_id}, blog_id={self.blog_id})>"
+        return f"<Comment(id={self.id}, content={self.content}, user_id={self.user_id}, blog_id={self.blog_id})>"
 
     def __str__(self):
-        return f"Comment(id={self.id}, content={self.content}, author_id={self.author_id}, blog_id={self.blog_id})"
+        return f"Comment(id={self.id}, content={self.content}, user_id={self.user_id}, blog_id={self.blog_id})"

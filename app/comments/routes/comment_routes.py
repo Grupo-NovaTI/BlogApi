@@ -60,17 +60,17 @@ async def get_comments_by_blog_id(
     return comment_service.get_comments_by_blog_id(blog_id=blog_id)
 
 @comment_router.get(
-    path="/authors/me",
+    path="/user/me",
     response_model=list[CommentResponse],
-    summary="Get all comments by the current author",
+    summary="Get all comments by the current user",
     tags=["comments"],
 )
-async def get_comments_by_author_id(
+async def get_comments_by_user(
     user_id: UserIDFromTokenDependency,
     comment_service: CommentServiceDependency,
 ):
     """
-    Retrieve all comments made by the current author.
+    Retrieve all comments made by the current user.
 
     Args:
         jwt_payload (dict): The JWT payload containing user information.
@@ -79,7 +79,7 @@ async def get_comments_by_author_id(
     Returns:
         list[CommentResponse]: A list of comments made by the current author.
     """
-    return comment_service.get_comments_by_author_id(author_id=user_id)
+    return comment_service.get_comments_by_user(user_id=user_id)
 
 @comment_router.get(
     path="/{comment_id}",
@@ -160,4 +160,4 @@ async def delete_comment(
     Returns:
         None: If the deletion is successful.
     """
-    comment_service.delete_comment_by_author(comment_id=comment_id, author_id=user_id)
+    comment_service.delete_comment_by_user(comment_id=comment_id, user_id=user_id)

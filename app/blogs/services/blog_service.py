@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 from typing import Any, List, Optional
+
 from sqlalchemy.orm import Session
+
+from app.blog_tags.repositories.blog_tag_repository import BlogTagRepository
 from app.blogs.models.blog_model import BlogModel
 from app.blogs.repositories.blog_repository import BlogRepository
-from app.utils.errors.exceptions import NotFoundException as BlogNotFoundException
-from app.blog_tags.repositories.blog_tag_repository import BlogTagRepository
-from app.utils.errors.exception_handlers import handle_read_exceptions, handle_service_transaction
 from app.utils.enums.operations import Operations
+from app.utils.errors.exception_handlers import (handle_read_exceptions,
+                                                 handle_service_transaction)
+from app.utils.errors.exceptions import \
+    NotFoundException as BlogNotFoundException
 
 _MODEL_NAME = "Blogs"
 class BlogService:
@@ -26,9 +30,9 @@ class BlogService:
         model=_MODEL_NAME,
         operation=Operations.CREATE
     )
-    def create_blog(self, blog: dict[str, Any], author_id: int) -> BlogModel:
+    def create_blog(self, blog: dict[str, Any], user_id: int) -> BlogModel:
         tags: Optional[List[int]] = blog.pop("tags", [])
-        blog_model = BlogModel(**blog, author_id=author_id)
+        blog_model = BlogModel(**blog, user_id=user_id)
         created_blog: BlogModel = self._blog_repository.create_blog(
             blog=blog_model)
         if tags:
@@ -42,15 +46,15 @@ class BlogService:
         model=_MODEL_NAME,
         operation=Operations.UPDATE
     )
-    def update_blog(self, blog: dict[str, Any], id: int, author_id: int) -> BlogModel:
+    def update_blog(self, blog: dict[str, Any], blog_id: int, user_id: int) -> BlogModel:
         tags: Optional[List[int]] = blog.pop("tags", [])
         operation_result: Optional[BlogModel] = self._blog_repository.update_blog(
-            blog_data=blog, blog_id=id, user_id=author_id)
+            blog_data=blog, blog_id=blog_id, user_id=user_id)
         if not operation_result:
-            raise BlogNotFoundException(identifier=id, model=self.model_name)
+            raise BlogNotFoundException(identifier=blog_id, resource_type=self.model_name)
         if tags:
             self._blog_tag_repository.unlink_blog_tags_by_blog_id(
-                blog_id=id, tag_ids_to_unlink=tags)
+                blog_id=blog_id, tag_ids_to_unlink=tags)
             self._blog_tag_repository.link_blog_tags(
                 blog_id=int(str(operation_result.id)), tag_ids=tags)
         return operation_result
@@ -59,12 +63,12 @@ class BlogService:
         model=_MODEL_NAME,
         operation=Operations.DELETE
     )
-    def delete_blog(self, blog_id: int, user_id : int) -> None:
+    def delete_blog(self, blog_id: int, user_id: int) -> None:
         operation_result: bool = self._blog_repository.delete_blog(
             blog_id=blog_id, user_id=user_id)
         if not operation_result:
             raise BlogNotFoundException(
-                identifier=blog_id, model=self.model_name)
+                identifier=blog_id, resource_type=self.model_name)
 
     @handle_service_transaction(
         model=_MODEL_NAME,
@@ -74,7 +78,7 @@ class BlogService:
         operation_result: Optional[BlogModel] = self._blog_repository.update_blog_visibility(
             blog_id=id, visibility=visibility, user_id=user_id)
         if not operation_result:
-            raise BlogNotFoundException(identifier=id, model=self.model_name)
+            raise BlogNotFoundException(identifier=id, resource_type=self.model_name)
         return operation_result
 
     @handle_read_exceptions(

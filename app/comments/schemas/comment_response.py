@@ -6,9 +6,9 @@ from app.users.schemas.user_response import UserResponse
 class CommentResponse(BaseModel):
     id: int
     blog_id: int
-    author_id: int
+    user_id: int
     content: str
-    author: Optional[UserResponse]
+    user: Optional[UserResponse]
     created_at: datetime
     updated_at: datetime
     class Config:
@@ -17,7 +17,7 @@ class CommentResponse(BaseModel):
                 "id": 1,
                 "blog_id": 1,
                 "user_id": 1,
-                "author": {
+                "user": {
                     "id": 1,
                     "username": "john_doe",
                     "email": "john_doe@example.com"

@@ -24,8 +24,8 @@ class UserModel(Base):
                         server_default=func.now(), default=datetime.now(tz=timezone.utc))
     updated_at = Column(DateTime(timezone=True), nullable=True, server_default=func.now(
     ), onupdate=func.now(), default=datetime.now(tz=timezone.utc))
-    blogs  = relationship("BlogModel", back_populates="author", cascade="all, delete-orphan")
-    comments  = relationship("CommentModel", back_populates="author", cascade="all, delete-orphan")
+    blogs  = relationship("BlogModel", back_populates="user", cascade="all, delete-orphan")
+    comments  = relationship("CommentModel", back_populates="user", cascade="all, delete-orphan")
 
 
     def __repr__(self):

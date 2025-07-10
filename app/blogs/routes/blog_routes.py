@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from typing import List, Optional
-from starlette import status
-from fastapi import APIRouter, Request, Path, Query
+
+from fastapi import APIRouter, Path, Query, Request
 from fastapi_cache.decorator import cache
-from app.core.dependencies import BlogServiceDependency, AccessTokenDependency, UserIDFromTokenDependency
-from app.blogs.schemas.blog_request import BlogRequest, BlogPatchRequest
-from app.blogs.schemas.blog_response import BlogResponse, BlogResponseFull
+from starlette import status
+
 from app.blogs.models.blog_model import BlogModel
-from app.utils.constants.constants import DEFAULT_PAGE_SIZE, DEFAULT_OFFSET
+from app.blogs.schemas.blog_request import BlogPatchRequest, BlogRequest
+from app.blogs.schemas.blog_response import BlogResponse, BlogResponseFull
+from app.core.dependencies import (AccessTokenDependency,
+                                   BlogServiceDependency,
+                                   UserIDFromTokenDependency)
+from app.utils.constants.constants import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
 
 blog_router = APIRouter(
     prefix="/blogs",
@@ -18,7 +22,7 @@ blog_router = APIRouter(
 
 @blog_router.get(path="", response_model=List[BlogResponseFull], tags=["blogs"], description="Get all blogs", status_code=status.HTTP_200_OK)
 @cache(expire=60)  # Cache for 60 seconds
-async def get_blogs(
+async def get_all_blogs(
     request: Request,
     blog_service: BlogServiceDependency,
     jwt_payload: AccessTokenDependency,
@@ -51,7 +55,7 @@ async def create_blog(
 Create a new blog post.
 This endpoint allows users to create a new blog post by providing the necessary details in the request body.
 """
-    return blog_service.create_blog(blog=blog.model_dump(exclude_unset=True), author_id=user_id)
+    return blog_service.create_blog(blog=blog.model_dump(exclude_unset=True), user_id=user_id)
 
 
 @blog_router.put(path="/{id}", response_model=BlogResponseFull, tags=["blogs"], description="Update a blog", status_code=status.HTTP_200_OK)
@@ -61,7 +65,7 @@ async def update_blog(
     blog_service: BlogServiceDependency,
     user_id: UserIDFromTokenDependency,
 ) -> BlogModel:
-    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), id=id, author_id=user_id)
+    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=id, user_id=user_id)
 
 
 @blog_router.delete(path="/{id}", tags=["blogs"], description="Delete a blog", status_code=status.HTTP_204_NO_CONTENT)
@@ -97,21 +101,21 @@ async def get_blogs_by_user(
 @blog_router.get(path="/users/me", response_model=List[BlogResponseFull], tags=["blogs"], description="Get blogs by current user", status_code=status.HTTP_200_OK)
 async def get_blogs_by_current_user(
     blog_service: BlogServiceDependency,
-    user_id_payload: UserIDFromTokenDependency,
+    user_id: UserIDFromTokenDependency,
     limit: int = DEFAULT_PAGE_SIZE,
     offset: int = DEFAULT_OFFSET,
 ) -> List[BlogModel]:
-    return blog_service.get_blogs_by_user(user_id=user_id_payload, limit=limit, offset=offset)
+    return blog_service.get_blogs_by_user(user_id=user_id, limit=limit, offset=offset)
 
 
 @blog_router.patch(path="/{id}", response_model=BlogResponseFull, tags=["blogs"], description="Patch blog", status_code=status.HTTP_200_OK)
 async def update_blog_content(
     blog: BlogPatchRequest,
     blog_service: BlogServiceDependency,
-    author_id: UserIDFromTokenDependency,
+    user_id: UserIDFromTokenDependency,
     id: int = Path(..., description="The ID of the blog to update", gt=0),
 ) -> BlogModel:
-    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), id=id, author_id=author_id)
+    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=id, user_id=user_id)
 
 
 @blog_router.get(path="/{id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")
