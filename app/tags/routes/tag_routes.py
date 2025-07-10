@@ -41,8 +41,8 @@ async def get_tag_by_id(jwt_payload: AccessTokenDependency, tag_service: TagServ
     """
     return tag_service.get_tag_by_id(tag_id=tag_id)
 
-@admin_only()
 @tag_router.post(path="", response_model=TagResponse, summary="Create a new tag", tags=["tags"], status_code=status.HTTP_201_CREATED)
+@admin_only()
 async def create_tag(tag: TagRequest, jwt_payload: AccessTokenDependency, tag_service: TagServiceDependency):
     """
     Create a new tag.
@@ -58,8 +58,8 @@ async def create_tag(tag: TagRequest, jwt_payload: AccessTokenDependency, tag_se
     """
     return tag_service.create_tag(tag=tag.model_dump(exclude_unset=True))
 
-@admin_only()
 @tag_router.put(path="/{tag_id}", response_model=TagResponse, summary="Update an existing tag", tags=["tags"], status_code=status.HTTP_200_OK)
+@admin_only()
 async def update_tag(tag_data: TagRequest, jwt_payload: AccessTokenDependency, tag_service: TagServiceDependency, tag_id: int = Path(..., description="The unique identifier of the tag to update")):
     """
     Update an existing tag.
@@ -76,8 +76,8 @@ async def update_tag(tag_data: TagRequest, jwt_payload: AccessTokenDependency, t
     """
     return tag_service.update_tag(tag_data=tag_data.model_dump(exclude_defaults=True), tag_id=tag_id)
 
-@admin_only()
 @tag_router.delete(path="/{tag_id}", summary="Delete a tag", tags=["tags"], status_code=status.HTTP_204_NO_CONTENT)
+@admin_only()
 async def delete_tag(jwt_payload: AccessTokenDependency, tag_service: TagServiceDependency, tag_id: int = Path(..., description="The unique identifier of the tag to delete"),):
     """
     Delete a tag by its ID.
