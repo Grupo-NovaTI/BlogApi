@@ -11,13 +11,12 @@ from app.utils.constants.constants import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
 
 user_router = APIRouter(
     prefix="/users",
-    tags=["users"],
-    responses={404: {"description": "Not found"}},
+    tags=["users"]
 )
 
 
 @user_router.get(path="/me", response_model=UserResponse, summary="Get current user", tags=["users"])
-async def get_current_user(service: UserServiceDependency, user_id_payload: UserIDFromTokenDependency):
+async def get_current_user(user_service: UserServiceDependency, current_user_id : UserIDFromTokenDependency):
     """
     Endpoint to retrieve the current authenticated user.
 
@@ -31,12 +30,12 @@ async def get_current_user(service: UserServiceDependency, user_id_payload: User
     Raises:
         HTTPException: If the user is not found or if there is an error during retrieval.
     """
-    return service.get_user_by_id(user_id=user_id_payload)
+    return user_service.get_user_by_id(user_id=current_user_id )
 
 
 @user_router.get(path="/{user_id}", response_model=Optional[UserResponse], summary="Get user by ID", tags=["users"])
 @role_required(required_role=[UserRole.ADMIN, UserRole.USER])
-async def get_user_by_id(service: UserServiceDependency, jwt_payload: AccessTokenDependency, user_id: int = Path(
+async def get_user_by_id(user_service: UserServiceDependency, jwt_payload: AccessTokenDependency, user_id: int = Path(
         ..., description="The unique identifier of the user to retrieve", ge=1, le=1000000)):
     """
     Endpoint to retrieve a user by their ID.
@@ -52,22 +51,22 @@ async def get_user_by_id(service: UserServiceDependency, jwt_payload: AccessToke
     Raises:
         HTTPException: If the user is not found or if there is an error during retrieval.
     """
-    return service.get_user_by_id(user_id=user_id)
+    return user_service.get_user_by_id(user_id=user_id)
 
 
 @user_router.get(path="", response_model=List[UserResponse], summary="Get all users", tags=["users"])
-async def get_users(service: UserServiceDependency, limit: int = Query(DEFAULT_PAGE_SIZE, ge=1), offset: int = Query(DEFAULT_OFFSET, ge=0)):
+async def get_users(user_service: UserServiceDependency, limit: int = Query(DEFAULT_PAGE_SIZE, ge=1), offset: int = Query(DEFAULT_OFFSET, ge=0)):
     """
     Endpoint to retrieve a list of users.
 
     Returns:
         List of users.
     """
-    return service.get_all_users()
+    return user_service.get_all_users()
 
 
 @user_router.delete(path="/me", summary="Delete user by ID", tags=["users"], status_code=status.HTTP_204_NO_CONTENT)
-async def delete_user(service: UserServiceDependency, user_id_payload: UserIDFromTokenDependency):
+async def delete_current_user(user_service: UserServiceDependency, current_user_id: UserIDFromTokenDependency):
     """
     Endpoint to delete a user by their ID.
 
@@ -81,11 +80,11 @@ async def delete_user(service: UserServiceDependency, user_id_payload: UserIDFro
     Raises:
         HTTPException: If the user is not found or if there is an error during deletion.
     """
-    service.delete_user(user_id=user_id_payload)
+    user_service.delete_user_by_id(user_id=current_user_id )
 
 
 @user_router.patch(path="/reactivate", summary="Reactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
-async def reactivate_user_account(service: UserServiceDependency, user_id_payload: UserIDFromTokenDependency):
+async def reactivate_user_account(service: UserServiceDependency, current_user_id : UserIDFromTokenDependency):
     """
     Endpoint to activate a user account.
 
@@ -97,11 +96,11 @@ async def reactivate_user_account(service: UserServiceDependency, user_id_payloa
         UserResponse: The activated user.
     """
 
-    return service.update_user_active_status(user_id=user_id_payload, is_active=True)
+    return service.update_user_active_status(user_id=current_user_id , is_active=True)
 
 
 @user_router.patch("/deactivate", summary="Deactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
-async def set_user_inactive(service: UserServiceDependency, user_id_payload: UserIDFromTokenDependency):
+async def set_user_inactive(user_service: UserServiceDependency, current_user_id : UserIDFromTokenDependency):
     """
     Endpoint to deactivate a user account.
 
@@ -112,4 +111,4 @@ async def set_user_inactive(service: UserServiceDependency, user_id_payload: Use
     Returns:
         UserResponse: The deactivated user.
     """
-    return service.update_user_active_status(user_id=user_id_payload, is_active=False)
+    return user_service.update_user_active_status(user_id=current_user_id , is_active=False)

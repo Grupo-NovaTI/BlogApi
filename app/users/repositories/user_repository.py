@@ -82,7 +82,7 @@ class UserRepository:
         return self.get_user_by_id(user_id=user_id)
 
 
-    def delete_user(self, user_id: int) -> bool:
+    def delete_user_by_id(self, user_id: int) -> bool:
         """
         Delete a user from the database.
 
@@ -151,7 +151,7 @@ class UserRepository:
         return self._db_session.query(User).filter(User.email == email).first()
 
 
-    def update_user_active_status(self, user_id: int, is_active: bool) -> Optional[User]:
+    def set_user_active_status(self, user_id: int, is_active: bool) -> Optional[User]:
         """
         Update the active status of a user in the database.
 

@@ -37,9 +37,9 @@ class UserService:
             The created user.
         """
         user_model = UserModel(**user_data)
-        check_user_exists: Optional[UserModel] = self._user_repository.get_user_by_email_or_username(
+        existing_user: Optional[UserModel] = self._user_repository.get_user_by_email_or_username(
             email=str(user_model.email), username=str(user_model.username))
-        if check_user_exists:
+        if existing_user:
             raise UserAlreadyExistsException(
                 identifier="email or username",
                 resource_type=_MODEL_NAME,
@@ -105,21 +105,21 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        user_updated_result:  Optional[UserModel] = self._user_repository.update_user(
+        updated_user:  Optional[UserModel] = self._user_repository.update_user(
             user_id=user_id, user_data=user_data)
-        if not user_updated_result:
+        if not updated_user:
             raise UserNotFoundException(
                 identifier=user_id,
                 resource_type=_MODEL_NAME
             )
 
-        return user_updated_result
+        return updated_user
 
     @handle_service_transaction(
         model=_MODEL_NAME,
         operation=Operations.DELETE
     )
-    def delete_user(self, user_id: int) -> None:
+    def delete_user_by_id(self, user_id: int) -> None:
         """
         Delete a user by their ID from the repository.
 
@@ -129,9 +129,9 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        deletion_result: bool = self._user_repository.delete_user(
+        was_deleted: bool = self._user_repository.delete_user_by_id(
             user_id=user_id)
-        if not deletion_result:
+        if not was_deleted:
             raise UserNotFoundException(
                 identifier=user_id,
                 resource_type=_MODEL_NAME
@@ -155,7 +155,7 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        updated_user: Optional[UserModel] = self._user_repository.update_user_active_status(
+        updated_user: Optional[UserModel] = self._user_repository.set_user_active_status (
             user_id=user_id, is_active=is_active)
         if not updated_user:
             raise UserNotFoundException(
