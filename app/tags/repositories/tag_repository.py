@@ -1,10 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.orm.session import Session
 from app.tags.models.tag_model import TagModel
-from app.utils.logger.application_logger import ApplicationLogger
-from app.utils.enums.operations import Operations
 from sqlalchemy import or_
-_logger = ApplicationLogger(__name__)
 
 class TagRepository:
     def __init__(self, db_session: Session) -> None:
@@ -61,8 +58,7 @@ class TagRepository:
             TagOperationException: If there is a database error during creation.
         """
         self._db_session.add(tag)
-        self._db_session.commit()
-        self._db_session.refresh(tag)
+        self._db_session.flush()
         return tag
     
     
@@ -83,9 +79,8 @@ class TagRepository:
             TagModel.id == tag_id
         ).update(tag_data)
         if rows_affected == 0:
-            return None 
-        self._db_session.commit()
-        return self.get_tag_by_id(tag_id)
+            return None
+        return self.get_tag_by_id(tag_id=tag_id)
 
     def delete_tag(self, tag_id: int) -> Optional[TagModel]:
         """
@@ -101,9 +96,8 @@ class TagRepository:
         if not target_tag:
             return None
         self._db_session.delete(instance=target_tag)
-        self._db_session.commit()
+        self._db_session.flush()
         return target_tag
-
-
+    
     def get_tag_by_id_or_name(self, tag_id: int, tag_name: str) -> Optional[TagModel]:
-            return self._db_session.query(TagModel).filter(or_(TagModel.id == tag_id, TagModel.name == tag_name)).first()
+        return self._db_session.query(TagModel).filter(or_(TagModel.id == tag_id, TagModel.name == tag_name)).first()

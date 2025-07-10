@@ -1,4 +1,5 @@
 from typing import List, Optional
+from sqlalchemy.orm import Session
 from app.tags.models.tag_model import TagModel
 from app.tags.repositories.tag_repository import TagRepository
 from app.utils.errors.exceptions import NotFoundException as TagNotFoundException, AlreadyExistsException as TagAlreadyExistsException, ValidationException as TagInvalidException
@@ -6,8 +7,9 @@ from app.utils.errors.exception_handlers import handle_read_exceptions, handle_s
 from app.utils.enums.operations import Operations
 _MODEL_NAME = "Tags"    
 class TagService:
-    def __init__(self, tag_repository: TagRepository) -> None:
+    def __init__(self, tag_repository: TagRepository, db_session: Session) -> None:
         self._repository: TagRepository = tag_repository
+        self._db_session : Session = db_session
 
     @handle_read_exceptions(
         model=_MODEL_NAME,
