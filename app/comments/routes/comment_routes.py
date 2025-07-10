@@ -1,18 +1,15 @@
 from typing import Optional
 from starlette import status
-from fastapi import APIRouter, Path, Query
-from app.comments.models.comment_model import CommentModel
+from fastapi import APIRouter, Path
 from app.comments.schemas.comment_request import InsertCommentRequest, UpdateCommentRequest
 from app.comments.schemas.comment_response import CommentResponse
 from app.core.dependencies import CommentServiceDependency, AccessTokenDependency, UserIDFromTokenDependency
-from app.utils.logger.application_logger import ApplicationLogger
+
 comment_router = APIRouter(
     prefix="/comments",
     tags=["comments"],
-    responses={404: {"description": "Not found"}},
 )
 
-_logger = ApplicationLogger(__name__)
 @comment_router.post(
     path="/",
     response_model=CommentResponse,
@@ -36,8 +33,7 @@ async def create_comment(
     Returns:
         CommentResponse: The created comment.
     """
-    comment: CommentModel = comment_request.to_orm(user_id=user_id)
-    return comment_service.create_comment(comment=comment)
+    return comment_service.create_comment(comment=comment_request.model_dump(exclude_unset=True), user_id=user_id)
 
 @comment_router.get(
     path="/blogs/{blog_id}",
