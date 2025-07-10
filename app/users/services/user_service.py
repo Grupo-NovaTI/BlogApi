@@ -1,11 +1,13 @@
 from typing import Any, List, Optional
 from sqlalchemy.orm import Session
 from app.users.repositories.user_repository import UserRepository
-from app.utils.errors.exceptions import NotFoundException as  UserNotFoundException, AlreadyExistsException as UserAlreadyExistsException
+from app.utils.errors.exceptions import NotFoundException as UserNotFoundException, AlreadyExistsException as UserAlreadyExistsException
 from app.users.models.user_model import UserModel
 from app.utils.errors.exception_handlers import handle_read_exceptions, handle_service_transaction
 from app.utils.enums.operations import Operations
 _MODEL_NAME = "Users"
+
+
 class UserService:
     def __init__(self, user_repository: UserRepository, db_session: Session) -> None:
         self._user_repository: UserRepository = user_repository
@@ -83,7 +85,7 @@ class UserService:
         """
         return self._user_repository.get_user_by_username(
             username=username)
-       
+
     @handle_service_transaction(
         model=_MODEL_NAME,
         operation=Operations.UPDATE
@@ -102,40 +104,42 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        user_updated_result :  Optional[UserModel]= self._user_repository.update_user(user_id=user_id, user_data=user_data)
+        user_updated_result:  Optional[UserModel] = self._user_repository.update_user(
+            user_id=user_id, user_data=user_data)
         if not user_updated_result:
             raise UserNotFoundException(
                 identifier=user_id,
                 model=_MODEL_NAME
             )
-        
+
         return user_updated_result
-    
+
     @handle_service_transaction(
         model=_MODEL_NAME,
         operation=Operations.DELETE
     )
-    def delete_user(self, user_id: int) -> bool:
+    def delete_user(self, user_id: int) -> None:
         """
         Delete a user by their ID from the repository.
 
         Args:
             user_id (int): The unique identifier of the user to delete.
 
-        Returns:
-            bool: True if the user was deleted, False otherwise.
-
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        deletion_result: bool = self._user_repository.delete_user(user_id=user_id)
+        deletion_result: bool = self._user_repository.delete_user(
+            user_id=user_id)
         if not deletion_result:
             raise UserNotFoundException(
                 identifier=user_id,
                 model=_MODEL_NAME
             )
-        return deletion_result
 
+    @handle_service_transaction(
+        model=_MODEL_NAME,
+        operation=Operations.UPDATE
+    )
     def update_user_active_status(self, user_id: int, is_active: bool) -> UserModel:
         """
         Update the active status of a user.
@@ -150,7 +154,8 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        updated_user: Optional[UserModel] = self._user_repository.update_user_active_status(user_id=user_id, is_active=is_active)
+        updated_user: Optional[UserModel] = self._user_repository.update_user_active_status(
+            user_id=user_id, is_active=is_active)
         if not updated_user:
             raise UserNotFoundException(
                 identifier=user_id,
