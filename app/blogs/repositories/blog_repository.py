@@ -29,13 +29,13 @@ class BlogRepository:
         return self.get_blog_by_id(blog_id)
 
 
-    def delete_blog(self, blog_id: int, user_id: int) -> Optional[BlogModel]:
+    def delete_blog(self, blog_id: int, user_id: int) -> bool:
         blog: Optional[BlogModel] = self._db_session.query(BlogModel).filter(
             and_(BlogModel.id == blog_id, BlogModel.author_id == user_id)).first()
         if not blog:
-            return None
+            return False
         self._db_session.delete(instance=blog)
-        return blog
+        return True
 
 
     def update_blog_visibility(self, blog_id: int, visibility: bool, user_id: int) -> Optional[BlogModel]:

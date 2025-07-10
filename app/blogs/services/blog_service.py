@@ -59,13 +59,12 @@ class BlogService:
         model=_MODEL_NAME,
         operation=Operations.DELETE
     )
-    def delete_blog(self, blog_id: int, user_id : int) -> BlogModel:
-        operation_result: Optional[BlogModel] = self._blog_repository.delete_blog(
+    def delete_blog(self, blog_id: int, user_id : int) -> None:
+        operation_result: bool = self._blog_repository.delete_blog(
             blog_id=blog_id, user_id=user_id)
         if not operation_result:
             raise BlogNotFoundException(
                 identifier=blog_id, model=self.model_name)
-        return operation_result
 
     @handle_service_transaction(
         model=_MODEL_NAME,
