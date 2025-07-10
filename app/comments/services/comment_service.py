@@ -54,12 +54,12 @@ class CommentService:
     )
     def update_comment_content(self, comment_id: int, content: str, user_id: int) -> CommentModel:
         """Update a comment's content by its ID."""
-        comment: Optional[CommentModel] = self._repository.update_comment_content(
+        updated_comment: Optional[CommentModel] = self._repository.update_comment_content(
             comment_id=comment_id, user_id=user_id, content=content)
-        if not comment:
+        if not updated_comment:
             raise CommentNotFoundException(
                 identifier=comment_id, resource_type="Comment")
-        return comment
+        return updated_comment
 
     @handle_service_transaction(
         model=_MODEL_NAME,
@@ -67,8 +67,8 @@ class CommentService:
     )
     def delete_comment(self, comment_id: int) -> None:
         """Delete a comment by its ID."""
-        deleted = self._repository.delete_comment(comment_id=comment_id)
-        if not deleted:
+        was_deleted: bool = self._repository.delete_comment(comment_id=comment_id)
+        if not was_deleted:
             raise CommentNotFoundException(
                 identifier=comment_id, resource_type="Comment")
 
@@ -78,8 +78,8 @@ class CommentService:
     )
     def delete_comment_by_user(self, comment_id: int, user_id: int) -> None:
         """Delete a comment by its ID and author ID."""
-        deleted: bool = self._repository.delete_comment_by_user(
+        was_deleted: bool = self._repository.delete_comment_by_user(
             user_id=user_id, comment_id=comment_id)
-        if not deleted:
+        if not was_deleted:
             raise CommentNotFoundException(
                 identifier=comment_id, resource_type="Comment")

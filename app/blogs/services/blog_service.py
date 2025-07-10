@@ -48,25 +48,25 @@ class BlogService:
     )
     def update_blog(self, blog: dict[str, Any], blog_id: int, user_id: int) -> BlogModel:
         tags: Optional[List[int]] = blog.pop("tags", [])
-        operation_result: Optional[BlogModel] = self._blog_repository.update_blog(
+        updated_blog: Optional[BlogModel] = self._blog_repository.update_blog(
             blog_data=blog, blog_id=blog_id, user_id=user_id)
-        if not operation_result:
+        if not updated_blog:
             raise BlogNotFoundException(identifier=blog_id, resource_type=self.model_name)
         if tags:
             self._blog_tag_repository.unlink_blog_tags_by_blog_id(
                 blog_id=blog_id, tag_ids_to_unlink=tags)
             self._blog_tag_repository.link_blog_tags(
-                blog_id=int(str(operation_result.id)), tag_ids=tags)
-        return operation_result
+                blog_id=int(str(updated_blog.id)), tag_ids=tags)
+        return updated_blog
 
     @handle_service_transaction(
         model=_MODEL_NAME,
         operation=Operations.DELETE
     )
     def delete_blog(self, blog_id: int, user_id: int) -> None:
-        operation_result: bool = self._blog_repository.delete_blog(
+        was_deleted: bool = self._blog_repository.delete_blog(
             blog_id=blog_id, user_id=user_id)
-        if not operation_result:
+        if not was_deleted:
             raise BlogNotFoundException(
                 identifier=blog_id, resource_type=self.model_name)
 
@@ -75,11 +75,11 @@ class BlogService:
         operation=Operations.UPDATE
     )
     def update_blog_visibility(self, id: int, visibility: bool, user_id : int) -> BlogModel:
-        operation_result: Optional[BlogModel] = self._blog_repository.update_blog_visibility(
+        updated_blog: Optional[BlogModel] = self._blog_repository.update_blog_visibility(
             blog_id=id, visibility=visibility, user_id=user_id)
-        if not operation_result:
+        if not updated_blog:
             raise BlogNotFoundException(identifier=id, resource_type=self.model_name)
-        return operation_result
+        return updated_blog
 
     @handle_read_exceptions(
         model=_MODEL_NAME,

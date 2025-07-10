@@ -56,9 +56,9 @@ class TagService:
             TagAlreadyExistsException: If a tag with the same name already exists.
         """
         tag_model = TagModel(**tag)
-        check_tag_exists: Optional[TagModel] = self._repository.get_tag_by_name(
+        exisiting_tag: Optional[TagModel] = self._repository.get_tag_by_name(
             tag_name=str(tag_model.name))
-        if check_tag_exists:
+        if exisiting_tag:
             raise TagAlreadyExistsException(
                 identifier=str(tag_model.name), resource_type=_MODEL_NAME, details=f"A tag with the name {tag_model.name} already exists."
             )
@@ -83,9 +83,9 @@ class TagService:
         if not isinstance(tag_name, str):
             raise TagInvalidException(
                 details="Tag name must be a string")
-        check_tag_exists_by_name: Optional[TagModel] = self._repository.get_tag_by_name(
+        existing_tag: Optional[TagModel] = self._repository.get_tag_by_name(
             tag_name=str(tag_name))
-        if check_tag_exists_by_name:
+        if existing_tag:
             raise TagAlreadyExistsException(
                 identifier=str(tag_name),
                 resource_type=_MODEL_NAME,
@@ -111,9 +111,9 @@ class TagService:
             TagModel: The deleted tag.
         """
 
-        tag_result: bool = self._repository.delete_tag(
+        was_deleted: bool = self._repository.delete_tag(
             tag_id=tag_id)
-        if not tag_result:
+        if not was_deleted:
             raise TagNotFoundException(
                 identifier=str(tag_id), resource_type=_MODEL_NAME)
 
