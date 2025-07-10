@@ -5,10 +5,10 @@ from app.blogs.models.blog_model import BlogModel
 from app.blogs.repositories.blog_repository import BlogRepository
 from app.utils.errors.exceptions import NotFoundException as BlogNotFoundException
 from app.blog_tags.repositories.blog_tag_repository import BlogTagRepository
-from app.utils.errors.exception_handlers import handle_database_exception
+from app.utils.errors.exception_handlers import handle_read_exceptions, handle_service_transaction
 from app.utils.enums.operations import Operations
 
-
+_MODEL_NAME = "Blogs"
 class BlogService:
     def __init__(self, blog_repository: BlogRepository, blog_tag_repository: BlogTagRepository, db_session: Session) -> None:
         self._blog_repository: BlogRepository = blog_repository
@@ -22,8 +22,8 @@ class BlogService:
     def get_blog_by_id(self, id: int) -> Optional[BlogModel]:
         return self._blog_repository.get_blog_by_id(id=id)
 
-    @handle_database_exception(
-        model="Blogs",
+    @handle_service_transaction(
+        model=_MODEL_NAME,
         operation=Operations.CREATE
     )
     def create_blog(self, blog: dict[str, Any], author_id: int) -> BlogModel:
@@ -34,13 +34,12 @@ class BlogService:
         if tags:
             self._blog_tag_repository.link_blog_tags(
                 blog_id=int(str(created_blog.id)), tag_ids=tags)
-        self._db_session.commit()
         self._db_session.refresh(created_blog)
         
         return created_blog
 
-    @handle_database_exception(
-        model="Blogs",
+    @handle_service_transaction(
+        model=_MODEL_NAME,
         operation=Operations.UPDATE
     )
     def update_blog(self, blog: dict[str, Any], id: int, author_id: int) -> BlogModel:
@@ -54,11 +53,10 @@ class BlogService:
                 blog_id=id, tag_ids_to_unlink=tags)
             self._blog_tag_repository.link_blog_tags(
                 blog_id=int(str(operation_result.id)), tag_ids=tags)
-        self._db_session.commit()
         return operation_result
 
-    @handle_database_exception(
-        model="Blogs",
+    @handle_service_transaction(
+        model=_MODEL_NAME,
         operation=Operations.DELETE
     )
     def delete_blog(self, blog_id: int, user_id : int) -> BlogModel:
@@ -69,8 +67,8 @@ class BlogService:
                 identifier=blog_id, model=self.model_name)
         return operation_result
 
-    @handle_database_exception(
-        model="Blogs",
+    @handle_service_transaction(
+        model=_MODEL_NAME,
         operation=Operations.UPDATE
     )
     def update_blog_visibility(self, id: int, visibility: bool, user_id : int) -> BlogModel:
@@ -78,18 +76,17 @@ class BlogService:
             blog_id=id, visibility=visibility, user_id=user_id)
         if not operation_result:
             raise BlogNotFoundException(identifier=id, model=self.model_name)
-        self._db_session.commit()
         return operation_result
 
-    @handle_database_exception(
-        model="Blogs",
+    @handle_read_exceptions(
+        model=_MODEL_NAME,
         operation=Operations.FETCH
     )
     def get_public_blogs(self, limit: int = 10, offset: int = 0) -> List[BlogModel]:
         return self._blog_repository.get_public_blogs(limit=limit, offset=offset)
 
-    @handle_database_exception(
-        model="Blogs",
+    @handle_read_exceptions(
+        model=_MODEL_NAME,
         operation=Operations.FETCH_BY
     )
     def get_blogs_by_user(self, user_id: int, limit: int = 10, offset: int = 0) -> List[BlogModel]:
