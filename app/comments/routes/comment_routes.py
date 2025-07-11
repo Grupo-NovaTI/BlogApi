@@ -11,7 +11,7 @@ comment_router = APIRouter(
 )
 
 @comment_router.post(
-    path="/",
+    path="",
     response_model=CommentResponse,
     summary="Insert a new comment",
     tags=["comments"],

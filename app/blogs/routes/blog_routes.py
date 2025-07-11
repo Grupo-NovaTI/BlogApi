@@ -20,7 +20,7 @@ blog_router = APIRouter(
 )
 
 
-@blog_router.get(path="/", response_model=List[BlogResponseFull], tags=["blogs"], description="Get all blogs", status_code=status.HTTP_200_OK)
+@blog_router.get(path="", response_model=List[BlogResponseFull], tags=["blogs"], description="Get all blogs", status_code=status.HTTP_200_OK)
 @cache(expire=60)  # Cache for 60 seconds
 async def get_all_blogs(
     request: Request,
@@ -45,7 +45,7 @@ async def get_public_blogs(
     return blog_service.get_public_blogs(limit=limit, offset=offset)
 
 
-@blog_router.post(path="/", response_model=BlogResponseFull, tags=["blogs"], description="Create a new blog", status_code=status.HTTP_201_CREATED)
+@blog_router.post(path="", response_model=BlogResponseFull, tags=["blogs"], description="Create a new blog", status_code=status.HTTP_201_CREATED)
 async def create_blog(
     blog: BlogRequest,
     blog_service: BlogServiceDependency,

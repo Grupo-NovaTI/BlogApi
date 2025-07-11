@@ -14,7 +14,7 @@ tag_router = APIRouter(
 )
 
 
-@tag_router.get(path="/", response_model=list[TagResponse], summary="Get all tags", tags=["tags"], status_code=status.HTTP_200_OK)
+@tag_router.get(path="", response_model=list[TagResponse], summary="Get all tags", tags=["tags"], status_code=status.HTTP_200_OK)
 async def get_tags(tag_service: TagServiceDependency, limit: int = Query(DEFAULT_PAGE_SIZE, ge=1), offset: int = Query(DEFAULT_OFFSET, ge=0)):
     """
     Retrieve all tags.
@@ -41,7 +41,7 @@ async def get_tag_by_id(jwt_payload: AccessTokenDependency, tag_service: TagServ
     """
     return tag_service.get_tag_by_id(tag_id=tag_id)
 
-@tag_router.post(path="/", response_model=TagResponse, summary="Create a new tag", tags=["tags"], status_code=status.HTTP_201_CREATED)
+@tag_router.post(path="", response_model=TagResponse, summary="Create a new tag", tags=["tags"], status_code=status.HTTP_201_CREATED)
 @admin_only()
 async def create_tag(tag: TagRequest, jwt_payload: AccessTokenDependency, tag_service: TagServiceDependency):
     """
