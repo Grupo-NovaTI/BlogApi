@@ -103,7 +103,7 @@ async def get_comment_by_id(
     Returns:
         CommentResponse: The requested comment.
     """
-    return comment_service.get_comment_by_id(id=comment_id)
+    return comment_service.get_comment_by_id(comment_id=comment_id)
   
 
 @comment_router.patch(

@@ -44,9 +44,9 @@ class CommentService:
         model=_MODEL_NAME,
         operation=Operations.FETCH_BY
     )
-    def get_comment_by_id(self, id: int) -> Optional[CommentModel]:
+    def get_comment_by_id(self, comment_id: int) -> Optional[CommentModel]:
         """Retrieve a comment by its ID."""
-        return self._repository.get_comment_by_id(id=id)
+        return self._repository.get_comment_by_id(comment_id=comment_id)
 
     @handle_service_transaction(
         model=_MODEL_NAME,

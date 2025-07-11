@@ -26,9 +26,9 @@ class CommentRepository:
         """Get all comments made by a specific user by their ID."""
         return self._db_session.query(CommentModel).filter(CommentModel.user_id == user_id).all()
 
-    def get_comment_by_id(self, id: int) -> Optional[CommentModel]:
+    def get_comment_by_id(self, comment_id: int) -> Optional[CommentModel]:
         """Get a comment by its ID."""
-        return self._db_session.get(entity=CommentModel, ident=id)
+        return self._db_session.get(entity=CommentModel, ident=comment_id)
 
     def update_comment_content(self, comment_id: int, user_id: int, content: str) -> Optional[CommentModel]:
         """Update a comment's content by its ID."""
@@ -38,7 +38,7 @@ class CommentRepository:
         ).update(values={"content": content})
         if rows_updated == 0:
             return None
-        return self.get_comment_by_id(id=comment_id)
+        return self.get_comment_by_id(comment_id=comment_id)
 
     def delete_comment(self, comment_id: int) -> bool:
         """Delete a comment by its ID."""
