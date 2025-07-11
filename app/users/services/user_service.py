@@ -1,27 +1,75 @@
 from typing import Any, List, Optional
+
 from sqlalchemy.orm import Session
-from app.users.repositories.user_repository import UserRepository
-from app.utils.errors.exceptions import NotFoundException as UserNotFoundException, ConflictException as UserAlreadyExistsException, ForbiddenException as UserForbiddenException
+
 from app.users.models.user_model import UserModel
-from app.utils.errors.exception_handlers import handle_read_exceptions, handle_service_transaction
+from app.users.repositories.user_repository import UserRepository
 from app.utils.enums.operations import Operations
+from app.utils.errors.exception_handlers import (handle_read_exceptions,
+                                                 handle_service_transaction)
+from app.utils.errors.exceptions import \
+    ConflictException as UserAlreadyExistsException
+from app.utils.errors.exceptions import \
+    ForbiddenException as UserForbiddenException
+from app.utils.errors.exceptions import \
+    NotFoundException as UserNotFoundException
+
 _MODEL_NAME = "Users"
 
 
 class UserService:
+    """UserService provides business logic for managing user entities in the application.
+    This service acts as an intermediary between the user repository and higher-level
+    application logic, handling user-related operations such as creation, retrieval,
+    updating, and deletion. It also manages exception handling and transactional
+    integrity for user operations.
+    Attributes:
+        _user_repository (UserRepository): The repository instance for user data access.
+        _db_session (Session): The SQLAlchemy session for database transactions.
+    Methods:
+        get_all_users() -> List[UserModel]:
+        create_user(user_data: dict[str, Any]) -> UserModel:
+            Create a new user with the provided data.
+        get_user_by_id(user_id: int) -> Optional[UserModel]:
+            Retrieve a user by their unique ID.
+        get_user_by_username(username: str) -> Optional[UserModel]:
+        update_user(user_id: int, user_data: dict) -> UserModel:
+            Update an existing user's information.
+        delete_user_by_id(user_id: int) -> None:
+            Delete a user by their unique ID.
+        update_user_active_status(user_id: int, is_active: bool) -> UserModel:
+        UserNotFoundException: If a user with the specified identifier does not exist.
+        UserAlreadyExistsException: If attempting to create a user with an existing email or username."""
+
     def __init__(self, user_repository: UserRepository, db_session: Session) -> None:
+        """
+        Initialize the UserService.
+
+        Args:
+            user_repository (UserRepository): The repository for managing user data.
+            db_session (Session): The SQLAlchemy session for database transactions.
+        """
         self._user_repository: UserRepository = user_repository
         self._db_session: Session = db_session
-
-
 
     def _get_user_or_raise(self, user_id: int) -> UserModel:
         """
         Retrieve a user by ID or raise an exception if not found.
+
+        Args:
+            user_id (int): The unique identifier of the user to retrieve.
+
+        Returns:
+            UserModel: The user object if found.
+
+        Raises:
+            UserNotFoundException: If the user with the given ID does not exist.
         """
-        user: Optional[UserModel] = self._user_repository.get_user_by_id(user_id=user_id)
+        user: Optional[UserModel] = self._user_repository.get_user_by_id(
+            user_id=user_id)
         if not user:
-            raise UserNotFoundException(identifier=user_id, resource_type=_MODEL_NAME)
+            raise UserNotFoundException(
+                identifier=user_id, resource_type=_MODEL_NAME)
         return user
 
     @handle_read_exceptions(
@@ -33,7 +81,7 @@ class UserService:
         Retrieve all users from the repository.
 
         Returns:
-            List of users.
+            List[UserModel]: A list of all users.
         """
         return self._user_repository.get_all_users()
 
@@ -46,10 +94,13 @@ class UserService:
         Create a new user in the repository.
 
         Args:
-            user_data: Data for the new user.
+            user_data (dict[str, Any]): The data for the new user.
 
         Returns:
-            The created user.
+            UserModel: The created user object.
+
+        Raises:
+            UserAlreadyExistsException: If a user with the same email or username already exists.
         """
         user_model = UserModel(**user_data)
         existing_user: Optional[UserModel] = self._user_repository.get_user_by_email_or_username(
@@ -74,7 +125,7 @@ class UserService:
             user_id (int): The unique identifier of the user to retrieve.
 
         Returns:
-            UserModel: The user object if found.
+            Optional[UserModel]: The user object if found, otherwise None.
 
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
@@ -94,7 +145,7 @@ class UserService:
             username (str): The username of the user to retrieve.
 
         Returns:
-            UserModel: The user object if found.
+            Optional[UserModel]: The user object if found, otherwise None.
 
         Raises:
             UserNotFoundException: If the user with the given username does not exist.
@@ -112,10 +163,10 @@ class UserService:
 
         Args:
             user_id (int): The unique identifier of the user to update.
-            user_data: Data for updating the user.
+            user_data (dict): The data for updating the user.
 
         Returns:
-            The updated user.
+            UserModel: The updated user object.
 
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
