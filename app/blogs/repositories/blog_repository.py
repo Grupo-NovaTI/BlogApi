@@ -16,8 +16,8 @@ class BlogRepository:
         """Fetches all blogs with pagination support."""
         return self._db_session.query(BlogModel).filter(and_(BlogModel.is_published == True)).limit(limit=limit).offset(offset=offset).all()
 
-    def get_blog_by_id(self, id: int) -> Optional[BlogModel]:
-        return self._db_session.query(BlogModel).filter(BlogModel.id == id).first()
+    def get_blog_by_id(self, blog_id: int) -> Optional[BlogModel]:
+        return self._db_session.query(BlogModel).filter(BlogModel.id == blog_id).first()
 
     def create_blog(self, blog: BlogModel) -> BlogModel:
         """Creates a new blog entry in the database."""
@@ -26,7 +26,7 @@ class BlogRepository:
         return blog
 
 
-    def update_blog(self, blog_data: dict, blog_id: int, user_id: int) -> Optional[BlogModel]:
+    def patch_blog(self, blog_data: dict, blog_id: int, user_id: int) -> Optional[BlogModel]:
         rows_affected: int = self._db_session.query(BlogModel).filter(
             and_(BlogModel.id == blog_id, BlogModel.user_id == user_id)).update(blog_data)
         if rows_affected == 0:
@@ -41,14 +41,6 @@ class BlogRepository:
             return False
         self._db_session.delete(instance=blog)
         return True
-
-
-    def update_blog_visibility(self, blog_id: int, visibility: bool, user_id: int) -> Optional[BlogModel]:
-        rows_affected: int = self._db_session.query(BlogModel).filter(and_(BlogModel.id == blog_id, BlogModel.user_id == user_id)).update(
-            values={"is_published": visibility})
-        if rows_affected == 0:
-            return None
-        return self.get_blog_by_id(id=blog_id)
 
     def get_public_blogs(self, limit: int = 10, offset: int = 0) -> List[BlogModel]:
         """Fetches all public blogs with pagination support."""

@@ -23,8 +23,8 @@ class BlogService:
     def get_all_blogs(self, limit: int = 10, offset: int = 0) -> List[BlogModel]:
         return self._blog_repository.get_all_blogs(limit=limit, offset=offset)
 
-    def get_blog_by_id(self, id: int) -> Optional[BlogModel]:
-        return self._blog_repository.get_blog_by_id(id=id)
+    def get_blog_by_id(self, blog_id: int) -> Optional[BlogModel]:
+        return self._blog_repository.get_blog_by_id(blog_id=blog_id)
 
     @handle_service_transaction(
         model=_MODEL_NAME,
@@ -46,9 +46,9 @@ class BlogService:
         model=_MODEL_NAME,
         operation=Operations.UPDATE
     )
-    def update_blog(self, blog: dict[str, Any], blog_id: int, user_id: int) -> BlogModel:
+    def patch_blog(self, blog: dict[str, Any], blog_id: int, user_id: int) -> BlogModel:
         tags: Optional[List[int]] = blog.pop("tags", [])
-        updated_blog: Optional[BlogModel] = self._blog_repository.update_blog(
+        updated_blog: Optional[BlogModel] = self._blog_repository.patch_blog(
             blog_data=blog, blog_id=blog_id, user_id=user_id)
         if not updated_blog:
             raise BlogNotFoundException(identifier=blog_id, resource_type=self.model_name)
@@ -69,17 +69,6 @@ class BlogService:
         if not was_deleted:
             raise BlogNotFoundException(
                 identifier=blog_id, resource_type=self.model_name)
-
-    @handle_service_transaction(
-        model=_MODEL_NAME,
-        operation=Operations.UPDATE
-    )
-    def update_blog_visibility(self, id: int, visibility: bool, user_id : int) -> BlogModel:
-        updated_blog: Optional[BlogModel] = self._blog_repository.update_blog_visibility(
-            blog_id=id, visibility=visibility, user_id=user_id)
-        if not updated_blog:
-            raise BlogNotFoundException(identifier=id, resource_type=self.model_name)
-        return updated_blog
 
     @handle_read_exceptions(
         model=_MODEL_NAME,

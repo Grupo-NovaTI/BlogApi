@@ -58,33 +58,23 @@ This endpoint allows users to create a new blog post by providing the necessary 
     return blog_service.create_blog(blog=blog.model_dump(exclude_unset=True), user_id=user_id)
 
 
-@blog_router.put(path="/{id}", response_model=BlogResponseFull, tags=["blogs"], description="Update a blog", status_code=status.HTTP_200_OK)
-async def update_blog(
-    id: int,
-    blog: BlogRequest,
-    blog_service: BlogServiceDependency,
-    user_id: UserIDFromTokenDependency,
-) -> BlogModel:
-    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=id, user_id=user_id)
-
-
-@blog_router.delete(path="/{id}", tags=["blogs"], description="Delete a blog", status_code=status.HTTP_204_NO_CONTENT)
+@blog_router.delete(path="/{blog_id}", tags=["blogs"], description="Delete a blog", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_blog(
-    id: int,
+    blog_id: int,
     blog_service: BlogServiceDependency,
     user_id: UserIDFromTokenDependency,
 ):
-    blog_service.delete_blog(blog_id=id, user_id=user_id)
+    blog_service.delete_blog(blog_id=blog_id, user_id=user_id)
 
 
-@blog_router.patch(path="/{id}/visibility", response_model=BlogResponseFull, tags=["blogs"], description="Update blog visibility", status_code=status.HTTP_200_OK)
-async def update_blog_visibility(
-    id: int,
-    visibility: bool,
+@blog_router.patch(path="/{blog_id}", response_model=BlogResponseFull, tags=["blogs"], description="Patch blog", status_code=status.HTTP_200_OK)
+async def patch_blog(
+    blog: BlogPatchRequest,
     blog_service: BlogServiceDependency,
     user_id: UserIDFromTokenDependency,
-) -> Optional[BlogModel]:
-    return blog_service.update_blog_visibility(id=id, visibility=visibility, user_id=user_id)
+    blog_id: int = Path(..., description="The ID of the blog to update", gt=0),
+) -> BlogModel:
+    return blog_service.patch_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
 
 
 @blog_router.get(path="/user/{user_id}", response_model=List[BlogResponseFull], tags=["blogs"], description="Get blogs by user", status_code=status.HTTP_200_OK)
@@ -108,22 +98,22 @@ async def get_blogs_by_current_user(
     return blog_service.get_blogs_by_user(user_id=user_id, limit=limit, offset=offset)
 
 
-@blog_router.patch(path="/{id}", response_model=BlogResponseFull, tags=["blogs"], description="Patch blog", status_code=status.HTTP_200_OK)
+@blog_router.patch(path="/{blog_id}", response_model=BlogResponseFull, tags=["blogs"], description="Patch blog", status_code=status.HTTP_200_OK)
 async def update_blog_content(
     blog: BlogPatchRequest,
     blog_service: BlogServiceDependency,
     user_id: UserIDFromTokenDependency,
-    id: int = Path(..., description="The ID of the blog to update", gt=0),
+    blog_id: int = Path(..., description="The ID of the blog to update", gt=0),
 ) -> BlogModel:
-    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=id, user_id=user_id)
+    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
 
 
-@blog_router.get(path="/{id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")
-@cache(expire=60)  # Cache for 60 seconds
+@blog_router.get(path="/{blog_id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")
+@cache(expire=.6)  # Cache for 60 seconds
 async def get_blog_by_id(
     blog_service: BlogServiceDependency,
     jwt_payload: AccessTokenDependency,
-    id: int = Path(
+    blog_id: int = Path(
         default=..., description="The ID of the blog to retrieve", ge=1),
 ) -> Optional[BlogModel]:
-    return blog_service.get_blog_by_id(id=id)
+    return blog_service.get_blog_by_id(blog_id=blog_id)
