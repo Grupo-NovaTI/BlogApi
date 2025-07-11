@@ -105,11 +105,11 @@ async def update_blog_content(
     user_id: UserIDFromTokenDependency,
     blog_id: int = Path(..., description="The ID of the blog to update", gt=0),
 ) -> BlogModel:
-    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
+    return blog_service.patch_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
 
 
 @blog_router.get(path="/{blog_id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")
-@cache(expire=.6)  # Cache for 60 seconds
+@cache(expire=60)  # Cache for 60 seconds
 async def get_blog_by_id(
     blog_service: BlogServiceDependency,
     jwt_payload: AccessTokenDependency,
