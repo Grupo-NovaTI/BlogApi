@@ -131,7 +131,7 @@ async def update_comment(
         CommentResponse: The updated comment.
     """
 
-    return comment_service.update_comment_content(
+    return comment_service.update_comment(
         comment_id=comment_id,
         content=comment_request.content,
         user_id=user_id
@@ -160,4 +160,4 @@ async def delete_comment(
     Returns:
         None: If the deletion is successful.
     """
-    comment_service.delete_comment_by_user(comment_id=comment_id, user_id=user_id)
+    comment_service.delete_comment_for_user(comment_id=comment_id, user_id=user_id)

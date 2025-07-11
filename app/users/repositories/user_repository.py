@@ -61,7 +61,7 @@ class UserRepository:
         self._db_session.flush()
         return user
 
-    def update_user(self, user_data: dict, user_id: int) -> Optional[User]:
+    def update_user(self, user: User, user_data: dict) -> Optional[User]:
         """
         Update an existing user's information in the database.
 
@@ -75,14 +75,11 @@ class UserRepository:
             UserOperationException: If there is a database error during update,
                                   such as user not found or duplicate unique fields.
         """
-        rows_affected: int = self._db_session.query(
-            User).filter(User.id == user_id).update(user_data)
-        if rows_affected == 0:
-            return None
-        return self.get_user_by_id(user_id=user_id)
+        for key, value in user_data.items():
+            setattr(user, key, value)
+        return user
 
-
-    def delete_user_by_id(self, user_id: int) -> bool:
+    def delete_user(self, user : User) -> None:
         """
         Delete a user from the database.
 
@@ -96,11 +93,7 @@ class UserRepository:
             UserOperationException: If there is a database error during deletion,
                                   such as user not found or constraint violations.
         """
-        user: Optional[User] = self.get_user_by_id(user_id=user_id)
-        if not user:
-            return False
-        self._db_session.delete(user)
-        return True
+        self._db_session.delete(instance=user)
 
 
     def get_all_users(self, offset: int = 0, limit: int = 10) -> List[User]:
@@ -150,23 +143,3 @@ class UserRepository:
         """
         return self._db_session.query(User).filter(User.email == email).first()
 
-
-    def set_user_active_status(self, user_id: int, is_active: bool) -> Optional[User]:
-        """
-        Update the active status of a user in the database.
-
-        Args:
-            user_id (int): The unique identifier of the user to update.
-            is_active (bool): The new active status of the user.
-
-        Returns:
-            User: The updated user object.
-
-        Raises:
-            UserOperationException: If there is a database error during update.
-        """
-        rows_affected: int = self._db_session.query(User).filter(
-            User.id == user_id).update({"is_active": is_active})
-        if rows_affected == 0:
-            return None
-        return self.get_user_by_id(user_id=user_id)

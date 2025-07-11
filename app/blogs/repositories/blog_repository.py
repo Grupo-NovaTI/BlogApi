@@ -26,21 +26,15 @@ class BlogRepository:
         return blog
 
 
-    def patch_blog(self, blog_data: dict, blog_id: int, user_id: int) -> Optional[BlogModel]:
-        rows_affected: int = self._db_session.query(BlogModel).filter(
-            and_(BlogModel.id == blog_id, BlogModel.user_id == user_id)).update(blog_data)
-        if rows_affected == 0:
-            return None
-        return self.get_blog_by_id(blog_id)
+    def update_blog(self, blog: BlogModel, blog_data: dict) -> Optional[BlogModel]:
+        for key, value in blog_data.items():
+            setattr(blog, key, value)
+        return blog
 
 
-    def delete_blog(self, blog_id: int, user_id: int) -> bool:
-        blog: Optional[BlogModel] = self._db_session.query(BlogModel).filter(
-            and_(BlogModel.id == blog_id, BlogModel.user_id == user_id)).first()
-        if not blog:
-            return False
+    def delete_blog(self, blog: BlogModel) -> None:
+        """Deletes a blog entry from the database."""
         self._db_session.delete(instance=blog)
-        return True
 
     def get_public_blogs(self, limit: int = 10, offset: int = 0) -> List[BlogModel]:
         """Fetches all public blogs with pagination support."""

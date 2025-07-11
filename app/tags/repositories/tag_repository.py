@@ -62,7 +62,7 @@ class TagRepository:
         return tag
     
     
-    def update_tag(self, tag_id : int, tag_data: dict) -> Optional[TagModel]:
+    def update_tag(self, tag: TagModel, tag_data: dict) -> Optional[TagModel]:
         """
         Update an existing tag in the database.
 
@@ -75,28 +75,21 @@ class TagRepository:
         Raises:
             TagOperationException: If there is a database error during update.
         """
-        rows_affected : int = self._db_session.query(TagModel).filter(
-            TagModel.id == tag_id
-        ).update(tag_data)
-        if rows_affected == 0:
-            return None
-        return self.get_tag_by_id(tag_id=tag_id)
+        for key, value in tag_data.items():
+            setattr(tag, key, value)
+        return tag
 
-    def delete_tag(self, tag_id: int) -> bool:
+    def delete_tag(self, tag: TagModel) -> None:
         """
         Delete a tag by its ID from the database.
 
         Args:
-            tag_id (int): The unique identifier of the tag to delete.
+            tag (TagModel): The tag object to delete.
 
         Raises:
             TagOperationException: If there is a database error during deletion.
         """
-        target_tag: Optional[TagModel] = self.get_tag_by_id(tag_id=tag_id)
-        if not target_tag:
-            return False
-        self._db_session.delete(instance=target_tag)
-        return True
+        self._db_session.delete(instance=tag)
 
     def get_tag_by_id_or_name(self, tag_id: int, tag_name: str) -> Optional[TagModel]:
         return self._db_session.query(TagModel).filter(or_(TagModel.id == tag_id, TagModel.name == tag_name)).first()

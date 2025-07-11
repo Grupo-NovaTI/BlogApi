@@ -2,10 +2,10 @@ from typing import Any, Optional
 from sqlalchemy.orm import Session
 from app.comments.repositories.comment_repository import CommentRepository
 from app.comments.models.comment_model import CommentModel
-from app.utils.errors.exceptions import NotFoundException as CommentNotFoundException
+from app.utils.errors.exceptions import NotFoundException as CommentNotFoundException, ForbiddenException
 from app.utils.errors.exception_handlers import handle_read_exceptions, handle_service_transaction
 from app.utils.enums.operations import Operations
-_MODEL_NAME = "Comments"
+_MODEL_NAME = "Comment"
 
 
 class CommentService:
@@ -15,13 +15,27 @@ class CommentService:
         self._repository: CommentRepository = comment_repository
         self._db_session: Session = db_session
 
+    def _get_and_authorize_comment(self, comment_id: int, user_id: int) -> CommentModel:
+        """
+        Retrieves a comment by ID and verifies that the user is the owner.
+        Returns the comment object if successful, otherwise raises an exception.
+        """
+        comment: Optional[CommentModel] = self._repository.get_comment_by_id(comment_id=comment_id)
+        if not comment:
+            raise CommentNotFoundException(
+                identifier=comment_id, resource_type=_MODEL_NAME)
+        if comment.user_id != user_id: # type: ignore
+            raise ForbiddenException(
+                details=f"User {user_id} lacks permission for comment {comment_id}.")
+        return comment
+
     @handle_service_transaction(
         model=_MODEL_NAME,
         operation=Operations.CREATE
     )
     def create_comment(self, comment: dict[str, Any], user_id: int) -> CommentModel:
-        comment_model = CommentModel(**comment, user_id=user_id)
         """Create a new comment in the repository."""
+        comment_model = CommentModel(**comment, user_id=user_id)
         return self._repository.create_comment(comment=comment_model)
 
     @handle_read_exceptions(
@@ -52,34 +66,36 @@ class CommentService:
         model=_MODEL_NAME,
         operation=Operations.UPDATE
     )
-    def update_comment_content(self, comment_id: int, content: str, user_id: int) -> CommentModel:
+    def update_comment(self, comment_id: int, content: str, user_id: int) -> CommentModel:
         """Update a comment's content by its ID."""
-        updated_comment: Optional[CommentModel] = self._repository.update_comment_content(
-            comment_id=comment_id, user_id=user_id, content=content)
-        if not updated_comment:
-            raise CommentNotFoundException(
-                identifier=comment_id, resource_type="Comment")
+        comment_to_update: CommentModel = self._get_and_authorize_comment(
+            comment_id=comment_id, user_id=user_id)
+        updated_comment: Optional[CommentModel] = self._repository.update_comment(
+            comment=comment_to_update, content={"content": content})
+
         return updated_comment
 
     @handle_service_transaction(
         model=_MODEL_NAME,
         operation=Operations.DELETE
     )
-    def delete_comment(self, comment_id: int) -> None:
+    def delete_comment_for_admin(self, comment_id: int) -> None:
         """Delete a comment by its ID."""
-        was_deleted: bool = self._repository.delete_comment(comment_id=comment_id)
-        if not was_deleted:
+
+        comment_to_delete: Optional[CommentModel] = self._repository.get_comment_by_id(
+            comment_id=comment_id)
+        if not comment_to_delete:
             raise CommentNotFoundException(
-                identifier=comment_id, resource_type="Comment")
+                identifier=comment_id, resource_type=_MODEL_NAME)
+        self._repository.delete_comment(comment=comment_to_delete)
 
     @handle_service_transaction(
         model=_MODEL_NAME,
         operation=Operations.DELETE
     )
-    def delete_comment_by_user(self, comment_id: int, user_id: int) -> None:
+    def delete_comment_for_user(self, comment_id: int, user_id: int) -> None:
         """Delete a comment by its ID and author ID."""
-        was_deleted: bool = self._repository.delete_comment_by_user(
-            user_id=user_id, comment_id=comment_id)
-        if not was_deleted:
-            raise CommentNotFoundException(
-                identifier=comment_id, resource_type="Comment")
+        comment_to_delete: CommentModel = self._get_and_authorize_comment(
+            comment_id=comment_id, user_id=user_id)
+        self._repository.delete_comment(
+            comment=comment_to_delete)

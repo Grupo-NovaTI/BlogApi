@@ -54,7 +54,7 @@ async def get_user_by_id(user_service: UserServiceDependency, jwt_payload: Acces
     return user_service.get_user_by_id(user_id=user_id)
 
 
-@user_router.get(path="", response_model=List[UserResponse], summary="Get all users", tags=["users"])
+@user_router.get(path="/", response_model=List[UserResponse], summary="Get all users", tags=["users"])
 async def get_users(user_service: UserServiceDependency, limit: int = Query(DEFAULT_PAGE_SIZE, ge=1), offset: int = Query(DEFAULT_OFFSET, ge=0)):
     """
     Endpoint to retrieve a list of users.

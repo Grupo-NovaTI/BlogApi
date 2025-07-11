@@ -20,7 +20,7 @@ blog_router = APIRouter(
 )
 
 
-@blog_router.get(path="", response_model=List[BlogResponseFull], tags=["blogs"], description="Get all blogs", status_code=status.HTTP_200_OK)
+@blog_router.get(path="/", response_model=List[BlogResponseFull], tags=["blogs"], description="Get all blogs", status_code=status.HTTP_200_OK)
 @cache(expire=60)  # Cache for 60 seconds
 async def get_all_blogs(
     request: Request,
@@ -45,7 +45,7 @@ async def get_public_blogs(
     return blog_service.get_public_blogs(limit=limit, offset=offset)
 
 
-@blog_router.post(path="", response_model=BlogResponseFull, tags=["blogs"], description="Create a new blog", status_code=status.HTTP_201_CREATED)
+@blog_router.post(path="/", response_model=BlogResponseFull, tags=["blogs"], description="Create a new blog", status_code=status.HTTP_201_CREATED)
 async def create_blog(
     blog: BlogRequest,
     blog_service: BlogServiceDependency,
@@ -64,7 +64,7 @@ async def delete_blog(
     blog_service: BlogServiceDependency,
     user_id: UserIDFromTokenDependency,
 ):
-    blog_service.delete_blog(blog_id=blog_id, user_id=user_id)
+    blog_service.delete_blog_for_user(blog_id=blog_id, user_id=user_id)
 
 
 @blog_router.patch(path="/{blog_id}", response_model=BlogResponseFull, tags=["blogs"], description="Patch blog", status_code=status.HTTP_200_OK)
@@ -74,7 +74,7 @@ async def patch_blog(
     user_id: UserIDFromTokenDependency,
     blog_id: int = Path(..., description="The ID of the blog to update", gt=0),
 ) -> BlogModel:
-    return blog_service.patch_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
+    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
 
 
 @blog_router.get(path="/user/{user_id}", response_model=List[BlogResponseFull], tags=["blogs"], description="Get blogs by user", status_code=status.HTTP_200_OK)
@@ -105,7 +105,7 @@ async def update_blog_content(
     user_id: UserIDFromTokenDependency,
     blog_id: int = Path(..., description="The ID of the blog to update", gt=0),
 ) -> BlogModel:
-    return blog_service.patch_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
+    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
 
 
 @blog_router.get(path="/{blog_id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")

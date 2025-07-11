@@ -2,7 +2,7 @@ from typing import Any, List, Optional
 from sqlalchemy.orm import Session
 from app.tags.models.tag_model import TagModel
 from app.tags.repositories.tag_repository import TagRepository
-from app.utils.errors.exceptions import NotFoundException as TagNotFoundException, ConflictException as TagAlreadyExistsException, UnprocessableContentException as TagInvalidException
+from app.utils.errors.exceptions import NotFoundException as TagNotFoundException, ConflictException as TagAlreadyExistsException
 from app.utils.errors.exception_handlers import handle_read_exceptions, handle_service_transaction
 from app.utils.enums.operations import Operations
 _MODEL_NAME = "Tags"
@@ -77,12 +77,7 @@ class TagService:
         Returns:
             TagModel: The updated tag.
         """
-        tag_name: Optional[str] = tag_data.get("name")
-        if not tag_name:
-            raise TagInvalidException(details="Tag name is required")
-        if not isinstance(tag_name, str):
-            raise TagInvalidException(
-                details="Tag name must be a string")
+        tag_name: str = tag_data.get("name", "")
         existing_tag: Optional[TagModel] = self._repository.get_tag_by_name(
             tag_name=str(tag_name))
         if existing_tag:
@@ -90,12 +85,13 @@ class TagService:
                 identifier=str(tag_name),
                 resource_type=_MODEL_NAME,
             )
-
-        updated_tag: Optional[TagModel] = self._repository.update_tag(
-            tag_data=tag_data, tag_id=tag_id)
-        if not updated_tag:
+        tag_to_update: Optional[TagModel] = self._repository.get_tag_by_id(
+            tag_id=tag_id)
+        if not tag_to_update:
             raise TagNotFoundException(
                 identifier=str(tag_id), resource_type=_MODEL_NAME)
+        updated_tag: Optional[TagModel] = self._repository.update_tag(
+            tag_data=tag_data, tag=tag_to_update)
         return updated_tag
 
     @handle_service_transaction(
@@ -110,12 +106,14 @@ class TagService:
         Returns:
             TagModel: The deleted tag.
         """
-
-        was_deleted: bool = self._repository.delete_tag(
+        tag_to_delete: Optional[TagModel] = self._repository.get_tag_by_id(
             tag_id=tag_id)
-        if not was_deleted:
+        if not tag_to_delete:
             raise TagNotFoundException(
-                identifier=str(tag_id), resource_type=_MODEL_NAME)
+                identifier=tag_id, resource_type=_MODEL_NAME)
+        self._repository.delete_tag(
+            tag=tag_to_delete)
+
 
     @handle_read_exceptions(
         model=_MODEL_NAME,

@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 from sqlalchemy.orm import Session
 from app.users.repositories.user_repository import UserRepository
-from app.utils.errors.exceptions import NotFoundException as UserNotFoundException, ConflictException as UserAlreadyExistsException
+from app.utils.errors.exceptions import NotFoundException as UserNotFoundException, ConflictException as UserAlreadyExistsException, ForbiddenException as UserForbiddenException
 from app.users.models.user_model import UserModel
 from app.utils.errors.exception_handlers import handle_read_exceptions, handle_service_transaction
 from app.utils.enums.operations import Operations
@@ -13,6 +13,21 @@ class UserService:
         self._user_repository: UserRepository = user_repository
         self._db_session: Session = db_session
 
+
+
+    def _get_user_or_raise(self, user_id: int) -> UserModel:
+        """
+        Retrieve a user by ID or raise an exception if not found.
+        """
+        user: Optional[UserModel] = self._user_repository.get_user_by_id(user_id=user_id)
+        if not user:
+            raise UserNotFoundException(identifier=user_id, resource_type=_MODEL_NAME)
+        return user
+
+    @handle_read_exceptions(
+        model=_MODEL_NAME,
+        operation=Operations.FETCH
+    )
     def get_all_users(self) -> List[UserModel]:
         """
         Retrieve all users from the repository.
@@ -105,14 +120,10 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        updated_user:  Optional[UserModel] = self._user_repository.update_user(
-            user_id=user_id, user_data=user_data)
-        if not updated_user:
-            raise UserNotFoundException(
-                identifier=user_id,
-                resource_type=_MODEL_NAME
-            )
 
+        user_to_update: UserModel = self._get_user_or_raise(user_id=user_id)
+        updated_user: UserModel = self._user_repository.update_user(
+            user=user_to_update, user_data=user_data)
         return updated_user
 
     @handle_service_transaction(
@@ -129,13 +140,9 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        was_deleted: bool = self._user_repository.delete_user_by_id(
-            user_id=user_id)
-        if not was_deleted:
-            raise UserNotFoundException(
-                identifier=user_id,
-                resource_type=_MODEL_NAME
-            )
+
+        user_to_delete: UserModel = self._get_user_or_raise(user_id=user_id)
+        self._user_repository.delete_user(user=user_to_delete)
 
     @handle_service_transaction(
         model=_MODEL_NAME,
@@ -155,11 +162,7 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        updated_user: Optional[UserModel] = self._user_repository.set_user_active_status (
-            user_id=user_id, is_active=is_active)
-        if not updated_user:
-            raise UserNotFoundException(
-                identifier=user_id,
-                resource_type=_MODEL_NAME
-            )
+        user_to_update = self._get_user_or_raise(user_id=user_id)
+        updated_user: Optional[UserModel] = self._user_repository.update_user(
+            user=user_to_update, user_data={"is_active": is_active})
         return updated_user

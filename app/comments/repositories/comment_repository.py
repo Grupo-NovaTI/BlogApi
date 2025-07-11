@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -30,31 +30,13 @@ class CommentRepository:
         """Get a comment by its ID."""
         return self._db_session.get(entity=CommentModel, ident=comment_id)
 
-    def update_comment_content(self, comment_id: int, user_id: int, content: str) -> Optional[CommentModel]:
+    def update_comment(self, comment : CommentModel, content: dict[str, Any]) -> Optional[CommentModel]:
         """Update a comment's content by its ID."""
-        rows_updated: int = self._db_session.query(CommentModel).filter(
-            and_(CommentModel.id == comment_id,
-                 CommentModel.user_id == user_id)
-        ).update(values={"content": content})
-        if rows_updated == 0:
-            return None
-        return self.get_comment_by_id(comment_id=comment_id)
+        for key, value in content.items():
+            setattr(comment, key, value)
+        return comment
 
-    def delete_comment(self, comment_id: int) -> bool:
+
+    def delete_comment(self, comment : CommentModel) -> None:
         """Delete a comment by its ID."""
-        comment: Optional[CommentModel] = self.get_comment_by_id(comment_id)
-        if comment:
-            self._db_session.delete(instance=comment)
-            return True
-        return False
-
-    def delete_comment_by_user(self, user_id: int, comment_id: int) -> bool:
-        """Delete a comment by its ID and user ID."""
-        comment: Optional[CommentModel] = self._db_session.query(CommentModel).filter(
-            and_(CommentModel.id == comment_id,
-                 CommentModel.user_id == user_id)
-        ).first()
-        if comment:
-            self._db_session.delete(instance=comment)
-            return True
-        return False
+        self._db_session.delete(instance=comment)
