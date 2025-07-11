@@ -1,0 +1,16 @@
+# High-level dependencies
+fastapi
+uvicorn
+psycopg2-binary
+SQLAlchemy
+alembic
+passlib[bcrypt]
+python-jose[cryptography]
+python-dotenv
+fastapi-cache2[redis]
+slowapi
+email_validator
+
+# For development and testing
+pip-tools
+pytest
