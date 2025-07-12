@@ -10,8 +10,9 @@ from app.utils.enums.operations import Operations
 from app.utils.errors.exception_handlers import (handle_read_exceptions,
                                                  handle_service_transaction)
 from app.utils.errors.exceptions import \
-    NotFoundException as BlogNotFoundException, \
     ForbiddenException as BlogForbiddenException
+from app.utils.errors.exceptions import \
+    NotFoundException as BlogNotFoundException
 
 _MODEL_NAME = "Blog"
 
@@ -153,7 +154,7 @@ class BlogService:
             blog=blog_model)
         if tags:
             self._blog_tag_repository.link_blog_tags(
-                blog_id=int(str(created_blog.id)), tag_ids=tags)
+                blog_id=created_blog.id, tag_ids=tags) # type: ignore
         self._db_session.refresh(created_blog)
 
         return created_blog

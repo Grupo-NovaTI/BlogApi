@@ -1,4 +1,9 @@
-# -*- coding: utf-8 -*-
+"""
+Blog API routes for blog management endpoints.
+
+This module defines FastAPI routes for creating, retrieving, updating, and deleting blogs.
+It uses dependency injection for service and authentication, and supports caching for some endpoints.
+"""
 
 from typing import List, Optional
 
@@ -21,7 +26,7 @@ blog_router = APIRouter(
 
 
 @blog_router.get(path="", response_model=List[BlogResponseFull], tags=["blogs"], description="Get all blogs", status_code=status.HTTP_200_OK)
-@cache(expire=60)  # Cache for 60 seconds
+@cache(expire=60)
 async def get_all_blogs(
     request: Request,
     blog_service: BlogServiceDependency,
@@ -29,7 +34,19 @@ async def get_all_blogs(
     limit: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=100),
     offset: int = Query(default=DEFAULT_OFFSET, ge=0),
 ) -> List[BlogModel]:
+    """
+    Retrieve all blogs with pagination.
 
+    Args:
+        request (Request): The FastAPI request object.
+        blog_service (BlogServiceDependency): The blog service dependency.
+        token (AccessTokenDependency): The JWT payload containing user information.
+        limit (int): Maximum number of blogs to retrieve.
+        offset (int): Number of blogs to skip.
+
+    Returns:
+        List[BlogModel]: List of blog models.
+    """
     return blog_service.get_all_blogs(limit=limit, offset=offset)
 
 
@@ -41,6 +58,14 @@ async def get_public_blogs(
 ) -> List[BlogModel]:
     """
     Fetch public blogs with pagination.
+
+    Args:
+        blog_service (BlogServiceDependency): The blog service dependency.
+        limit (int): Maximum number of blogs to retrieve.
+        offset (int): Number of blogs to skip.
+
+    Returns:
+        List[BlogModel]: List of public blog models.
     """
     return blog_service.get_public_blogs(limit=limit, offset=offset)
 
@@ -52,9 +77,16 @@ async def create_blog(
     user_id: UserIDFromTokenDependency,
 ) -> BlogModel:
     """
-Create a new blog post.
-This endpoint allows users to create a new blog post by providing the necessary details in the request body.
-"""
+    Create a new blog post.
+
+    Args:
+        blog (BlogRequest): The request body containing the blog details.
+        blog_service (BlogServiceDependency): The blog service dependency.
+        user_id (int): The ID of the user creating the blog.
+
+    Returns:
+        BlogModel: The created blog model.
+    """
     return blog_service.create_blog(blog=blog.model_dump(exclude_unset=True), user_id=user_id)
 
 
@@ -64,6 +96,14 @@ async def delete_blog(
     blog_service: BlogServiceDependency,
     user_id: UserIDFromTokenDependency,
 ):
+    """
+    Delete a blog by its ID.
+
+    Args:
+        blog_id (int): The ID of the blog to delete.
+        blog_service (BlogServiceDependency): The blog service dependency.
+        user_id (int): The ID of the user deleting the blog.
+    """
     blog_service.delete_blog_for_user(blog_id=blog_id, user_id=user_id)
 
 
@@ -74,6 +114,18 @@ async def patch_blog(
     user_id: UserIDFromTokenDependency,
     blog_id: int = Path(..., description="The ID of the blog to update", gt=0),
 ) -> BlogModel:
+    """
+    Patch (partially update) a blog post.
+
+    Args:
+        blog (BlogPatchRequest): The request body containing the updated blog details.
+        blog_service (BlogServiceDependency): The blog service dependency.
+        user_id (int): The ID of the user updating the blog.
+        blog_id (int): The ID of the blog to update.
+
+    Returns:
+        BlogModel: The updated blog model.
+    """
     return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
 
 
@@ -85,6 +137,19 @@ async def get_blogs_by_user(
     limit: int = DEFAULT_PAGE_SIZE,
     offset: int = DEFAULT_OFFSET,
 ) -> List[BlogModel]:
+    """
+    Retrieve all blogs by a specific user.
+
+    Args:
+        user_id (int): The ID of the user whose blogs to retrieve.
+        blog_service (BlogServiceDependency): The blog service dependency.
+        token (AccessTokenDependency): The JWT payload containing user information.
+        limit (int): Maximum number of blogs to retrieve.
+        offset (int): Number of blogs to skip.
+
+    Returns:
+        List[BlogModel]: List of blog models by the user.
+    """
     return blog_service.get_blogs_by_user(user_id=user_id, limit=limit, offset=offset)
 
 
@@ -95,6 +160,18 @@ async def get_blogs_by_current_user(
     limit: int = DEFAULT_PAGE_SIZE,
     offset: int = DEFAULT_OFFSET,
 ) -> List[BlogModel]:
+    """
+    Retrieve all blogs by the current user.
+
+    Args:
+        blog_service (BlogServiceDependency): The blog service dependency.
+        user_id (int): The ID of the current user.
+        limit (int): Maximum number of blogs to retrieve.
+        offset (int): Number of blogs to skip.
+
+    Returns:
+        List[BlogModel]: List of blog models by the current user.
+    """
     return blog_service.get_blogs_by_user(user_id=user_id, limit=limit, offset=offset)
 
 
@@ -105,6 +182,18 @@ async def update_blog_content(
     user_id: UserIDFromTokenDependency,
     blog_id: int = Path(..., description="The ID of the blog to update", gt=0),
 ) -> BlogModel:
+    """
+    Update the content of a blog post.
+
+    Args:
+        blog (BlogPatchRequest): The request body containing the updated blog details.
+        blog_service (BlogServiceDependency): The blog service dependency.
+        user_id (int): The ID of the user updating the blog.
+        blog_id (int): The ID of the blog to update.
+
+    Returns:
+        BlogModel: The updated blog model.
+    """
     return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
 
 
@@ -116,4 +205,15 @@ async def get_blog_by_id(
     blog_id: int = Path(
         default=..., description="The ID of the blog to retrieve", ge=1),
 ) -> Optional[BlogModel]:
+    """
+    Retrieve a blog by its ID.
+
+    Args:
+        blog_service (BlogServiceDependency): The blog service dependency.
+        token (AccessTokenDependency): The JWT payload containing user information.
+        blog_id (int): The ID of the blog to retrieve.
+
+    Returns:
+        Optional[BlogModel]: The requested blog model if found, otherwise None.
+    """
     return blog_service.get_blog_by_id(blog_id=blog_id)
