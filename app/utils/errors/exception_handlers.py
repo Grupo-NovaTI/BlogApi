@@ -1,3 +1,10 @@
+"""
+Exception handler decorators for service and repository layers.
+
+This module provides decorators for handling exceptions and managing transactions in service methods.
+It ensures consistent error handling and rollback/commit logic for both write and read operations.
+"""
+
 from functools import wraps
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.utils.enums.operations import Operations
@@ -15,7 +22,7 @@ from app.utils.errors.exceptions import (
 def handle_service_transaction(model: str, operation: Operations):
     """
     Decorator for service methods that perform WRITE operations (Create, Update, Delete).
-    This decorator manages the full transaction lifecycle (commit/rollback) and handles exceptions.
+    Manages the full transaction lifecycle (commit/rollback) and handles exceptions.
 
     Args:
         model (str): The name of the model being operated on.
@@ -54,7 +61,7 @@ def handle_service_transaction(model: str, operation: Operations):
 def handle_read_exceptions(model: str, operation: Operations):
     """
     Decorator for service methods that perform READ operations.
-    This decorator does NOT manage transactions, but catches and wraps unexpected errors during data fetching.
+    Does NOT manage transactions, but catches and wraps unexpected errors during data fetching.
 
     Args:
         model (str): The name of the model being operated on.

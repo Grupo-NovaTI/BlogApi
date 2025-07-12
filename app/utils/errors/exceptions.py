@@ -6,7 +6,7 @@ across the application. Each exception includes a status code, a user-friendly m
 for logging and debugging. These exceptions are intended to be raised in service, repository, or route layers
 and handled by global exception handlers to return appropriate HTTP responses.
 """
-from typing import Optional, Any
+from typing import Optional
 from starlette import status
 import uuid
 from datetime import datetime

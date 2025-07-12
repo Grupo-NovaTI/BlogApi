@@ -1,5 +1,12 @@
-import logging
+"""
+Logger utility for application-wide logging configuration and usage.
 
+This module defines the ApplicationLogger class, which provides a flexible and configurable
+logging utility for Python applications. It supports both console and file logging, log rotation,
+custom formatting, and dynamic log level changes.
+"""
+
+import logging
 from datetime import datetime
 from pathlib import Path
 
@@ -15,48 +22,6 @@ class ApplicationLogger:
     Attributes:
         logger (logging.Logger): The underlying logger instance.
         formatter (logging.Formatter): The formatter used for log messages.
-
-    Methods:
-        __init__(name, logger_level, log_to_console, log_to_file, log_dir):
-            Initializes the logger with specified handlers and formatting.
-        _setup_console_handler(level):
-            Sets up a console (stdout) logging handler.
-        _setup_file_handler(level, log_dir):
-            Sets up a file logging handler with daily log file rotation.
-        add_logger_handler(handler):
-            Adds a custom logging handler to the logger.
-        remove_handler(handler):
-            Removes a specific handler from the logger.
-        clear_handlers():
-            Removes all handlers from the logger.
-        set_formatter(fmt):
-            Sets the formatter for all handlers.
-        set_level(level):
-            Dynamically sets the logging level for the logger and all handlers.
-        log_debug(message):
-            Logs a debug-level message.
-        log_info(message):
-            Logs an info-level message.
-        log_warning(message):
-            Logs a warning-level message.
-        log_error(message):
-            Logs an error-level message.
-        log_critical(message):
-            Logs a critical-level message.
-        debug(message):
-            Alias for log_debug.
-        log_exception(exc):
-            Logs an exception with traceback.
-        get_logger(name, level, log_to_console, log_to_file):
-            Class method to create or retrieve a configured ApplicationLogger instance.
-
-    Usage Example:
-        logger = ApplicationLogger.get_logger("my_app")
-        logger.log_info("Application started.")
-        try:
-            # some code
-        except Exception as e:
-            logger.log_exception(e)
     """
 
     def __init__(
@@ -76,9 +41,6 @@ class ApplicationLogger:
             log_to_console (bool): Whether to log messages to the console. Defaults to True.
             log_to_file (bool): Whether to log messages to a file. Defaults to True.
             log_dir (str): Directory where log files will be stored. Defaults to "logs".
-
-        Returns:
-            None
         """
         self.logger: logging.Logger = logging.getLogger(name)
         self.logger.setLevel(logger_level)
@@ -105,9 +67,6 @@ class ApplicationLogger:
 
         Args:
             level (int): The logging level for the console handler.
-
-        Returns:
-            None
         """
         console_handler = logging.StreamHandler()
         console_handler.setLevel(level)
@@ -121,9 +80,6 @@ class ApplicationLogger:
         Args:
             level (int): The logging level for the file handler.
             log_dir (str): Directory where log files will be stored.
-
-        Returns:
-            None
         """
         # Create logs directory if it doesn't exist
         log_path = Path(log_dir)
@@ -145,9 +101,6 @@ class ApplicationLogger:
 
         Args:
             handler (logging.Handler): The handler to add.
-
-        Returns:
-            None
         """
         if handler not in self.logger.handlers:
             self.logger.addHandler(handler)
@@ -160,9 +113,6 @@ class ApplicationLogger:
 
         Args:
             handler (logging.Handler): The handler to remove.
-
-        Returns:
-            None
         """
         if handler in self.logger.handlers:
             self.logger.removeHandler(handler)
@@ -172,9 +122,6 @@ class ApplicationLogger:
     def clear_handlers(self) -> None:
         """
         Removes all logging handlers from the logger.
-
-        Returns:
-            None
         """
         self.logger.handlers.clear()
 
@@ -184,9 +131,6 @@ class ApplicationLogger:
 
         Args:
             fmt (logging.Formatter): The formatter to set.
-
-        Returns:
-            None
         """
         for handler in self.logger.handlers:
             handler.setFormatter(fmt)
@@ -197,9 +141,6 @@ class ApplicationLogger:
 
         Args:
             level (int): The logging level to set.
-
-        Returns:
-            None
         """
         self.logger.setLevel(level)
         for handler in self.logger.handlers:
@@ -211,9 +152,6 @@ class ApplicationLogger:
 
         Args:
             message (str): The message to log.
-
-        Returns:
-            None
         """
         self.logger.debug(message)
 
@@ -223,9 +161,6 @@ class ApplicationLogger:
 
         Args:
             message (str): The message to log.
-
-        Returns:
-            None
         """
         self.logger.info(message)
 
@@ -235,9 +170,6 @@ class ApplicationLogger:
 
         Args:
             message (str): The message to log.
-
-        Returns:
-            None
         """
         self.logger.warning(message)
 
@@ -247,9 +179,6 @@ class ApplicationLogger:
 
         Args:
             message (str): The message to log.
-
-        Returns:
-            None
         """
         self.logger.error(message)
 
@@ -259,9 +188,6 @@ class ApplicationLogger:
 
         Args:
             message (str): The message to log.
-
-        Returns:
-            None
         """
         self.logger.critical(message)
 
@@ -271,9 +197,6 @@ class ApplicationLogger:
 
         Args:
             message (str): The message to log.
-
-        Returns:
-            None
         """
         self.logger.debug(message)
 
@@ -283,9 +206,6 @@ class ApplicationLogger:
 
         Args:
             exc (Exception): The exception to log.
-
-        Returns:
-            None
         """
         self.logger.exception(f"Exception occurred: {str(exc)}")
 

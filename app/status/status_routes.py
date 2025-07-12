@@ -1,4 +1,9 @@
-from fastapi import APIRouter, Depends
+"""
+This module defines the status routes for the FastAPI application.
+
+It includes endpoints for the home page, application information, and health checks.
+"""
+from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
 import app.core.config.application_config as config
 from app.utils.logger.application_logger import ApplicationLogger
@@ -13,6 +18,12 @@ app = APIRouter(
 
 @app.get(path="/", description="Root endpoint", tags=["status"], include_in_schema=False)
 async def home() -> HTMLResponse:
+    """
+    Serves the home page of the application.
+
+    Returns:
+        HTMLResponse: The HTML content for the home page.
+    """
     return HTMLResponse(content=f"""
 <!DOCTYPE html>
 <html>
@@ -62,8 +73,16 @@ async def home() -> HTMLResponse:
 </body>
 </html>
 """)
+
+
 @app.get(path="/info", description="Get application information", tags=["status"])
-async def get_info():
+async def get_info() -> dict:
+    """
+    Retrieves application information.
+
+    Returns:
+        dict: A dictionary containing the application name, version, and debug status.
+    """
     return {
         "name": config.APP_NAME,
         "version": config.APP_VERSION,
@@ -72,10 +91,15 @@ async def get_info():
 
 
 @app.get(path="/health", description="Health check endpoint", tags=["status"])
-async def health_check():
-    """Health check endpoint to verify the service is running.
+async def health_check() -> dict:
+    """
+    Performs a health check of the service.
+
+    This endpoint can be used to verify that the service is running and accessible.
+    It can be extended to check dependencies like database connections.
+
     Returns:
-        dict: A dictionary with the status of the service.
+        dict: A dictionary with the health status of the service.
     """
     try:
         # Here you can add any health check logic, like checking database connection
