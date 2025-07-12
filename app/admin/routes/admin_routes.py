@@ -8,5 +8,5 @@ admin_router = APIRouter(
 
 @admin_router.get("/admin-only", summary="Admin Only Endpoint", tags=["admin"])
 @admin_only()
-async def admin_only_endpoint(jwt_payload: AccessTokenDependency):
-    return {"message": "This is an admin-only endpoint", "user_id": jwt_payload.get("user_id")}
+async def admin_only_endpoint(token: AccessTokenDependency):
+    return {"message": "This is an admin-only endpoint", "user_id": token.get("user_id")}

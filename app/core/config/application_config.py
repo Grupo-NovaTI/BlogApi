@@ -1,3 +1,10 @@
+"""
+Application configuration settings.
+
+This module loads environment variables and provides application-wide configuration constants
+for versioning, debug mode, host/port, database, Redis, and JWT authentication.
+"""
+
 import os
 
 from dotenv import load_dotenv

@@ -1,9 +1,16 @@
+"""
+Database setup and session management utilities.
+
+This module configures the SQLAlchemy engine, session, and base class for ORM models.
+It provides dependency-injectable session management and database initialization utilities.
+"""
+
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
-from app.core.config import DATABASE_URL
 
+from app.core.config import DATABASE_URL
 from app.utils.logger.application_logger import ApplicationLogger
 
 _logger: ApplicationLogger = ApplicationLogger(name=__name__, log_to_console=False)

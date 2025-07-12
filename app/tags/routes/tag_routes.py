@@ -59,7 +59,7 @@ async def get_tags(
     status_code=status.HTTP_200_OK
 )
 async def get_tag_by_id(
-    jwt_payload: AccessTokenDependency,
+    token: AccessTokenDependency,
     tag_service: TagServiceDependency,
     tag_id: int = Path(..., description="The unique identifier of the tag to retrieve")
 ):
@@ -67,7 +67,7 @@ async def get_tag_by_id(
     Retrieve a tag by its ID.
 
     Args:
-        jwt_payload (AccessTokenDependency): The JWT payload dependency.
+        token (AccessTokenDependency): The JWT payload dependency.
         tag_service (TagServiceDependency): The tag service dependency.
         tag_id (int): The unique identifier of the tag to retrieve.
 
@@ -90,7 +90,7 @@ async def get_tag_by_id(
 @admin_only()
 async def create_tag(
     tag: TagRequest,
-    jwt_payload: AccessTokenDependency,
+    token: AccessTokenDependency,
     tag_service: TagServiceDependency
 ):
     """
@@ -98,7 +98,7 @@ async def create_tag(
 
     Args:
         tag (TagRequest): The data for the new tag.
-        jwt_payload (AccessTokenDependency): The JWT payload dependency.
+        token (AccessTokenDependency): The JWT payload dependency.
         tag_service (TagServiceDependency): The tag service dependency.
 
     Returns:
@@ -120,7 +120,7 @@ async def create_tag(
 @admin_only()
 async def update_tag(
     tag: TagRequest,
-    jwt_payload: AccessTokenDependency,
+    token: AccessTokenDependency,
     tag_service: TagServiceDependency,
     tag_id: int = Path(..., description="The unique identifier of the tag to update")
 ):
@@ -129,7 +129,7 @@ async def update_tag(
 
     Args:
         tag (TagRequest): The updated data for the tag.
-        jwt_payload (AccessTokenDependency): The JWT payload dependency.
+        token (AccessTokenDependency): The JWT payload dependency.
         tag_service (TagServiceDependency): The tag service dependency.
         tag_id (int): The unique identifier of the tag to update.
 
@@ -150,7 +150,7 @@ async def update_tag(
 )
 @admin_only()
 async def delete_tag(
-    jwt_payload: AccessTokenDependency,
+    token: AccessTokenDependency,
     tag_service: TagServiceDependency,
     tag_id: int = Path(..., description="The unique identifier of the tag to delete")
 ):
@@ -158,7 +158,7 @@ async def delete_tag(
     Delete a tag by its ID.
 
     Args:
-        jwt_payload (AccessTokenDependency): The JWT payload dependency.
+        token (AccessTokenDependency): The JWT payload dependency.
         tag_service (TagServiceDependency): The tag service dependency.
         tag_id (int): The unique identifier of the tag to delete.
 

@@ -25,7 +25,7 @@ blog_router = APIRouter(
 async def get_all_blogs(
     request: Request,
     blog_service: BlogServiceDependency,
-    jwt_payload: AccessTokenDependency,
+    token: AccessTokenDependency,
     limit: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=100),
     offset: int = Query(default=DEFAULT_OFFSET, ge=0),
 ) -> List[BlogModel]:
@@ -81,7 +81,7 @@ async def patch_blog(
 async def get_blogs_by_user(
     user_id: int,
     blog_service: BlogServiceDependency,
-    jwt_payload: AccessTokenDependency,
+    token: AccessTokenDependency,
     limit: int = DEFAULT_PAGE_SIZE,
     offset: int = DEFAULT_OFFSET,
 ) -> List[BlogModel]:
@@ -112,7 +112,7 @@ async def update_blog_content(
 @cache(expire=60)  # Cache for 60 seconds
 async def get_blog_by_id(
     blog_service: BlogServiceDependency,
-    jwt_payload: AccessTokenDependency,
+    token: AccessTokenDependency,
     blog_id: int = Path(
         default=..., description="The ID of the blog to retrieve", ge=1),
 ) -> Optional[BlogModel]:

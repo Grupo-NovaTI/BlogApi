@@ -42,7 +42,7 @@ async def create_comment(
     tags=["comments"],
 )
 async def get_comments_by_blog_id(
-    jwt_payload: AccessTokenDependency,
+    token: AccessTokenDependency,
     comment_service: CommentServiceDependency,
     blog_id: int = Path(..., description="The ID of the blog to retrieve comments for", ge=1, le=1000000)
 ):
@@ -51,7 +51,7 @@ async def get_comments_by_blog_id(
 
     Args:
         blog_id (int): The ID of the blog to retrieve comments for.
-        jwt_payload (dict): The JWT payload containing user information.
+        token (dict): The JWT payload containing user information.
         comment_service (CommentServiceDependency): The service dependency for managing comments.
 
     Returns:
@@ -73,7 +73,7 @@ async def get_comments_by_user(
     Retrieve all comments made by the current user.
 
     Args:
-        jwt_payload (dict): The JWT payload containing user information.
+        token (dict): The JWT payload containing user information.
         comment_service (CommentServiceDependency): The service dependency for managing comments.
 
     Returns:
@@ -88,7 +88,7 @@ async def get_comments_by_user(
     tags=["comments"],
 )
 async def get_comment_by_id(
-    jwt_payload: AccessTokenDependency,
+    token: AccessTokenDependency,
     comment_service: CommentServiceDependency,
     comment_id: int = Path(..., description="The ID of the comment to retrieve", ge=1, le=1000000)
 ):
@@ -97,7 +97,7 @@ async def get_comment_by_id(
 
     Args:
         comment_id (int): The ID of the comment to retrieve.
-        jwt_payload (dict): The JWT payload containing user information.
+        token (dict): The JWT payload containing user information.
         comment_service (CommentServiceDependency): The service dependency for managing comments.
 
     Returns:
@@ -154,7 +154,7 @@ async def delete_comment(
 
     Args:
         comment_id (int): The ID of the comment to delete.
-        jwt_payload (dict): The JWT payload containing user information.
+        token (dict): The JWT payload containing user information.
         comment_service (CommentServiceDependency): The service dependency for managing comments.
 
     Returns:

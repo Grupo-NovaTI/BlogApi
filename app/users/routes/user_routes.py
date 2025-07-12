@@ -40,14 +40,14 @@ async def get_current_user(user_service: UserServiceDependency, current_user_id 
 
 @user_router.get(path="/{user_id}", response_model=Optional[UserResponse], summary="Get user by ID", tags=["users"])
 @role_required(required_role=[UserRole.ADMIN, UserRole.USER])
-async def get_user_by_id(user_service: UserServiceDependency, jwt_payload: AccessTokenDependency, user_id: int = Path(
+async def get_user_by_id(user_service: UserServiceDependency, token: AccessTokenDependency, user_id: int = Path(
         ..., description="The unique identifier of the user to retrieve", ge=1, le=1000000)):
     """
     Retrieve a user by their unique ID.
 
     Args:
         user_service (UserServiceDependency): The user service dependency.
-        jwt_payload (AccessTokenDependency): The JWT payload dependency.
+        token (AccessTokenDependency): The JWT payload dependency.
         user_id (int): The unique identifier of the user to retrieve.
 
     Returns:
