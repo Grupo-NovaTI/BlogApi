@@ -4,11 +4,12 @@ Authentication API routes for user login and registration.
 This module defines FastAPI routes for user authentication, including login and registration endpoints.
 """
 
-from starlette import status
 from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
-from app.core.dependencies import AuthServiceDependency as AuthService
+from starlette import status
+
 from app.auth.schemas.token_response import TokenResponse
+from app.core.dependencies import AuthServiceDependency as AuthService
 from app.users.schemas.user_request import UserRequest
 
 auth_router = APIRouter(

@@ -5,6 +5,7 @@ This module defines FastAPI routes that are accessible only to admin users.
 """
 
 from fastapi import APIRouter
+
 from app.core.dependencies import AccessTokenDependency
 from app.core.security.authentication_decorators import admin_only
 

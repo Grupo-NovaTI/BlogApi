@@ -6,14 +6,20 @@ This module defines the AuthService class, which provides business logic for use
 """
 
 from typing import Optional
+
 from sqlalchemy.orm import Session
-from app.users.models.user_model import UserModel
+
 from app.core.security.jwt_handler import JwtHandler
-from app.users.repositories.user_repository import UserRepository
-from app.utils.errors.exceptions import ConflictException as UserAlreadyExistsException, UnauthorizedException
 from app.core.security.password_hasher import PasswordHasher
-from app.utils.errors.exception_handlers import handle_service_transaction, handle_read_exceptions
+from app.users.models.user_model import UserModel
+from app.users.repositories.user_repository import UserRepository
 from app.utils.enums.operations import Operations
+from app.utils.errors.exception_handlers import (handle_read_exceptions,
+                                                 handle_service_transaction)
+from app.utils.errors.exceptions import \
+    ConflictException as UserAlreadyExistsException
+from app.utils.errors.exceptions import UnauthorizedException
+
 
 class AuthService:
     """

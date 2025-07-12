@@ -4,7 +4,7 @@ Association table for many-to-many relationship between blogs and tags.
 This module defines the SQLAlchemy Table object for linking blogs and tags.
 """
 
-from sqlalchemy import Column, Integer, ForeignKey, Table
+from sqlalchemy import Column, ForeignKey, Integer, Table
 
 from app.core.db.database import Base
 
