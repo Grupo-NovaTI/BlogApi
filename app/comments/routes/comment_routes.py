@@ -1,3 +1,10 @@
+"""
+Comment API routes for comment management endpoints.
+
+This module defines FastAPI routes for creating, retrieving, updating, and deleting comments.
+It uses dependency injection for service and authentication.
+"""
+
 from typing import Optional
 from starlette import status
 from fastapi import APIRouter, Path
@@ -73,7 +80,7 @@ async def get_comments_by_user(
     Retrieve all comments made by the current user.
 
     Args:
-        token (dict): The JWT payload containing user information.
+        user_id (int): The ID of the current user.
         comment_service (CommentServiceDependency): The service dependency for managing comments.
 
     Returns:
@@ -104,7 +111,6 @@ async def get_comment_by_id(
         CommentResponse: The requested comment.
     """
     return comment_service.get_comment_by_id(comment_id=comment_id)
-  
 
 @comment_router.patch(
     path="/{comment_id}",
@@ -130,14 +136,12 @@ async def update_comment(
     Returns:
         CommentResponse: The updated comment.
     """
-
     return comment_service.update_comment(
         comment_id=comment_id,
         content=comment_request.content,
         user_id=user_id
     )
-    
-    
+
 @comment_router.delete(
     path="/{comment_id}",
     summary="Delete a comment",
@@ -154,7 +158,7 @@ async def delete_comment(
 
     Args:
         comment_id (int): The ID of the comment to delete.
-        token (dict): The JWT payload containing user information.
+        user_id (int): The ID of the user making the request.
         comment_service (CommentServiceDependency): The service dependency for managing comments.
 
     Returns:
