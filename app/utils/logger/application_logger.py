@@ -1,9 +1,64 @@
 import logging
-import os
+
 from datetime import datetime
 from pathlib import Path
 
+
 class ApplicationLogger:
+    """
+    ApplicationLogger provides a flexible and configurable logging utility for Python applications.
+
+    This class wraps Python's built-in logging module, allowing for easy setup of console and file logging,
+    custom formatting, dynamic log level changes, and handler management. It supports log rotation by date,
+    custom handler addition/removal, and exception logging with traceback.
+
+    Attributes:
+        logger (logging.Logger): The underlying logger instance.
+        formatter (logging.Formatter): The formatter used for log messages.
+
+    Methods:
+        __init__(name, logger_level, log_to_console, log_to_file, log_dir):
+            Initializes the logger with specified handlers and formatting.
+        _setup_console_handler(level):
+            Sets up a console (stdout) logging handler.
+        _setup_file_handler(level, log_dir):
+            Sets up a file logging handler with daily log file rotation.
+        add_logger_handler(handler):
+            Adds a custom logging handler to the logger.
+        remove_handler(handler):
+            Removes a specific handler from the logger.
+        clear_handlers():
+            Removes all handlers from the logger.
+        set_formatter(fmt):
+            Sets the formatter for all handlers.
+        set_level(level):
+            Dynamically sets the logging level for the logger and all handlers.
+        log_debug(message):
+            Logs a debug-level message.
+        log_info(message):
+            Logs an info-level message.
+        log_warning(message):
+            Logs a warning-level message.
+        log_error(message):
+            Logs an error-level message.
+        log_critical(message):
+            Logs a critical-level message.
+        debug(message):
+            Alias for log_debug.
+        log_exception(exc):
+            Logs an exception with traceback.
+        get_logger(name, level, log_to_console, log_to_file):
+            Class method to create or retrieve a configured ApplicationLogger instance.
+
+    Usage Example:
+        logger = ApplicationLogger.get_logger("my_app")
+        logger.log_info("Application started.")
+        try:
+            # some code
+        except Exception as e:
+            logger.log_exception(e)
+    """
+
     def __init__(
         self,
         name: str = "ApplicationLogger",
@@ -13,18 +68,21 @@ class ApplicationLogger:
         log_dir: str = "logs"
     ) -> None:
         """
-        Initialize the logger with both console and file handlers.
-        
+        Initializes the ApplicationLogger instance.
+
         Args:
-            name (str): The name of the logger
-            logger_level (int): Logging level (default is logging.DEBUG)
-            log_to_console (bool): Whether to log to console (default True)
-            log_to_file (bool): Whether to log to file (default True)
-            log_dir (str): Directory to store log files (default "logs")
+            name (str): The name of the logger. Defaults to "ApplicationLogger".
+            logger_level (int): The logging level (e.g., logging.DEBUG, logging.INFO). Defaults to logging.DEBUG.
+            log_to_console (bool): Whether to log messages to the console. Defaults to True.
+            log_to_file (bool): Whether to log messages to a file. Defaults to True.
+            log_dir (str): Directory where log files will be stored. Defaults to "logs".
+
+        Returns:
+            None
         """
         self.logger: logging.Logger = logging.getLogger(name)
         self.logger.setLevel(logger_level)
-        
+
         # Create formatter
         self.formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -36,20 +94,37 @@ class ApplicationLogger:
             # Console handler
             if log_to_console:
                 self._setup_console_handler(logger_level)
-            
+
             # File handler
             if log_to_file:
                 self._setup_file_handler(logger_level, log_dir)
 
     def _setup_console_handler(self, level: int) -> None:
-        """Setup console handler with formatting"""
+        """
+        Sets up a console (stdout) logging handler.
+
+        Args:
+            level (int): The logging level for the console handler.
+
+        Returns:
+            None
+        """
         console_handler = logging.StreamHandler()
         console_handler.setLevel(level)
         console_handler.setFormatter(self.formatter)
         self.logger.addHandler(console_handler)
 
     def _setup_file_handler(self, level: int, log_dir: str) -> None:
-        """Setup file handler with formatting and rotation"""
+        """
+        Sets up a file logging handler with daily log file rotation.
+
+        Args:
+            level (int): The logging level for the file handler.
+            log_dir (str): Directory where log files will be stored.
+
+        Returns:
+            None
+        """
         # Create logs directory if it doesn't exist
         log_path = Path(log_dir)
         log_path.mkdir(exist_ok=True)
@@ -65,64 +140,152 @@ class ApplicationLogger:
         self.logger.addHandler(file_handler)
 
     def add_logger_handler(self, handler: logging.Handler) -> None:
-        """Add a custom logging handler."""
+        """
+        Adds a custom logging handler to the logger.
+
+        Args:
+            handler (logging.Handler): The handler to add.
+
+        Returns:
+            None
+        """
         if handler not in self.logger.handlers:
             self.logger.addHandler(handler)
         else:
             self.logger.warning("Handler is already added to the logger.")
 
     def remove_handler(self, handler: logging.Handler) -> None:
-        """Remove a specific logging handler."""
+        """
+        Removes a specific logging handler from the logger.
+
+        Args:
+            handler (logging.Handler): The handler to remove.
+
+        Returns:
+            None
+        """
         if handler in self.logger.handlers:
             self.logger.removeHandler(handler)
         else:
             self.logger.warning("Handler not found in logger handlers.")
 
     def clear_handlers(self) -> None:
-        """Remove all logging handlers."""
+        """
+        Removes all logging handlers from the logger.
+
+        Returns:
+            None
+        """
         self.logger.handlers.clear()
 
     def set_formatter(self, fmt: logging.Formatter) -> None:
-        """Set a formatter for all handlers."""
+        """
+        Sets the formatter for all handlers.
+
+        Args:
+            fmt (logging.Formatter): The formatter to set.
+
+        Returns:
+            None
+        """
         for handler in self.logger.handlers:
             handler.setFormatter(fmt)
 
     def set_level(self, level: int) -> None:
-        """Set the logging level dynamically."""
+        """
+        Dynamically sets the logging level for the logger and all handlers.
+
+        Args:
+            level (int): The logging level to set.
+
+        Returns:
+            None
+        """
         self.logger.setLevel(level)
         for handler in self.logger.handlers:
             handler.setLevel(level)
 
     def log_debug(self, message: str) -> None:
-        """Log a debug message."""
+        """
+        Logs a debug-level message.
+
+        Args:
+            message (str): The message to log.
+
+        Returns:
+            None
+        """
         self.logger.debug(message)
 
     def log_info(self, message: str) -> None:
-        """Log an info message."""
+        """
+        Logs an info-level message.
+
+        Args:
+            message (str): The message to log.
+
+        Returns:
+            None
+        """
         self.logger.info(message)
 
     def log_warning(self, message: str) -> None:
-        """Log a warning message."""
+        """
+        Logs a warning-level message.
+
+        Args:
+            message (str): The message to log.
+
+        Returns:
+            None
+        """
         self.logger.warning(message)
 
     def log_error(self, message: str) -> None:
-        """Log an error message."""
+        """
+        Logs an error-level message.
+
+        Args:
+            message (str): The message to log.
+
+        Returns:
+            None
+        """
         self.logger.error(message)
 
     def log_critical(self, message: str) -> None:
-        """Log a critical message."""
+        """
+        Logs a critical-level message.
+
+        Args:
+            message (str): The message to log.
+
+        Returns:
+            None
+        """
         self.logger.critical(message)
 
     def debug(self, message: str) -> None:
-        """Alias for debug logging."""
+        """
+        Alias for logging a debug-level message.
+
+        Args:
+            message (str): The message to log.
+
+        Returns:
+            None
+        """
         self.logger.debug(message)
-    
+
     def log_exception(self, exc: Exception) -> None:
         """
-        Log an exception with traceback.
-        
+        Logs an exception with traceback.
+
         Args:
-            exc (Exception): The exception to log
+            exc (Exception): The exception to log.
+
+        Returns:
+            None
         """
         self.logger.exception(f"Exception occurred: {str(exc)}")
 
@@ -136,15 +299,15 @@ class ApplicationLogger:
     ) -> 'ApplicationLogger':
         """
         Factory method to create or get an existing logger.
-        
+
         Args:
-            name (str): Logger name
-            level (int): Logging level
-            log_to_console (bool): Whether to log to console
-            log_to_file (bool): Whether to log to file
-        
+            name (str): The name of the logger.
+            level (int): The logging level.
+            log_to_console (bool): Whether to log to the console.
+            log_to_file (bool): Whether to log to a file.
+
         Returns:
-            ApplicationLogger: Configured logger instance
+            ApplicationLogger: A configured logger instance.
         """
         return cls(
             name=name,

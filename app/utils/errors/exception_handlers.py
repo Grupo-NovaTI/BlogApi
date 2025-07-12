@@ -1,5 +1,3 @@
-
-
 from functools import wraps
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from app.utils.enums.operations import Operations
@@ -11,17 +9,20 @@ from app.utils.errors.exceptions import (
     ForbiddenException,
     UnknownException,
     UnauthorizedException,
-    
 )
-# Asumiendo que tienes un logger configurado
-# import logging
-# logger = logging.getLogger(__name__)
 
-# --- DECORADOR PARA OPERACIONES DE ESCRITURA ---
+
 def handle_service_transaction(model: str, operation: Operations):
     """
-    Decorator for WRITE operations (CUD). Manages the full transaction lifecycle
-    (commit/rollback) and handles exceptions.
+    Decorator for service methods that perform WRITE operations (Create, Update, Delete).
+    This decorator manages the full transaction lifecycle (commit/rollback) and handles exceptions.
+
+    Args:
+        model (str): The name of the model being operated on.
+        operation (Operations): The type of operation being performed.
+
+    Returns:
+        Callable: The decorated function with transaction and error handling.
     """
     def decorator(func):
         @wraps(func)
@@ -35,7 +36,6 @@ def handle_service_transaction(model: str, operation: Operations):
                 raise e
             except IntegrityError as e:
                 self._db_session.rollback()
-                # logger.error(f"Integrity Error on {model} {operation}: {e.orig}")
                 raise IntegrityConstraintException(
                     model=model,
                     operation=operation,
@@ -43,35 +43,36 @@ def handle_service_transaction(model: str, operation: Operations):
                 )
             except SQLAlchemyError as e:
                 self._db_session.rollback()
-                # logger.error(f"Database Error on {model} {operation}: {e}")
                 raise DatabaseException(model=model, operation=operation, original_exception=e)
             except Exception as e:
                 self._db_session.rollback()
-                # logger.error(f"Unknown Error on {model} {operation}: {e}", exc_info=True)
                 raise UnknownException(model=model, operation=operation, details=str(e))
         return wrapper
     return decorator
 
-# --- DECORADOR PARA OPERACIONES DE LECTURA ---
+
 def handle_read_exceptions(model: str, operation: Operations):
     """
-    Decorator for READ operations. Does NOT manage transactions.
-    It catches unexpected errors during data fetching.
+    Decorator for service methods that perform READ operations.
+    This decorator does NOT manage transactions, but catches and wraps unexpected errors during data fetching.
+
+    Args:
+        model (str): The name of the model being operated on.
+        operation (Operations): The type of operation being performed.
+
+    Returns:
+        Callable: The decorated function with error handling for read operations.
     """
     def decorator(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             try:
                 return func(self, *args, **kwargs)
-            # No se necesita rollback, no hay cambios pendientes
             except SQLAlchemyError as e:
-                # logger.error(f"Database Read Error on {model} {operation}: {e}")
                 raise DatabaseException(model=model, operation=operation, original_exception=e)
             except (UnauthorizedException, ForbiddenException) as e:
                 raise e
             except Exception as e:
-                # logger.error(f"Unknown Read Error on {model} {operation}: {e}", exc_info=True)
                 raise UnknownException(model=model, operation=operation, details=str(e))
-            
         return wrapper
     return decorator

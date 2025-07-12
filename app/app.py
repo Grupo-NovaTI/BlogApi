@@ -33,7 +33,23 @@ _logger: ApplicationLogger = ApplicationLogger(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Lifespan event handler to initialize Redis and FastAPI Cache."""
+    """
+    Lifespan event handler for FastAPI application.
+
+    This asynchronous generator function manages the application's startup and shutdown events.
+    On startup, it logs the application state, initializes the database, and attempts to establish
+    a Redis cache connection. If the Redis connection fails, it logs an error and raises a RuntimeError.
+    On shutdown, it clears the Redis cache and logs the shutdown event.
+
+    Args:
+        app (FastAPI): The FastAPI application instance.
+
+    Yields:
+        None
+
+    Raises:
+        RuntimeError: If the Redis cache connection cannot be established.
+    """
 
     _logger.log_info(
         message=f"Starting application: {app.title} v{app.version} in {'debug' if app.debug else 'production'} mode.")
@@ -68,14 +84,32 @@ app.state.limiter = rate_limiter  # Set the rate limiter from the config
 # Handle rate limit exceeded exceptions
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
-    """Custom handler for rate limit exceeded exceptions."""
+    """
+    This asynchronous handler is triggered when a client exceeds the allowed number of requests
+    within a specified time window. It returns a JSON response with a 429 status code, a user-friendly
+    error message, a unique error identifier, and a timestamp indicating when the error occurred.
+
+        request (Request): The incoming HTTP request that triggered the rate limit.
+        exc (RateLimitExceeded): The exception instance indicating the rate limit was exceeded.
+
+        JSONResponse: A response object with HTTP 429 status and error details in JSON format.
+    """
     return _rate_limit_exceeded_handler(request, exc)
 
 
 # Handle BaseApplicationException
 @app.exception_handler(BaseAPIException)
 async def base_application_exception_handler(request: Request, exc: BaseAPIException) -> JSONResponse:
-    """Custom handler for BaseApplicationException."""
+    """
+    Handles exceptions of type BaseAPIException by logging the error details and returning a JSON response.
+
+    Args:
+        request (Request): The incoming HTTP request that triggered the exception.
+        exc (BaseAPIException): The exception instance containing error details.
+
+    Returns:
+        JSONResponse: A response with the error ID, timestamp, and message, along with the appropriate HTTP status code.
+    """
     _logger.log_error(
         message=f"[{exc.exception_id}] At [{exc.timestamp}]: {exc.details}")
     # Log the error with the logger
@@ -92,7 +126,16 @@ async def base_application_exception_handler(request: Request, exc: BaseAPIExcep
 # Handle ResponseValidationError
 @app.exception_handler(ResponseValidationError)
 async def response_validation_error_handler(request: Request, exc: ResponseValidationError) -> JSONResponse:
-    """Custom handler for ResponseValidationError."""
+    """
+    Handles response validation errors by logging the error details and returning a standardized JSON response.
+
+    Args:
+        request (Request): The incoming HTTP request that triggered the error.
+        exc (ResponseValidationError): The exception instance containing validation error details.
+
+    Returns:
+        JSONResponse: A JSON response with HTTP 500 status, an error message, a unique error ID, and a timestamp.
+    """
     exception_id = str(uuid4())
     _logger.log_error(
         message=f"[{exception_id}]: Response validation error: {exc.errors()}")
@@ -105,7 +148,21 @@ async def response_validation_error_handler(request: Request, exc: ResponseValid
 
 @app.exception_handler(RequestValidationError)  # Handle RequestValidationError
 async def request_validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
-    """Custom handler for RequestValidationError."""
+    """
+    Handles FastAPI RequestValidationError exceptions by logging the error with a unique ID and returning a structured JSON response.
+
+    Args:
+        request (Request): The incoming HTTP request that caused the validation error.
+        exc (RequestValidationError): The exception instance containing validation error details.
+
+    Returns:
+        JSONResponse: A response with HTTP 422 status code, including an error message, error ID, and timestamp.
+
+    The response content includes:
+        - message: A description of the validation error and the field involved.
+        - error_id: A unique identifier for the error instance.
+        - timestamp: The time the error was handled.
+    """
     exception_id = str(uuid4())
     _logger.log_error(
         message=f"[{exception_id}]: Request validation error: {exc.errors()}")
@@ -122,6 +179,21 @@ async def request_validation_error_handler(request: Request, exc: RequestValidat
 
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """
+    Handles unexpected exceptions raised during request processing.
+
+    This asynchronous exception handler logs the error with a unique identifier and returns a standardized JSON response containing:
+        - A generic error message
+        - A unique error ID for tracking
+        - The timestamp of the error occurrence
+
+    Args:
+        request (Request): The incoming HTTP request that caused the exception.
+        exc (Exception): The exception instance that was raised.
+
+    Returns:
+        JSONResponse: A response with HTTP 500 status code and error details in JSON format.
+    """
     """Custom handler for generic exceptions."""
     exception_id = str(uuid4())
     _logger.log_error(message=f"[{exception_id}]: Unexpected error: {exc}")

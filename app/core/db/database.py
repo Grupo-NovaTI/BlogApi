@@ -16,11 +16,14 @@ Base = declarative_base()
 
 def get_db():
     """
-    Dependency that provides a database session.
-    This function should be used in FastAPI routes to get a database session.
-    
+    Yields a SQLAlchemy database session and ensures it is closed after use.
+
+    This generator function provides a database session for use in dependency injection,
+    such as with FastAPI endpoints. The session is automatically closed after the request
+    is completed, ensuring proper resource management.
+
     Yields:
-        Session: A database session that can be used to interact with the database.
+        Session: An active SQLAlchemy database session.
     """
     db: Session = _SessionLocal()
     try:
@@ -31,8 +34,9 @@ def get_db():
 
 def init_db() -> None:
     """
-    Initialize the database by creating all tables.
-    This function should be called at the start of the application.
+    Initializes the database by creating all tables defined in the SQLAlchemy Base metadata.
+
+    Logs the start and completion of the database initialization process.
     """
     _logger.log_info("Initializing the database...")
     Base.metadata.create_all(bind=_engine)
