@@ -1,3 +1,11 @@
+"""
+User routes for the FastAPI application.
+
+This module defines the API endpoints for user-related operations, including retrieving the current user,
+fetching users by ID, listing all users, deleting the current user, and activating or deactivating user accounts.
+It uses dependency injection for service and authentication logic.
+"""
+
 from typing import List, Optional
 from starlette import status
 
@@ -18,17 +26,14 @@ user_router = APIRouter(
 @user_router.get(path="/me", response_model=UserResponse, summary="Get current user", tags=["users"])
 async def get_current_user(user_service: UserServiceDependency, current_user_id : UserIDFromTokenDependency):
     """
-    Endpoint to retrieve the current authenticated user.
+    Retrieve the current authenticated user's information.
 
     Args:
-        service (UserServicesDependency): The user services dependency.
-        jwt_payload (JwtAccessTokenDependency): The JWT payload dependency.
+        user_service (UserServiceDependency): The user service dependency.
+        current_user_id (UserIDFromTokenDependency): The ID of the current user from the token.
 
     Returns:
         UserResponse: The current user's data.
-
-    Raises:
-        HTTPException: If the user is not found or if there is an error during retrieval.
     """
     return user_service.get_user_by_id(user_id=current_user_id )
 
@@ -38,18 +43,15 @@ async def get_current_user(user_service: UserServiceDependency, current_user_id 
 async def get_user_by_id(user_service: UserServiceDependency, jwt_payload: AccessTokenDependency, user_id: int = Path(
         ..., description="The unique identifier of the user to retrieve", ge=1, le=1000000)):
     """
-    Endpoint to retrieve a user by their ID.
+    Retrieve a user by their unique ID.
 
     Args:
+        user_service (UserServiceDependency): The user service dependency.
+        jwt_payload (AccessTokenDependency): The JWT payload dependency.
         user_id (int): The unique identifier of the user to retrieve.
-        service (UserServicesDependency): The user services dependency.
-        jwt_payload (JwtAccessTokenDependency): The JWT payload dependency.
 
     Returns:
-        UserResponse: The user data if found.
-
-    Raises:
-        HTTPException: If the user is not found or if there is an error during retrieval.
+        UserResponse: The user data if found, otherwise None.
     """
     return user_service.get_user_by_id(user_id=user_id)
 
@@ -57,10 +59,15 @@ async def get_user_by_id(user_service: UserServiceDependency, jwt_payload: Acces
 @user_router.get(path="", response_model=List[UserResponse], summary="Get all users", tags=["users"])
 async def get_users(user_service: UserServiceDependency, limit: int = Query(DEFAULT_PAGE_SIZE, ge=1), offset: int = Query(DEFAULT_OFFSET, ge=0)):
     """
-    Endpoint to retrieve a list of users.
+    Retrieve a list of users with pagination.
+
+    Args:
+        user_service (UserServiceDependency): The user service dependency.
+        limit (int): The maximum number of users to return.
+        offset (int): The number of users to skip before starting to return results.
 
     Returns:
-        List of users.
+        List[UserResponse]: A list of user data.
     """
     return user_service.get_all_users()
 
@@ -68,45 +75,41 @@ async def get_users(user_service: UserServiceDependency, limit: int = Query(DEFA
 @user_router.delete(path="/me", summary="Delete user by ID", tags=["users"], status_code=status.HTTP_204_NO_CONTENT)
 async def delete_current_user(user_service: UserServiceDependency, current_user_id: UserIDFromTokenDependency):
     """
-    Endpoint to delete a user by their ID.
+    Delete the current authenticated user.
 
     Args:
-        user_id (int): The unique identifier of the user to delete.
-        service (UserServicesDependency): The user services dependency.
+        user_service (UserServiceDependency): The user service dependency.
+        current_user_id (UserIDFromTokenDependency): The ID of the current user from the token.
 
     Returns:
         None
-
-    Raises:
-        HTTPException: If the user is not found or if there is an error during deletion.
     """
     user_service.delete_user_by_id(user_id=current_user_id )
 
 
 @user_router.patch(path="/reactivate", summary="Reactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
-async def reactivate_user_account(service: UserServiceDependency, current_user_id : UserIDFromTokenDependency):
+async def reactivate_user_account(user_service: UserServiceDependency, current_user_id : UserIDFromTokenDependency):
     """
-    Endpoint to activate a user account.
+    Reactivate the current user's account.
 
     Args:
-        user_id (int): The unique identifier of the user to activate.
-        service (UserServicesDependency): The user services dependency.
+        user_service (UserServiceDependency): The user service dependency.
+        current_user_id (UserIDFromTokenDependency): The ID of the current user from the token.
 
     Returns:
-        UserResponse: The activated user.
+        UserResponse: The reactivated user.
     """
-
-    return service.update_user_active_status(user_id=current_user_id , is_active=True)
+    return user_service.update_user_active_status(user_id=current_user_id , is_active=True)
 
 
 @user_router.patch("/deactivate", summary="Deactivate user account", tags=["users"], status_code=status.HTTP_200_OK)
 async def set_user_inactive(user_service: UserServiceDependency, current_user_id : UserIDFromTokenDependency):
     """
-    Endpoint to deactivate a user account.
+    Deactivate the current user's account.
 
     Args:
-        user_id (int): The unique identifier of the user to deactivate.
-        service (UserServicesDependency): The user services dependency.
+        user_service (UserServiceDependency): The user service dependency.
+        current_user_id (UserIDFromTokenDependency): The ID of the current user from the token.
 
     Returns:
         UserResponse: The deactivated user.

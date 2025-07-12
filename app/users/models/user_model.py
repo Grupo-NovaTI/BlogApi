@@ -1,15 +1,26 @@
+"""
+User model definition for the application's database.
+
+This module defines the UserModel class, which represents a user entity in the system.
+It includes fields for authentication, personal information, role, and relationships to blogs and comments.
+"""
+
 from datetime import datetime, timezone
 
-from datetime import datetime
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
-from sqlalchemy.orm import relationship, Mapped
-from typing import List
+
 from app.core.db.database import Base
 
 
-
 class UserModel(Base):
+    """
+    SQLAlchemy ORM model for the 'users' table.
+
+    Represents a user in the system, including authentication details, personal information,
+    role, timestamps, and relationships to blogs and comments.
+    """
     __tablename__: str = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -29,7 +40,19 @@ class UserModel(Base):
 
 
     def __repr__(self):
+        """
+        Return a string representation of the UserModel instance for debugging.
+
+        Returns:
+            str: A string with the user's id, username, and email.
+        """
         return f"<User(id={self.id}, username={self.username}, email={self.email})>"
 
     def __str__(self):
+        """
+        Return a human-readable string representation of the UserModel instance.
+
+        Returns:
+            str: A string with the user's id, username, and email.
+        """
         return f"User(id={self.id}, username={self.username}, email={self.email})"

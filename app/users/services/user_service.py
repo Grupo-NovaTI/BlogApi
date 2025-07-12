@@ -1,3 +1,11 @@
+"""
+User service module for business logic related to user management.
+
+This module defines the UserService class, which provides methods for creating, retrieving,
+updating, and deleting users, as well as managing user activation status. It acts as an
+intermediary between the repository and higher-level application logic, ensuring transactional
+integrity and consistent exception handling.
+"""
 from typing import Any, List, Optional
 
 from sqlalchemy.orm import Session
@@ -10,36 +18,18 @@ from app.utils.errors.exception_handlers import (handle_read_exceptions,
 from app.utils.errors.exceptions import \
     ConflictException as UserAlreadyExistsException
 from app.utils.errors.exceptions import \
-    ForbiddenException as UserForbiddenException
-from app.utils.errors.exceptions import \
     NotFoundException as UserNotFoundException
 
 _MODEL_NAME = "Users"
 
 
 class UserService:
-    """UserService provides business logic for managing user entities in the application.
-    This service acts as an intermediary between the user repository and higher-level
-    application logic, handling user-related operations such as creation, retrieval,
-    updating, and deletion. It also manages exception handling and transactional
-    integrity for user operations.
-    Attributes:
-        _user_repository (UserRepository): The repository instance for user data access.
-        _db_session (Session): The SQLAlchemy session for database transactions.
-    Methods:
-        get_all_users() -> List[UserModel]:
-        create_user(user_data: dict[str, Any]) -> UserModel:
-            Create a new user with the provided data.
-        get_user_by_id(user_id: int) -> Optional[UserModel]:
-            Retrieve a user by their unique ID.
-        get_user_by_username(username: str) -> Optional[UserModel]:
-        update_user(user_id: int, user_data: dict) -> UserModel:
-            Update an existing user's information.
-        delete_user_by_id(user_id: int) -> None:
-            Delete a user by their unique ID.
-        update_user_active_status(user_id: int, is_active: bool) -> UserModel:
-        UserNotFoundException: If a user with the specified identifier does not exist.
-        UserAlreadyExistsException: If attempting to create a user with an existing email or username."""
+    """
+    Service class for managing user entities and business logic.
+
+    Provides methods for creating, retrieving, updating, and deleting users, as well as
+    managing user activation status. Handles exception management and transactional integrity.
+    """
 
     def __init__(self, user_repository: UserRepository, db_session: Session) -> None:
         """
