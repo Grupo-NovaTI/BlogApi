@@ -21,6 +21,7 @@ class Operations(Enum):
         UPDATE (str): Indicates that a resource is being updated.
         DELETE (str): Indicates that a resource is being deleted.
         PATCH (str): Indicates that a resource is being partially updated.
+        AUTHENTICATE (str): Indicates that a user is being authenticated.
     """
 
     CREATE = "Creating"
@@ -30,4 +31,5 @@ class Operations(Enum):
     UPDATE = "Updating"
     DELETE = "Deleting"
     PATCH = "Patching"
+    AUTHENTICATE = "Authenticating"
 
