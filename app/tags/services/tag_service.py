@@ -68,17 +68,17 @@ class TagService:
         model=_MODEL_NAME,
         operation=Operations.CREATE
     )
-    def create_tag(self, tag: dict[str, Any]) -> TagModel:
+    def create_tag(self, tag_data: dict[str, Any]) -> TagModel:
         """
         Create a new tag in the repository.
 
         Args:
-            tag (dict[str, Any]): Data for the new tag.
+            tag_data (dict[str, Any]): Data for the new tag.
 
         Returns:
             TagModel: The created tag.
         """
-        tag_model = TagModel(**tag)
+        tag_model = TagModel(**tag_data)
         exisiting_tag: Optional[TagModel] = self._repository.get_tag_by_name(
             tag_name=str(tag_model.name))
         if exisiting_tag:

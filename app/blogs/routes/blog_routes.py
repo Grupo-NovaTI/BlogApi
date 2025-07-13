@@ -87,7 +87,7 @@ async def create_blog(
     Returns:
         BlogModel: The created blog model.
     """
-    return blog_service.create_blog(blog=blog.model_dump(exclude_unset=True), user_id=user_id)
+    return blog_service.create_blog(blog_data=blog.model_dump(exclude_unset=True), user_id=user_id)
 
 
 @blog_router.delete(path="/{blog_id}", tags=["blogs"], description="Delete a blog", status_code=status.HTTP_204_NO_CONTENT)
@@ -126,7 +126,7 @@ async def patch_blog(
     Returns:
         BlogModel: The updated blog model.
     """
-    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
+    return blog_service.update_blog(blog_data=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
 
 
 @blog_router.get(path="/user/{user_id}", response_model=List[BlogResponseFull], tags=["blogs"], description="Get blogs by user", status_code=status.HTTP_200_OK)
@@ -194,7 +194,7 @@ async def update_blog_content(
     Returns:
         BlogModel: The updated blog model.
     """
-    return blog_service.update_blog(blog=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
+    return blog_service.update_blog(blog_data=blog.model_dump(exclude_unset=True), blog_id=blog_id, user_id=user_id)
 
 
 @blog_router.get(path="/{blog_id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")

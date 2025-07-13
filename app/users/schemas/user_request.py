@@ -5,11 +5,13 @@ This module defines the UserRequest class, which is used to validate and seriali
 data for user creation and update operations. It includes field constraints, password validation,
 and a method to convert the request to a UserModel ORM object.
 """
-from typing import Optional
+
+import re
+from typing import Any
+
 from pydantic import BaseModel, EmailStr, Field, field_validator
-from app.users.models.user_model import UserModel
-from app.core.security.password_hasher import PasswordHasher
-from app.utils.constants.constants import EMAIL_PATTERN
+
+from app.utils.constants.constants import EMAIL_PATTERN, PASSWORD_PATTERN
 from app.utils.enums.user_roles import UserRole
 
 
@@ -21,9 +23,12 @@ class UserRequest(BaseModel):
     the request to a UserModel ORM object.
     """
     username: str = Field(..., min_length=5, max_length=50)
-    email: EmailStr = Field(..., examples=["user@example.com"], pattern=EMAIL_PATTERN)
-    name: str = Field(..., min_length=1, max_length=50, examples=["John", "Jane"])
-    last_name: str = Field(..., min_length=1, max_length=50, examples=["Doe", "Smith"])
+    email: EmailStr = Field(..., examples=[
+                            "user@example.com"], pattern=EMAIL_PATTERN)
+    name: str = Field(..., min_length=1, max_length=50,
+                      examples=["John", "Jane"])
+    last_name: str = Field(..., min_length=1,
+                           max_length=50, examples=["Doe", "Smith"])
     password: str = Field(..., min_length=8, max_length=12)
     role: UserRole = Field(
         default=UserRole.USER, description="User role, default is 'user'", examples=["user", "admin", "reader"]
@@ -32,23 +37,17 @@ class UserRequest(BaseModel):
     @field_validator("password")
     def validate_password(cls, value: str) -> str:
         """
-        Validates the password to ensure it meets security requirements.
-
-        Args:
-            value (str): The password to validate.
-
-        Returns:
-            str: The validated password.
-
-        Raises:
-            ValueError: If the password does not meet the required criteria.
+        Validates the password to ensure it meets security requirements using a single regex.
+        - At least one uppercase letter.
+        - At least one digit.
+        - At least one special character (!@#$%^&*+.).
+        - At least 8 characters long.
         """
-        if not any(char.isupper() for char in value):
-            raise ValueError("Password must contain at least one uppercase letter")
-        if not any(char.isdigit() for char in value):
-            raise ValueError("Password must contain at least one number")
-        if not any(char in "!@#$%^&*+." for char in value):
-            raise ValueError("Password must contain at least one special character")
+        if not re.fullmatch(pattern=PASSWORD_PATTERN, string=value):
+            raise ValueError(
+                "Password must be at least 8 characters long and include at least one uppercase letter, "
+                "one lowercase letter, one number, and one special character (!@#$%^&*+.)."
+            )
         return value
 
     class Config:
@@ -56,7 +55,7 @@ class UserRequest(BaseModel):
         Pydantic configuration for ORM compatibility and schema examples.
         """
         from_attributes = True
-        json_schema_extra = {
+        json_schema_extra: dict[str, Any] = {
             "example": {
                 "username": "johndoe",
                 "email": "johndoe@example.com",
@@ -66,23 +65,3 @@ class UserRequest(BaseModel):
                 "role": "user"
             }
         }
-
-    def to_orm(self, user_id: Optional[int] = None) -> UserModel:
-        """
-        Converts the UserRequest instance to a UserModel ORM object.
-
-        Args:
-            user_id (Optional[int]): The user ID to assign (for updates).
-
-        Returns:
-            UserModel: The corresponding UserModel ORM object.
-        """
-        return UserModel(
-            id=user_id,
-            username=self.username,
-            email=self.email,
-            name=self.name,
-            last_name=self.last_name,
-            hashed_password=PasswordHasher().hash_password(self.password),
-            role=self.role
-        )

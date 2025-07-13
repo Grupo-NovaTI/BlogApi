@@ -35,10 +35,10 @@ class BlogService:
         get_blog_by_id(blog_id: int) -> Optional[BlogModel]:
             Retrieve a single blog by its unique identifier.
 
-        create_blog(blog: dict[str, Any], user_id: int) -> BlogModel:
+        create_blog(blog_data: dict[str, Any], user_id: int) -> BlogModel:
             Create a new blog post and associate it with tags.
 
-        update_blog(blog: dict[str, Any], blog_id: int, user_id: int) -> BlogModel:
+        update_blog(blog_data: dict[str, Any], blog_id: int, user_id: int) -> BlogModel:
             Update an existing blog post and manage its tag associations, ensuring user authorization.
 
         delete_blog_for_user(blog_id: int, user_id: int) -> None:
@@ -132,12 +132,12 @@ class BlogService:
         model=_MODEL_NAME,
         operation=Operations.CREATE
     )
-    def create_blog(self, blog: dict[str, Any], user_id: int) -> BlogModel:
+    def create_blog(self, blog_data: dict[str, Any], user_id: int) -> BlogModel:
         """
         Creates a new blog entry and associates it with the specified user and optional tags.
 
         Args:
-            blog (dict[str, Any]): A dictionary containing the blog data. May include a "tags" key with a list of tag IDs.
+            blog_data (dict[str, Any]): A dictionary containing the blog data. May include a "tags" key with a list of tag IDs.
             user_id (int): The ID of the user creating the blog.
 
         Returns:
@@ -148,8 +148,8 @@ class BlogService:
             - Links the blog to the specified tags if provided.
             - Refreshes the created_blog instance from the database.
         """
-        tags: Optional[List[int]] = blog.pop("tags", [])
-        blog_model = BlogModel(**blog, user_id=user_id)
+        tags: Optional[List[int]] = blog_data.pop("tags", [])
+        blog_model = BlogModel(**blog_data, user_id=user_id)
         created_blog: BlogModel = self._blog_repository.create_blog(
             blog=blog_model)
         if tags:
@@ -163,12 +163,12 @@ class BlogService:
         model=_MODEL_NAME,
         operation=Operations.UPDATE
     )
-    def update_blog(self, blog: dict[str, Any], blog_id: int, user_id: int) -> BlogModel:
+    def update_blog(self, blog_data: dict[str, Any], blog_id: int, user_id: int) -> BlogModel:
         """
         Updates a blog post with the provided data and manages its associated tags.
 
         Args:
-            blog (dict[str, Any]): A dictionary containing the updated blog data. May include a "tags" key with a list of tag IDs.
+            blog_data (dict[str, Any]): A dictionary containing the updated blog data. May include a "tags" key with a list of tag IDs.
             blog_id (int): The ID of the blog post to update.
             user_id (int): The ID of the user attempting the update, used for authorization.
 
@@ -183,11 +183,11 @@ class BlogService:
             - Updates the blog post in the repository.
             - Adds or removes tag associations as needed.
         """
-        tags: Optional[List[int]] = blog.pop("tags", [])
+        tags: Optional[List[int]] = blog_data.pop("tags", [])
         authorized_blog: BlogModel = self._get_and_authorize_blog(
             blog_id=blog_id, user_id=user_id)
         updated_blog: BlogModel = self._blog_repository.update_blog(
-            blog=authorized_blog, blog_data=blog)
+            blog=authorized_blog, blog_data=blog_data)
         if tags is not None:
             current_tag_ids: set[Any] = {tag.id for tag in updated_blog.tags}  # type: ignore
             new_tag_ids: set[int] = set(tags)

@@ -65,7 +65,7 @@ class CommentService:
         model=_MODEL_NAME,
         operation=Operations.CREATE
     )
-    def create_comment(self, comment: dict[str, Any], user_id: int) -> CommentModel:
+    def create_comment(self, comment_data: dict[str, Any], user_id: int) -> CommentModel:
         """
         Create a new comment in the repository.
 
@@ -76,7 +76,7 @@ class CommentService:
         Returns:
             CommentModel: The created comment.
         """
-        comment_model = CommentModel(**comment, user_id=user_id)
+        comment_model = CommentModel(**comment_data, user_id=user_id)
         return self._repository.create_comment(comment=comment_model)
 
     @handle_read_exceptions(

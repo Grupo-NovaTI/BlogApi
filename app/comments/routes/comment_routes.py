@@ -40,7 +40,7 @@ async def create_comment(
     Returns:
         CommentResponse: The created comment.
     """
-    return comment_service.create_comment(comment=comment_request.model_dump(exclude_unset=True), user_id=user_id)
+    return comment_service.create_comment(comment_data=comment_request.model_dump(exclude_unset=True), user_id=user_id)
 
 @comment_router.get(
     path="/blogs/{blog_id}",

@@ -107,7 +107,7 @@ async def create_tag(
     Raises:
         HTTPException: If a tag with the same name already exists or if there is an error during creation.
     """
-    return tag_service.create_tag(tag=tag.model_dump(exclude_unset=True))
+    return tag_service.create_tag(tag_data=tag.model_dump(exclude_unset=True))
 
 
 @tag_router.put(
