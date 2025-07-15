@@ -5,6 +5,7 @@ This module provides reusable dependency definitions for injecting services, rep
 database sessions, and security utilities into FastAPI route handlers.
 """
 
+from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
@@ -18,7 +19,7 @@ from app.blogs.services.blog_service import BlogService
 from app.comments.repositories.comment_repository import CommentRepository
 from app.comments.services.comment_service import CommentService
 from app.core.config.application_config import JWT_OAUTH_SCHEME
-from app.core.db.database import get_db
+from app.core.data.database import get_db
 from app.core.security.jwt_handler import JwtHandler
 from app.core.security.password_hasher import PasswordHasher
 from app.tags.repositories.tag_repository import TagRepository
@@ -26,7 +27,8 @@ from app.tags.services.tag_service import TagService
 from app.users.repositories.user_repository import UserRepository
 from app.users.services.user_service import UserService
 from app.utils.errors.exceptions import UnauthorizedException
-
+from app.core.data.file_storage_interface import FileStorageInterface
+from app.core.data.azure_file_storage_service import AzureFileStorageService
 # Security Dependencies
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=JWT_OAUTH_SCHEME)
@@ -99,8 +101,21 @@ async def provide_user_id_from_token(
 AccessTokenPayloadDependency = Annotated[dict, Depends(dependency=provide_token_payload)]
 UserIDFromTokenDependency = Annotated[int, Depends(dependency=provide_user_id_from_token)]
 
-# Database Dependencies
+# Data Dependencies
 _DatabaseSession = Annotated[Session, Depends(dependency=get_db)]
+
+# File Storage Dependency
+@lru_cache
+def _provide_file_storage_service() -> FileStorageInterface:
+    """
+    Provides a FileStorageService instance for dependency injection.
+
+    Returns:
+        FileStorageInterface: The file storage service instance.
+    """
+    return AzureFileStorageService()
+
+FileStorageServiceDependency = Annotated[FileStorageInterface, Depends(dependency=_provide_file_storage_service)]
 
 # Repository Dependencies
 def _provide_user_repository(db_session: _DatabaseSession) -> UserRepository:

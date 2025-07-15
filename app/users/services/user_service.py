@@ -147,7 +147,7 @@ class UserService:
         model=_MODEL_NAME,
         operation=Operations.UPDATE
     )
-    def update_user(self, user_id: int, user_data: dict) -> UserModel:
+    def update_user(self, user_id: int, user_data: dict[str, Any]) -> UserModel:
         """
         Update an existing user in the repository.
 
@@ -203,7 +203,26 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        user_to_update = self._get_user_or_raise(user_id=user_id)
+        user_to_update: UserModel = self._get_user_or_raise(user_id=user_id)
         updated_user: Optional[UserModel] = self._user_repository.update_user(
             user=user_to_update, user_data={"is_active": is_active})
         return updated_user
+    
+    def update_profile_picture(self, user_id: int, picture_url: str) -> UserModel:
+        """
+        Update the profile picture of a user.
+
+        Args:
+            user_id (int): The unique identifier of the user.
+            picture_url (str): The URL of the new profile picture.
+
+        Returns:
+            UserModel: The updated user object.
+
+        Raises:
+            UserNotFoundException: If the user with the given ID does not exist.
+        """
+        return self.update_user(
+            user_id=user_id,
+            user_data={"profile_picture": picture_url}
+        )

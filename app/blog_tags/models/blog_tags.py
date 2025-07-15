@@ -6,7 +6,7 @@ This module defines the SQLAlchemy Table object for linking blogs and tags.
 
 from sqlalchemy import Column, ForeignKey, Integer, Table
 
-from app.core.db.database import Base
+from app.core.data.database import Base
 
 blog_tags = Table(
     "blogs_tags",

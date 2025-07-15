@@ -11,7 +11,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from app.blog_tags.models.blog_tags import blog_tags
-from app.core.db.database import Base
+from app.core.data.database import Base
 
 
 class BlogModel(Base):

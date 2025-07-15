@@ -9,6 +9,7 @@ and a method to convert the request to a UserModel ORM object.
 import re
 from typing import Any
 
+from git import Optional
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.utils.constants.constants import EMAIL_PATTERN, PASSWORD_PATTERN
@@ -65,3 +66,17 @@ class UserRequest(BaseModel):
                 "role": "user"
             }
         }
+
+
+class UserUpdateRequest(BaseModel):
+    """
+    Schema for user update requests.
+
+    Validates user input data for updating user information, excluding the password field.
+    """
+    name : Optional[str] = Field(
+        None, min_length=1, max_length=50, examples=["John", "Jane"])
+    last_name: Optional[str] = Field(
+        None, min_length=1, max_length=50, examples=["Doe", "Smith"])
+    email: Optional[EmailStr] = Field(
+        None, examples=["johndoe@example.com"], pattern=EMAIL_PATTERN)
