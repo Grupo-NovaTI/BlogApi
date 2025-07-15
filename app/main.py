@@ -1,35 +1,38 @@
+# built-in Imports
 from contextlib import asynccontextmanager
-
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
+
+#? FastAPI Imports
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import ResponseValidationError, RequestValidationError
-from starlette import status
-# Rate Limiting
+
+#? Rate Limiting
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
+from starlette import status
 
-# Application Imports
-from app.core.db.database import init_db
-from app.users.routes.user_routes import user_router
-from app.comments.routes.comment_routes import comment_router
-from app.blogs.routes.blog_routes import blog_router
-from app.auth.routes.auth_routes import auth_router
-from app.tags.routes.tag_routes import tag_router
-from app.utils.logger.application_logger import ApplicationLogger
-from app.core.middlewares import rate_limiter, clear_redis_cache, init_redis_cache
-from app.status.status_routes import app as status_router
 from app.admin.routes.admin_routes import admin_router
-from app.utils.errors.exceptions import BaseAPIException
+from app.auth.routes.auth_routes import auth_router
+from app.blogs.routes.blog_routes import blog_router
+from app.comments.routes.comment_routes import comment_router
 from app.core.config.application_config import APP_NAME, APP_VERSION, DEBUG
+
+#! Application Imports
+from app.core.data.database import init_db
+from app.core.middlewares import (clear_redis_cache, init_redis_cache,
+                                  rate_limiter)
+from app.status.status_routes import app as status_router
+from app.tags.routes.tag_routes import tag_router
+from app.users.routes.user_routes import user_router
+from app.utils.errors.exceptions import BaseAPIException
+from app.utils.logger.application_logger import ApplicationLogger
 
 _logger: ApplicationLogger = ApplicationLogger(
     name=__name__, log_to_console=False)
-# Gets the application global configuration
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -54,7 +57,6 @@ async def lifespan(app: FastAPI):
     _logger.log_info(
         message=f"Starting application: {app.title} v{app.version} in {'debug' if app.debug else 'production'} mode.")
     init_db()
-    # Initialize Redis connection
     redis_initialized: bool = await init_redis_cache()
     if not redis_initialized:
         _logger.log_error(
@@ -64,11 +66,8 @@ async def lifespan(app: FastAPI):
     _logger.log_info(
         message="Redis connection established and FastAPI Cache initialized.")
     yield
-    await clear_redis_cache()  # Clear cache on shutdown
+    await clear_redis_cache()
     _logger.log_info(message="Application shutdown initiated.")
-
-
-# Initialize the database at application startup
 
 app = FastAPI(
     lifespan=lifespan,
@@ -78,10 +77,9 @@ app = FastAPI(
 )
 
 # Rate Limiting Configuration
-app.state.limiter = rate_limiter  # Set the rate limiter from the config
+app.state.limiter = rate_limiter
 
 
-# Handle rate limit exceeded exceptions
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     """
@@ -97,7 +95,6 @@ async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     return _rate_limit_exceeded_handler(request, exc)
 
 
-# Handle BaseApplicationException
 @app.exception_handler(BaseAPIException)
 async def base_application_exception_handler(request: Request, exc: BaseAPIException) -> JSONResponse:
     """
@@ -123,7 +120,6 @@ async def base_application_exception_handler(request: Request, exc: BaseAPIExcep
     )
 
 
-# Handle ResponseValidationError
 @app.exception_handler(ResponseValidationError)
 async def response_validation_error_handler(request: Request, exc: ResponseValidationError) -> JSONResponse:
     """
@@ -204,7 +200,6 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
     )
 
 
-# Add SlowAPI middleware for rate limiting
 app.add_middleware(middleware_class=SlowAPIMiddleware)
 
 # Register routers for different modules
