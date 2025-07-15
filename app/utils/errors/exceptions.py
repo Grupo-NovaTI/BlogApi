@@ -123,6 +123,23 @@ class DatabaseException(BaseAPIException):
         """
         details: str = f"Database operation '{operation.value}' failed on model '{model}'. Original error: {original_exception}"
         super().__init__(details=details)
+        
+class FileStorageException(BaseAPIException):
+    """
+    Raised for errors related to file storage operations (e.g., upload, download).
+
+    Args:
+        operation (Operations): The file storage operation being performed.
+        details (str): Additional details about the error.
+    """
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    message = "An error occurred while processing the file storage operation."
+
+    def __init__(self, details: str) -> None:
+        """
+        Initialize FileStorageException with operation and details.
+        """
+        super().__init__(details=f"File storage error: {details}")
 
 
 class IntegrityConstraintException(DatabaseException):
