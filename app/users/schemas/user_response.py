@@ -6,8 +6,11 @@ when sending responses to clients. It ensures type safety and proper formatting
 of user-related fields.
 """
 
-from pydantic import BaseModel, EmailStr
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, EmailStr
+
 
 class UserResponse(BaseModel):
     """
@@ -23,6 +26,7 @@ class UserResponse(BaseModel):
         created_at (datetime): Timestamp when the user was created.
         updated_at (datetime): Timestamp when the user was last updated.
         role (str): Role assigned to the user.
+        profile_picture (Optional[str]): URL of the user's profile picture.
     """
     id: int
     username : str
@@ -33,6 +37,7 @@ class UserResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     role: str
+    profile_picture: Optional[str] = None   
 
     class Config:
         """

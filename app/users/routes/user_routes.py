@@ -122,7 +122,7 @@ async def update_user_profile(user_service: UserServiceDependency, current_user_
     return user_service.update_user(user_id=current_user_id, user_data=user_data.model_dump(exclude_unset=True))
 
 
-@user_router.post(path="/profile-picture", summary="Upload user profile picture", status_code=status.HTTP_200_OK)
+@user_router.post(path="/profile-picture", summary="Upload user profile picture", status_code=status.HTTP_200_OK, response_model=UserResponse)
 async def upload_user_profile_picture(user_service: UserServiceDependency, current_user_id: UserIDFromTokenDependency, file_service: FileStorageServiceDependency, file: UploadFile = File(default=..., description="The profile picture file to upload")):
     """
     Upload a profile picture for the current user.

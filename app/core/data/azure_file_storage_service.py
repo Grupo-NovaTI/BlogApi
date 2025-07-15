@@ -57,7 +57,7 @@ class AzureFileStorageService(FileStorageInterface):
             file_extension: str = content_type.split(
                 '/')[-1]
 
-            blob_name: str = f"{prefix}/{user_id}/{uuid.uuid4()}.{file_extension}"
+            blob_name: str = f"{prefix}/{user_id}/profile-picture.{file_extension}"
 
             async with container_client.get_blob_client(
                     blob_name) as blob_client:
