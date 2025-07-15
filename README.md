@@ -15,7 +15,7 @@ To develop the application, it is recommended to use the provided DevContainer w
 Once inside the dev container, you can run the application with hot-reloading:
 
 ```bash
-uvicorn app.app:app --host 0.0.0.0 --reload
+uvicorn app.main:app --host 0.0.0.0 --reload
 ```
 
 ### Docker Compose
