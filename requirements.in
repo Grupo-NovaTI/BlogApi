@@ -10,6 +10,7 @@ python-dotenv
 fastapi-cache2[redis]
 slowapi
 email_validator
+azure-storage-blob
 
 # For development and testing
 pip-tools
