@@ -14,12 +14,14 @@ from app.utils.enums.operations import Operations
 
 _MODEL_NAME = "Tags"
 
+
 class TagService:
     """
     Service class for tag business logic and operations.
 
     Provides methods for creating, retrieving, updating, and deleting tags using the repository layer.
     """
+
     def __init__(self, tag_repository: TagRepository, db_session: Session) -> None:
         """
         Initialize the TagService with a tag repository and database session.
@@ -52,7 +54,7 @@ class TagService:
         model=_MODEL_NAME,
         operation=Operations.FETCH_BY
     )
-    def get_tag_by_id(self, tag_id: int) -> Optional[TagModel]:
+    def get_tag_by_id(self, tag_id: int) -> TagModel:
         """
         Retrieve a tag by its ID.
 
@@ -61,8 +63,16 @@ class TagService:
 
         Returns:
             TagModel: The tag object if found.
+            
+        raises:
+            TagNotFoundException: If the tag with the given ID does not exist.
         """
-        return self._repository.get_tag_by_id(tag_id=tag_id)
+        tag: Optional[TagModel] = self._repository.get_tag_by_id(tag_id=tag_id)
+        if tag is None:
+            raise TagNotFoundException(
+                identifier=tag_id, resource_type=_MODEL_NAME
+            )
+        return tag
 
     @handle_service_transaction(
         model=_MODEL_NAME,
@@ -123,7 +133,7 @@ class TagService:
         model=_MODEL_NAME,
         operation=Operations.DELETE
     )
-    def delete_tag(self, tag_id: int) ->  None:
+    def delete_tag(self, tag_id: int) -> None:
         """
         Delete a tag from the repository.
 

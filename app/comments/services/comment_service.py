@@ -14,7 +14,7 @@ from app.comments.repositories.comment_repository import CommentRepository
 from app.utils.enums.operations import Operations
 from app.utils.errors.exception_handlers import (handle_read_exceptions,
                                                  handle_service_transaction)
-from app.utils.errors.exceptions import ForbiddenException
+from app.utils.errors.exceptions import ForbiddenException, NotFoundException
 from app.utils.errors.exceptions import \
     NotFoundException as CommentNotFoundException
 
@@ -52,11 +52,12 @@ class CommentService:
             CommentNotFoundException: If the comment does not exist.
             ForbiddenException: If the user is not the owner of the comment.
         """
-        comment: Optional[CommentModel] = self._repository.get_comment_by_id(comment_id=comment_id)
+        comment: Optional[CommentModel] = self._repository.get_comment_by_id(
+            comment_id=comment_id)
         if not comment:
             raise CommentNotFoundException(
                 identifier=comment_id, resource_type=_MODEL_NAME)
-        if comment.user_id != user_id: # type: ignore
+        if comment.user_id != user_id:  # type: ignore
             raise ForbiddenException(
                 details=f"User {user_id} lacks permission for comment {comment_id}.")
         return comment
@@ -115,7 +116,7 @@ class CommentService:
         model=_MODEL_NAME,
         operation=Operations.FETCH_BY
     )
-    def get_comment_by_id(self, comment_id: int) -> Optional[CommentModel]:
+    def get_comment_by_id(self, comment_id: int) -> CommentModel:
         """
         Retrieve a comment by its ID.
 
@@ -125,7 +126,14 @@ class CommentService:
         Returns:
             Optional[CommentModel]: The comment object if found, otherwise None.
         """
-        return self._repository.get_comment_by_id(comment_id=comment_id)
+        comment: Optional[CommentModel] = self._repository.get_comment_by_id(
+            comment_id=comment_id)
+        if comment is None:
+            raise NotFoundException(
+                resource_type=_MODEL_NAME,
+                identifier=comment_id
+            )
+        return comment
 
     @handle_service_transaction(
         model=_MODEL_NAME,

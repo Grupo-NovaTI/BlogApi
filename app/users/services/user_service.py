@@ -107,7 +107,7 @@ class UserService:
         model=_MODEL_NAME,
         operation=Operations.FETCH_BY
     )
-    def get_user_by_id(self, user_id: int) -> Optional[UserModel]:
+    def get_user_by_id(self, user_id: int) -> UserModel:
         """
         Retrieve a user by their ID.
 
@@ -120,8 +120,13 @@ class UserService:
         Raises:
             UserNotFoundException: If the user with the given ID does not exist.
         """
-        return self._user_repository.get_user_by_id(
+        user :Optional[UserModel]=  self._user_repository.get_user_by_id(
             user_id=user_id)
+        if user is None:
+            raise UserNotFoundException(
+                identifier=user_id, resource_type=_MODEL_NAME
+            )
+        return user
 
     @handle_read_exceptions(
         model=_MODEL_NAME,

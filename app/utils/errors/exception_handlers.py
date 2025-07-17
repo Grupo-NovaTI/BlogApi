@@ -77,7 +77,7 @@ def handle_read_exceptions(model: str, operation: Operations):
                 return func(self, *args, **kwargs)
             except SQLAlchemyError as e:
                 raise DatabaseException(model=model, operation=operation, original_exception=e)
-            except (UnauthorizedException, ForbiddenException) as e:
+            except (UnauthorizedException, ForbiddenException, NotFoundException) as e:
                 raise e
             except Exception as e:
                 raise UnknownException(model=model, operation=operation, details=str(e))
