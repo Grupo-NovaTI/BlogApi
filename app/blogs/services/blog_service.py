@@ -53,10 +53,14 @@ class BlogService:
         get_blogs_by_user(user_id: int, limit: int = 10, offset: int = 0) -> List[BlogModel]:
             Retrieve a paginated list of blogs authored by a specific user.
 
+        update_blog_image(blog_id: int, user_id: int, blog_image_url: str) -> BlogModel:
+            Update the image URL of a blog post, ensuring user authorization.
+
     Private Methods:
         _get_and_authorize_blog(blog_id: int, user_id: int) -> BlogModel:
             Retrieve a blog and verify that the user is authorized to access or modify it.
         """
+
     def __init__(self, blog_repository: BlogRepository, blog_tag_repository: BlogTagRepository, db_session: Session) -> None:
         """
         Initializes the BlogService with the given repositories and database session.
@@ -126,8 +130,12 @@ class BlogService:
         Returns:
             Optional[BlogModel]: The blog entry if found, otherwise None.
         """
-        return self._blog_repository.get_blog_by_id(blog_id=blog_id)
-
+        user : Optional[BlogModel] = self._blog_repository.get_blog_by_id(blog_id=blog_id)
+        if user is None:
+            raise BlogNotFoundException(
+                identifier=blog_id, resource_type=_MODEL_NAME)
+        return user
+    
     @handle_service_transaction(
         model=_MODEL_NAME,
         operation=Operations.CREATE
@@ -154,7 +162,7 @@ class BlogService:
             blog=blog_model)
         if tags:
             self._blog_tag_repository.link_blog_tags(
-                blog_id=created_blog.id, tag_ids=tags) # type: ignore
+                blog_id=created_blog.id, tag_ids=tags)  # type: ignore
         self._db_session.refresh(created_blog)
 
         return created_blog
@@ -189,7 +197,8 @@ class BlogService:
         updated_blog: BlogModel = self._blog_repository.update_blog(
             blog=authorized_blog, blog_data=blog_data)
         if tags is not None:
-            current_tag_ids: set[Any] = {tag.id for tag in updated_blog.tags}  # type: ignore
+            current_tag_ids: set[Any] = {
+                tag.id for tag in updated_blog.tags}  # type: ignore
             new_tag_ids: set[int] = set(tags)
 
             tags_to_add: List[int] = list(new_tag_ids - current_tag_ids)
@@ -198,7 +207,8 @@ class BlogService:
             if tags_to_add:
                 self._blog_tag_repository.link_blog_tags(blog_id, tags_to_add)
             if tags_to_remove:
-                self._blog_tag_repository.unlink_blog_tags_by_blog_id(blog_id, tags_to_remove)
+                self._blog_tag_repository.unlink_blog_tags_by_blog_id(
+                    blog_id, tags_to_remove)
         return authorized_blog
 
     @handle_service_transaction(
@@ -233,7 +243,7 @@ class BlogService:
 
         Raises:
             BlogNotFoundException: If no blog with the specified ID exists.
-        
+
         Deletes a blog entry from the database by an admin.
         Args:
             blog_id (int): The unique identifier of the blog to delete.
@@ -279,3 +289,28 @@ class BlogService:
             List[BlogModel]: A list of BlogModel instances authored by the specified user.
         """
         return self._blog_repository.get_blogs_by_user(user_id=user_id, limit=limit, offset=offset)
+
+    @handle_read_exceptions(
+        model=_MODEL_NAME,
+        operation=Operations.UPDATE
+    )
+    def update_blog_image(self, blog_id: int, user_id: int, blog_image_url: str) -> BlogModel:
+        """
+        Updates the image URL of a blog post.
+
+        Args:
+            blog_id (int): The ID of the blog post to update.
+            blog_image_url (str): The new image URL to set for the blog post.
+            user_id (int): The ID of the user updating the blog, used for authorization.
+
+        Returns:
+            BlogModel: The updated blog model with the new image URL.
+        """
+        blog: BlogModel = self._get_and_authorize_blog(
+            blog_id=blog_id, user_id=user_id)
+        if not blog:
+            raise BlogNotFoundException(
+                identifier=blog_id, resource_type=_MODEL_NAME)
+        self._blog_repository.update_blog(
+            blog=blog, blog_data={"image_url": blog_image_url})
+        return blog

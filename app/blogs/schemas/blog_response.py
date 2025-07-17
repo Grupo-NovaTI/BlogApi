@@ -33,6 +33,7 @@ class BlogResponse(BaseModel):
     updated_at: datetime
     created_at: datetime
     is_published: bool
+    image_url : str
 
     class Config:
         """
@@ -45,7 +46,10 @@ class BlogResponse(BaseModel):
                 "title": "My First Blog Post",
                 "content": "This is the content of my first blog post.",
                 "user_id": 1,
-                "is_published": True
+                "is_published": True,
+                "updated_at": "2023-10-01T12:00:00Z",
+                "created_at": "2023-10-01T12:00:00Z",
+                "image_url": "https://placehold.co/600x400.png?text=Blog+Image"
             }
         }
 
@@ -58,5 +62,6 @@ class BlogResponseFull(BlogResponse):
         user (UserResponse): User details for the blog author.
         tags (List[TagResponse]): List of tags associated with the blog post.
     """
+    
     user: UserResponse
     tags: List[TagResponse]

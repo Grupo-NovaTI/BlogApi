@@ -7,17 +7,18 @@ It uses dependency injection for service and authentication, and supports cachin
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Path, Query, Request
+from fastapi import APIRouter, File, HTTPException, Path, Query, Request, UploadFile
 from fastapi_cache.decorator import cache
 from starlette import status
 
 from app.blogs.models.blog_model import BlogModel
 from app.blogs.schemas.blog_request import BlogPatchRequest, BlogRequest
-from app.blogs.schemas.blog_response import BlogResponse, BlogResponseFull
+from app.blogs.schemas.blog_response import BlogResponseFull
 from app.core.dependencies import (AccessTokenDependency,
                                    BlogServiceDependency,
-                                   UserIDFromTokenDependency)
+                                   UserIDFromTokenDependency, FileStorageServiceDependency)
 from app.utils.constants.constants import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
+from app.utils.validators.upload_image_validator import validate_uploaded_image
 
 blog_router = APIRouter(
     prefix="/blogs",
@@ -217,3 +218,36 @@ async def get_blog_by_id(
         Optional[BlogModel]: The requested blog model if found, otherwise None.
     """
     return blog_service.get_blog_by_id(blog_id=blog_id)
+
+
+@blog_router.post(path="/{blog_id}/image", tags=["blogs"], description="Upload image to blog", status_code=status.HTTP_200_OK, response_model=BlogResponseFull)
+async def upload_image_to_blog(
+    blog_service: BlogServiceDependency,
+    user_id: UserIDFromTokenDependency,
+    file_service: FileStorageServiceDependency,
+    blog_id: int = Path(...,
+                        description="The ID of the blog to upload the image to", gt=0),
+    file: UploadFile = File(..., description="The image file to upload")
+) -> BlogModel:
+    """
+    Set an image to a blog post.
+
+    Args:
+        blog_id (int): The ID of the blog to upload the image to.
+        file (UploadFile): The image file to upload.
+
+    Returns:
+        BlogModel: The updated blog model with the new image.
+    """
+    image_content: bytes = await validate_uploaded_image(file=file)
+    if file.content_type is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="File content type is required.")
+    image_url: str = await file_service.upload_file(
+        file_content=image_content,
+        content_type=file.content_type,
+        user_id=user_id,
+        prefix="blog-images",
+        file_name=f"blog-{blog_id}-image"
+    )
+    return blog_service.update_blog_image(blog_id=blog_id, user_id=user_id, blog_image_url=image_url)
