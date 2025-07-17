@@ -16,10 +16,12 @@ from app.core.dependencies import (AccessTokenDependency,
                                    UserIDFromTokenDependency,
                                    UserServiceDependency)
 from app.core.security.authentication_decorators import role_required
+from app.users.models.user_model import UserModel
 from app.users.schemas.user_request import UserUpdateRequest
 from app.users.schemas.user_response import UserResponse
 from app.utils.constants.constants import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
 from app.utils.enums.user_roles import UserRole
+from app.utils.validators.upload_image_validator import validate_uploaded_image
 
 user_router = APIRouter(
     prefix="/users",
@@ -122,7 +124,7 @@ async def update_user_profile(user_service: UserServiceDependency, current_user_
     return user_service.update_user(user_id=current_user_id, user_data=user_data.model_dump(exclude_unset=True))
 
 
-@user_router.post(path="/profile-picture", summary="Upload user profile picture", status_code=status.HTTP_200_OK, response_model=UserResponse)
+@user_router.post(path="/me/profile-picture", summary="Upload user profile picture", status_code=status.HTTP_200_OK, response_model=UserResponse)
 async def upload_user_profile_picture(user_service: UserServiceDependency, current_user_id: UserIDFromTokenDependency, file_service: FileStorageServiceDependency, file: UploadFile = File(default=..., description="The profile picture file to upload")):
     """
     Upload a profile picture for the current user.
@@ -131,6 +133,7 @@ async def upload_user_profile_picture(user_service: UserServiceDependency, curre
         user_service (UserServiceDependency): The user service dependency.
         current_user_id (UserIDFromTokenDependency): The ID of the current user from the token.
         file (bytes): The profile picture file to upload.
+        file_service (FileStorageServiceDependency): The file storage service dependency.
 
     Returns:
         UserResponse: The updated user profile with the new profile picture.
@@ -138,7 +141,7 @@ async def upload_user_profile_picture(user_service: UserServiceDependency, curre
     Raises:
         HTTPException: If the file type is invalid or exceeds the size limit.
     """
-    file_content: bytes = await _validate_profile_picture(file=file)
+    file_content: bytes = await validate_uploaded_image(file=file)
 
     if file.content_type is None:
         raise HTTPException(
@@ -156,41 +159,9 @@ async def upload_user_profile_picture(user_service: UserServiceDependency, curre
         file_content=file_content,
         content_type=file.content_type,
         user_id=current_user_id,
-        prefix="profile-pictures"
+        prefix="profile-pictures",
+        file_name="profile-picture"
     )
 
     return user_service.update_profile_picture(user_id=current_user_id, picture_url=file_url)
 
-
-async def _validate_profile_picture(file: UploadFile) -> bytes:
-    """
-    Validates an uploaded profile picture for type and size.
-
-    Args:
-        file: The uploaded file from FastAPI.
-
-    Returns:
-        The file content as bytes if validation is successful.
-
-    Raises:
-        HTTPException: If the file type or size is invalid.
-    """
-
-    MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
-    ALLOWED_MIME_TYPES: List[str] = ["image/jpeg", "image/png", "image/webp"]
-
-    if file.content_type not in ALLOWED_MIME_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid file type. Allowed types are: {', '.join(ALLOWED_MIME_TYPES)}"
-        )
-
-    file_content: bytes = await file.read()
-
-    if len(file_content) > MAX_FILE_SIZE_BYTES:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File size exceeds the limit of {MAX_FILE_SIZE_BYTES / (1024*1024):.0f}MB."
-        )
-
-    return file_content

@@ -38,6 +38,7 @@ class BlogModel(Base):
     is_published = Column(Boolean, nullable=False, server_default="False", default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), default=datetime.now(tz=timezone.utc))
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), default=datetime.now(tz=timezone.utc))
+    image_url = Column(String, nullable=True, comment="URL of the blog image")
     user = relationship("UserModel", back_populates="blogs")
     tags = relationship("TagModel", secondary=blog_tags, back_populates="blogs")
     comments = relationship("CommentModel", back_populates="blog", cascade="all, delete-orphan")
