@@ -149,7 +149,6 @@ class IntegrityConstraintException(DatabaseException):
     message: str = "The resource could not be created due to a data conflict."
     status_code: int = status.HTTP_409_CONFLICT
 
-
 class UnknownException(BaseAPIException):
     """
     Raised for unexpected errors that do not fit into other categories.
