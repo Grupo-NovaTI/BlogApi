@@ -1,14 +1,13 @@
-import uuid
+from typing import Optional
 
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import ContentSettings
 from azure.storage.blob.aio import BlobServiceClient, ContainerClient
-from azure.storage.blob.aio._blob_client_async import BlobClient
 
 from app.core.config.application_config import (
     CLOUD_STORAGE_CONNECTION_STRING, CLOUD_STORAGE_CONTAINER_NAME)
-from app.utils.errors.exceptions import FileStorageException, NotFoundException
 from app.core.data.file_storage_interface import FileStorageInterface
+from app.utils.errors.exceptions import FileStorageException, NotFoundException
 
 
 class AzureFileStorageService(FileStorageInterface):
@@ -38,7 +37,9 @@ class AzureFileStorageService(FileStorageInterface):
         file_content: bytes,
         content_type: str,
         user_id: int,
-        prefix: str = "profile-pictures"
+        prefix: str = "profile-pictures",
+        file_name: Optional[str] = "uploaded_file",
+        replace_existing: bool = True
     ) -> str:
         """
         Uploads a file to Azure Blob Storage and returns its URL.
@@ -57,12 +58,12 @@ class AzureFileStorageService(FileStorageInterface):
             file_extension: str = content_type.split(
                 '/')[-1]
 
-            blob_name: str = f"{prefix}/{user_id}/profile-picture.{file_extension}"
+            blob_name: str = f"{prefix}/{user_id}/{file_name}.{file_extension}"
 
             async with container_client.get_blob_client(
                     blob_name) as blob_client:
 
-                await blob_client.upload_blob(file_content, overwrite=True)
+                await blob_client.upload_blob(file_content, overwrite=replace_existing)
 
                 await blob_client.set_http_headers(content_settings=ContentSettings(content_type=content_type))
 
