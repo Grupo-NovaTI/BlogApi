@@ -6,7 +6,7 @@ across the application. Each exception includes a status code, a user-friendly m
 for logging and debugging. These exceptions are intended to be raised in service, repository, or route layers
 and handled by global exception handlers to return appropriate HTTP responses.
 """
-from typing import Optional
+from typing import List, Optional
 from starlette import status
 import uuid
 from datetime import datetime
@@ -141,6 +141,40 @@ class FileStorageException(BaseAPIException):
         """
         super().__init__(details=f"File storage error: {details}")
 
+class RequestEntityTooLargeException(BaseAPIException):
+    """
+    Raised when the request entity is too large (413).
+
+    Args:
+        details (str): Additional details about the error.
+    """
+    status_code = status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+    message = "The request entity is too large. Please reduce the size of your request."
+    
+    def __init__(self, details: str) -> None:
+        """
+        Initialize RequestEntityTooLargeException with details.
+        """
+        super().__init__(details=details)
+        
+
+class InvalidFileTypeException(BaseAPIException):
+    """
+    Raised when an uploaded file type is not allowed.
+
+    Args:
+        allowed_types (List[str]): List of allowed MIME types.
+        provided_type (str): The MIME type of the uploaded file.
+    """
+    status_code = status.HTTP_400_BAD_REQUEST
+    message = "Invalid file type provided."
+
+    def __init__(self, allowed_types: List[str], provided_type: str) -> None:
+        """
+        Initialize InvalidFileTypeException with allowed types and provided type.
+        """
+        details: str = f"Allowed types are: {', '.join(allowed_types)}. Provided type: {provided_type}."
+        super().__init__(details=details)
 
 class IntegrityConstraintException(DatabaseException):
     """
