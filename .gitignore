@@ -4,4 +4,5 @@ __pycache__/
 */__pycache__/
 *.log
 .venv
-./.idea/**
+./.idea/*.xml
+./.idea/inspectionProfiles/
