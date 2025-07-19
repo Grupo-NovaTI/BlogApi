@@ -47,7 +47,7 @@ class AzureFileStorageService(FileStorageInterface):
         Args:
             file_content: The binary content of the file.
             content_type: The MIME type of the file.
-            user_id: The ID of the user uploading the file, for organization.
+            user_id: The ID of the user uploading the file for organization.
             prefix: A folder-like prefix for organization within the container.
 
         Returns:

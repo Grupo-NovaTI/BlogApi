@@ -1,8 +1,7 @@
 from test import BlogModel, CommentModel, TagModel, UserModel, UserRepository
-from typing import List
+from typing import List, Optional
 
 import pytest
-from git import Optional
 from sqlalchemy.orm.session import Session
 from test.utils.utils import db_session
 
