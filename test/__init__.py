@@ -19,6 +19,9 @@ from app.comments.models.comment_model import CommentModel
 from app.comments.repositories.comment_repository import CommentRepository
 from app.comments.services.comment_service import CommentService
 
+# Exceptions and utilities
+from app.utils.errors.exceptions import NotFoundException, ConflictException, DatabaseException, IntegrityConstraintException
+
 __all__: list[str] = [
     "Base",
     "UserModel",
@@ -33,4 +36,8 @@ __all__: list[str] = [
     "CommentModel",
     "CommentRepository",
     "CommentService",
+    "NotFoundException",
+    "ConflictException",
+    "DatabaseException",
+    "IntegrityConstraintException",
 ]
