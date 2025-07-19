@@ -45,6 +45,8 @@ class AzureFileStorageService(FileStorageInterface):
         Uploads a file to Azure Blob Storage and returns its URL.
 
         Args:
+            replace_existing: Whether to replace an existing file with the same name.
+            file_name: The name of the file to upload.
             file_content: The binary content of the file.
             content_type: The MIME type of the file.
             user_id: The ID of the user uploading the file for organization.
