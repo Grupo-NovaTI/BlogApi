@@ -6,9 +6,7 @@ It provides dependency-injectable session management and database initialization
 """
 
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm.session import Session
+from sqlalchemy.orm import sessionmaker, Session, declarative_base
 
 from app.core.config import DATABASE_URL
 from app.utils.logger.application_logger import ApplicationLogger
