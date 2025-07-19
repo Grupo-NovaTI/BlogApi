@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - backend.env
+      - .env
     volumes:
       - .:/app # Comment this line if you want to use a pre-built image instead of building from source
     depends_on:

@@ -46,10 +46,12 @@ cp .env-copy .env
 The following variables need to be set in the `.env` file:
 
 *   `DATABASE_URL`: The connection string for the PostgreSQL database.
-*   `SECRET_KEY`: A secret key for signing JWTs.
-*   `ALGORITHM`: The algorithm used for JWTs (e.g., HS256).
+*   `JWT_SECRET_KEY`: A secret key for signing JWTs.
+*   `JWT_ALGORITHM`: The algorithm used for JWTs (e.g., HS256).
 *   `ACCESS_TOKEN_EXPIRE_MINUTES`: The expiration time for access tokens in minutes.
+*  `CLOUD_STORAGE_CONNECTION_STRING`: The cloud storage connection string
+* `REDIS_URL`: The connection string for the redis database service.
+* `CLOUD_STORAGE_CONTAINER_NAME`: The name of the storage where the files are saved.
 
 ## Testing
-
-[This section will be updated with instructions on how to run automated tests once they are implemented.]
+Open the terminal and run `pytest`
