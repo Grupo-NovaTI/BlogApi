@@ -21,6 +21,11 @@
 	// "customizations": {},
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	"remoteUser": "vscode",
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"username": "vscode"
+		}
+	},
 	"customizations": {
 		"vscode": {
 			"extensions": [
