@@ -1,0 +1,17 @@
+{
+    "python.analysis.indexing": false,
+    "python.analysis.exclude": [
+        "**/node_modules",
+        "**/__pycache__/**",
+        "**/.venv/**",
+        "**/.mypy_cache/**",
+        "**/.pytest_cache/**",
+        "**/.tox/**",
+        "**/.eggs/**",
+        "**/build",
+        "**/dist",
+        "**/.git/**",
+        "**/.vscode/**",
+        "**/.idea/**",
+    ],
+}
