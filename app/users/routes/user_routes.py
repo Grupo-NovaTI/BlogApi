@@ -75,7 +75,7 @@ async def get_users(user_service: UserServiceDependency, limit: int = Query(DEFA
     Returns:
         List[UserResponse]: A list of user data.
     """
-    return user_service.get_all_users()
+    return user_service.get_all_users(offset=offset, limit=limit)
 
 
 @user_router.delete(path="/me", summary="Delete user by ID", status_code=status.HTTP_204_NO_CONTENT)
@@ -93,8 +93,8 @@ async def delete_current_user(user_service: UserServiceDependency, current_user_
     user_service.delete_user_by_id(user_id=current_user_id)
 
 
-@user_router.patch(path="/status", summary="Reactivate user account", status_code=status.HTTP_200_OK)
-async def reactivate_user_account(user_service: UserServiceDependency, current_user_id: UserIDFromTokenDependency, is_active: bool = Path(default=..., description="Set to True to reactivate the account or False to deactivate it", example=True)):
+@user_router.patch(path="/me/status", summary="Reactivate user account", status_code=status.HTTP_200_OK)
+async def reactivate_user_account(user_service: UserServiceDependency, current_user_id: UserIDFromTokenDependency, is_active: bool = Query(default=..., description="Set to True to reactivate the account or False to deactivate it", example=True)):
     """
     Reactivate the current user's account.
 
@@ -164,4 +164,3 @@ async def upload_user_profile_picture(user_service: UserServiceDependency, curre
     )
 
     return user_service.update_profile_picture(user_id=current_user_id, picture_url=file_url)
-

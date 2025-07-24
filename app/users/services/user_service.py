@@ -66,14 +66,14 @@ class UserService:
         model=_MODEL_NAME,
         operation=Operations.FETCH
     )
-    def get_all_users(self) -> List[UserModel]:
+    def get_all_users(self, offset : int, limit : int) -> List[UserModel]:
         """
         Retrieve all users from the repository.
 
         Returns:
             List[UserModel]: A list of all users.
         """
-        return self._user_repository.get_all_users()
+        return self._user_repository.get_all_users(offset=offset, limit=limit)
 
     @handle_service_transaction(
         model=_MODEL_NAME,
