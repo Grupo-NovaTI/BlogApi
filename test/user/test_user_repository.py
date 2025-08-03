@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import pytest
 from sqlalchemy.orm.session import Session
-from test.utils.utils import db_session
+from test.utils.conftest import db_session
 
 
 @pytest.fixture(scope="function")
