@@ -15,3 +15,4 @@ azure-storage-blob
 # For development and testing
 pip-tools
 pytest
+pytest-asyncio
