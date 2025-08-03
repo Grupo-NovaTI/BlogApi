@@ -19,7 +19,7 @@ from app.blogs.services.blog_service import BlogService
 from app.comments.repositories.comment_repository import CommentRepository
 from app.comments.services.comment_service import CommentService
 from app.core.config.application_config import JWT_OAUTH_SCHEME
-from app.core.data.database import get_db
+from app.core.data.db.database import get_db
 from app.core.security.jwt_handler import JwtHandler
 from app.core.security.password_hasher import PasswordHasher
 from app.tags.repositories.tag_repository import TagRepository
@@ -27,8 +27,7 @@ from app.tags.services.tag_service import TagService
 from app.users.repositories.user_repository import UserRepository
 from app.users.services.user_service import UserService
 from app.utils.errors.exceptions import UnauthorizedException
-from app.core.data.file_storage_interface import FileStorageInterface
-from app.core.data.azure_file_storage_service import AzureFileStorageService
+from app.core.data import AzureFileStorageService, FileStorageInterface 
 # Security Dependencies
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=JWT_OAUTH_SCHEME)

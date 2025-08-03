@@ -1,4 +1,4 @@
-from app.core.data.database import Base
+from app.core.data.db.database import Base
 # Users imports
 from app.users.models.user_model import UserModel
 from app.users.repositories.user_repository import UserRepository

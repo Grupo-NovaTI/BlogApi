@@ -22,7 +22,7 @@ from app.comments.routes.comment_routes import comment_router
 from app.core.config.application_config import APP_NAME, APP_VERSION, DEBUG
 
 #! Application Imports
-from app.core.data.database import init_db
+from app.core.data.db.database import init_db
 from app.core.middlewares import (clear_redis_cache, init_redis_cache,
                                   rate_limiter)
 from app.status.status_routes import app as status_router

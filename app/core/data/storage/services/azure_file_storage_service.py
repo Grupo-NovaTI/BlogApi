@@ -6,7 +6,7 @@ from azure.storage.blob.aio import BlobServiceClient, ContainerClient
 
 from app.core.config.application_config import (
     CLOUD_STORAGE_CONNECTION_STRING, CLOUD_STORAGE_CONTAINER_NAME)
-from app.core.data.file_storage_interface import FileStorageInterface
+from app.core.data.storage.contracts.file_storage_interface import FileStorageInterface
 from app.utils.errors.exceptions import FileStorageException, NotFoundException
 
 
