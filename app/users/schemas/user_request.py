@@ -8,7 +8,6 @@ and a method to convert the request to a UserModel ORM object.
 
 import re
 from typing import Any, Optional
-
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.utils.constants.constants import EMAIL_PATTERN, PASSWORD_PATTERN

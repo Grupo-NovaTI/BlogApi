@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException, status
 
 from app.utils.constants.constants import (ALLOWED_MIME_TYPES,
                                            MAX_FILE_SIZE_BYTES)
@@ -21,8 +21,14 @@ async def validate_uploaded_image(file: UploadFile, image_size: int = MAX_FILE_S
     Raises:
         HTTPException: If the file type or size is invalid.
     """
+    if file.content_type is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File content type is required"
+        )
 
-    if file.content_type is not None and file.content_type not in allowed_types:
+    # This check is now correct because we know content_type is not None
+    if file.content_type not in allowed_types:
         raise InvalidFileTypeException(
             allowed_types=allowed_types,
             provided_type=file.content_type

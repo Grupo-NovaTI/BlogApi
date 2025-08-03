@@ -137,7 +137,7 @@ async def response_validation_error_handler(request: Request, exc: ResponseValid
         message=f"[{exception_id}]: Response validation error: {exc.errors()}")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={"message": "Invalid response data.",
+        content={"message": f"Invalid response data: {exc.errors()}",
                  "error_id": exception_id, "timestamp": datetime.now().isoformat()},
     )
 

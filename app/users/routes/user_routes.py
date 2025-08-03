@@ -8,7 +8,7 @@ It uses dependency injection for service and authentication logic.
 
 from typing import List, Optional
 
-from fastapi import APIRouter, File, HTTPException, Path, Query, UploadFile
+from fastapi import APIRouter, File, Path, Query, UploadFile
 from starlette import status
 
 from app.core.dependencies import (AccessTokenDependency,
@@ -143,21 +143,9 @@ async def upload_user_profile_picture(user_service: UserServiceDependency, curre
     """
     file_content: bytes = await validate_uploaded_image(file=file)
 
-    if file.content_type is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="File content type is required."
-        )
-
-    if file.content_type is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="File content type is required."
-        )
-
     file_url: str = await file_service.upload_file(
         file_content=file_content,
-        content_type=file.content_type,
+        content_type=str(file.content_type),
         user_id=current_user_id,
         prefix="profile-pictures",
         file_name="profile-picture"
