@@ -17,7 +17,6 @@ from app.main import app
 from app.users.models.user_model import UserModel
 
 # --- Mock Service Fixtures ---
-
 @pytest.fixture(scope="function")
 def mock_user_service() -> Mock:
     """Provides a fresh mock of the user service for each test function."""
@@ -29,7 +28,6 @@ def mock_file_service() -> AsyncMock:
     return AsyncMock()
 
 # --- Data Fixtures ---
-
 @pytest.fixture(scope="session")
 def sample_user_data() -> dict[str, Any]:
     """Provides sample user data that can be used across tests."""
@@ -47,7 +45,6 @@ def sample_user_data() -> dict[str, Any]:
         "hashed_password": "fake_hash",
     }
 
-# --- The Centralized Client Fixture ---
 
 @pytest.fixture(scope="function")
 def auth_client(
@@ -61,19 +58,15 @@ def auth_client(
     The `yield` statement ensures that dependency overrides are cleaned up
     after each test.
     """
-    # Override dependencies with our mocks
     app.dependency_overrides[_provide_user_services] = lambda: mock_user_service
     app.dependency_overrides[_provide_file_storage_service] = lambda: mock_file_service
     
-    # Mock an authenticated user with ID=1
     app.dependency_overrides[provide_user_id_from_token] = lambda: 1
     app.dependency_overrides[provide_token_payload] = lambda: {"user_id": 1, "role": "user"}
 
-    # Yield the client to the test function
     with TestClient(app, base_url="http://testserver/api/v1") as client:
         yield client
 
-    # Clean up the overrides after the test is done
     app.dependency_overrides.clear()
     
     
@@ -82,7 +75,6 @@ engine: Engine = create_engine(url=SQLALCHEMY_DATABASE_URL, connect_args={"check
 TestingSessionLocal: sessionmaker[Session] = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # --- Database Fixtures ---
-
 @pytest.fixture(scope="function")
 def db_session() -> Generator[Session, Any, None]:
     """
