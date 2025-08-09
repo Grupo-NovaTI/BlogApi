@@ -1,4 +1,5 @@
-from test import BlogModel, CommentModel, TagModel, UserModel, UserRepository
+from test.utils.imports import (  BlogModel, CommentModel, TagModel, UserModel)
+from app.users.repositories.user_repository import UserRepository
 from typing import List, Optional
 
 import pytest
