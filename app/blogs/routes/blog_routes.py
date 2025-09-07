@@ -7,7 +7,8 @@ It uses dependency injection for service and authentication, and supports cachin
 
 from typing import List, Optional
 
-from fastapi import APIRouter, File, HTTPException, Path, Query, Request, UploadFile
+from fastapi import (APIRouter, File, HTTPException, Path, Query, Request,
+                     UploadFile)
 from fastapi_cache.decorator import cache
 from starlette import status
 
@@ -16,7 +17,8 @@ from app.blogs.schemas.blog_request import BlogPatchRequest, BlogRequest
 from app.blogs.schemas.blog_response import BlogResponseFull
 from app.core.dependencies import (AccessTokenDependency,
                                    BlogServiceDependency,
-                                   UserIDFromTokenDependency, FileStorageServiceDependency)
+                                   FileStorageServiceDependency,
+                                   UserIDFromTokenDependency)
 from app.utils.constants.constants import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
 from app.utils.validators.upload_image_validator import validate_uploaded_image
 
@@ -24,7 +26,6 @@ blog_router = APIRouter(
     prefix="/blogs",
     tags=["blogs"],
 )
-
 
 @blog_router.get(path="", response_model=List[BlogResponseFull], tags=["blogs"], description="Get all blogs", status_code=status.HTTP_200_OK)
 @cache(expire=60)
@@ -52,7 +53,9 @@ async def get_all_blogs(
 
 
 @blog_router.get(path="/public", response_model=List[BlogResponseFull], tags=["blogs"], description="Get public blogs", status_code=status.HTTP_200_OK)
+@cache(expire=60)
 async def get_public_blogs(
+    request: Request,
     blog_service: BlogServiceDependency,
     limit: int = DEFAULT_PAGE_SIZE,
     offset: int = DEFAULT_OFFSET,
@@ -131,7 +134,9 @@ async def patch_blog(
 
 
 @blog_router.get(path="/user/{user_id}", response_model=List[BlogResponseFull], tags=["blogs"], description="Get blogs by user", status_code=status.HTTP_200_OK)
+@cache(expire=60)
 async def get_blogs_by_user(
+    request: Request,
     user_id: int,
     blog_service: BlogServiceDependency,
     token: AccessTokenDependency,
@@ -155,7 +160,9 @@ async def get_blogs_by_user(
 
 
 @blog_router.get(path="/users/me", response_model=List[BlogResponseFull], tags=["blogs"], description="Get blogs by current user", status_code=status.HTTP_200_OK)
+@cache(expire=60)
 async def get_blogs_by_current_user(
+    request: Request,
     blog_service: BlogServiceDependency,
     user_id: UserIDFromTokenDependency,
     limit: int = DEFAULT_PAGE_SIZE,
@@ -201,6 +208,7 @@ async def update_blog_content(
 @blog_router.get(path="/{blog_id}", response_model=Optional[BlogResponseFull], tags=["blogs"], description="Get blog by ID")
 @cache(expire=60)  # Cache for 60 seconds
 async def get_blog_by_id(
+    request: Request,
     blog_service: BlogServiceDependency,
     token: AccessTokenDependency,
     blog_id: int = Path(

@@ -7,12 +7,15 @@ for write operations.
 """
 
 from typing import Optional
-from fastapi import APIRouter, Path, Query
+
+from fastapi import APIRouter, Path, Query, Request
+from fastapi_cache.decorator import cache
 from starlette import status
-from app.tags.schemas.tag_response import TagResponse
-from app.tags.schemas.tag_request import TagRequest
-from app.core.dependencies import TagServiceDependency, AccessTokenDependency
+
+from app.core.dependencies import AccessTokenDependency, TagServiceDependency
 from app.core.security.authentication_decorators import admin_only
+from app.tags.schemas.tag_request import TagRequest
+from app.tags.schemas.tag_response import TagResponse
 from app.utils.constants.constants import DEFAULT_OFFSET, DEFAULT_PAGE_SIZE
 
 tag_router = APIRouter(
@@ -29,7 +32,9 @@ tag_router = APIRouter(
     tags=["tags"],
     status_code=status.HTTP_200_OK
 )
+@cache(expire=60)
 async def get_tags(
+    request: Request,
     tag_service: TagServiceDependency,
     limit: int = Query(DEFAULT_PAGE_SIZE, ge=1),
     offset: int = Query(DEFAULT_OFFSET, ge=0)
@@ -58,7 +63,9 @@ async def get_tags(
     tags=["tags"],
     status_code=status.HTTP_200_OK
 )
+@cache(expire=60)
 async def get_tag_by_id(
+    request: Request,
     token: AccessTokenDependency,
     tag_service: TagServiceDependency,
     tag_id: int = Path(..., description="The unique identifier of the tag to retrieve")

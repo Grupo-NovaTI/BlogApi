@@ -8,7 +8,8 @@ It uses dependency injection for service and authentication logic.
 
 from typing import List, Optional
 
-from fastapi import APIRouter, File, Path, Query, UploadFile
+from fastapi import APIRouter, File, Path, Query, Request, UploadFile
+from fastapi_cache.decorator import cache
 from starlette import status
 
 from app.core.dependencies import (AccessTokenDependency,
@@ -30,7 +31,8 @@ user_router = APIRouter(
 
 
 @user_router.get(path="/me", response_model=UserResponse, summary="Get current user")
-async def get_current_user(user_service: UserServiceDependency, current_user_id: UserIDFromTokenDependency):
+@cache(expire=60)
+async def get_current_user(request: Request, user_service: UserServiceDependency, current_user_id: UserIDFromTokenDependency):
     """
     Retrieve the current authenticated user's information.
 
@@ -45,8 +47,9 @@ async def get_current_user(user_service: UserServiceDependency, current_user_id:
 
 
 @user_router.get(path="/{user_id}", response_model=Optional[UserResponse], summary="Get user by ID")
+@cache(expire=60)
 @role_required(required_role=[UserRole.ADMIN, UserRole.USER])
-async def get_user_by_id(user_service: UserServiceDependency, token: AccessTokenDependency, user_id: int = Path(
+async def get_user_by_id(request: Request, user_service: UserServiceDependency, token: AccessTokenDependency, user_id: int = Path(
         default=..., description="The unique identifier of the user to retrieve", ge=1, le=1000000)):
     """
     Retrieve a user by their unique ID.
@@ -63,7 +66,8 @@ async def get_user_by_id(user_service: UserServiceDependency, token: AccessToken
 
 
 @user_router.get(path="", response_model=List[UserResponse], summary="Get all users")
-async def get_users(user_service: UserServiceDependency, limit: int = Query(DEFAULT_PAGE_SIZE, ge=1), offset: int = Query(DEFAULT_OFFSET, ge=0)):
+@cache(expire=60)
+async def get_users(request: Request, user_service: UserServiceDependency, limit: int = Query(DEFAULT_PAGE_SIZE, ge=1), offset: int = Query(DEFAULT_OFFSET, ge=0)):
     """
     Retrieve a list of users with pagination.
 

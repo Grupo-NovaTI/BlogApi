@@ -6,11 +6,17 @@ It uses dependency injection for service and authentication.
 """
 
 from typing import Optional
+
+from fastapi import APIRouter, Path, Request
+from fastapi_cache.decorator import cache
 from starlette import status
-from fastapi import APIRouter, Path
-from app.comments.schemas.comment_request import InsertCommentRequest, UpdateCommentRequest
+
+from app.comments.schemas.comment_request import (InsertCommentRequest,
+                                                  UpdateCommentRequest)
 from app.comments.schemas.comment_response import CommentResponse
-from app.core.dependencies import CommentServiceDependency, AccessTokenDependency, UserIDFromTokenDependency
+from app.core.dependencies import (AccessTokenDependency,
+                                   CommentServiceDependency,
+                                   UserIDFromTokenDependency)
 
 comment_router = APIRouter(
     prefix="/comments",
@@ -48,7 +54,9 @@ async def create_comment(
     summary="Get all comments for a blog",
     tags=["comments"],
 )
+@cache(expire=60)
 async def get_comments_by_blog_id(
+    request: Request,
     token: AccessTokenDependency,
     comment_service: CommentServiceDependency,
     blog_id: int = Path(..., description="The ID of the blog to retrieve comments for", ge=1, le=1000000)
@@ -72,7 +80,9 @@ async def get_comments_by_blog_id(
     summary="Get all comments by the current user",
     tags=["comments"],
 )
+@cache(expire=60)
 async def get_comments_by_user(
+    request: Request,
     user_id: UserIDFromTokenDependency,
     comment_service: CommentServiceDependency,
 ):
@@ -94,7 +104,9 @@ async def get_comments_by_user(
     summary="Get a comment by ID",
     tags=["comments"],
 )
+@cache(expire=60)
 async def get_comment_by_id(
+    request: Request,
     token: AccessTokenDependency,
     comment_service: CommentServiceDependency,
     comment_id: int = Path(..., description="The ID of the comment to retrieve", ge=1, le=1000000)
