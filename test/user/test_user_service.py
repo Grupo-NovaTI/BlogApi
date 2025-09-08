@@ -1,7 +1,7 @@
 from test import (ConflictException, NotFoundException, UserModel,
                   UserRepository, UserService)
 from unittest.mock import MagicMock, patch
-
+from test.utils.conftest import mock_db_session
 import pytest
 
 # --- Pytest Fixtures ---
@@ -13,15 +13,6 @@ def mock_user_repo() -> MagicMock:
     We can control what its methods return in each test.
     """
     return MagicMock(spec=UserRepository)
-
-@pytest.fixture
-def mock_db_session() -> MagicMock:
-    """
-    Fixture that creates a mock of the SQLAlchemy session.
-    For the service layer, we often don't need a real session,
-    just an object that can be passed to the constructor.
-    """
-    return MagicMock()
 
 @pytest.fixture
 def user_service(mock_user_repo: MagicMock, mock_db_session: MagicMock):

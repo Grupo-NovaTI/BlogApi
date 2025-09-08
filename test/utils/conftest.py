@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from test import Base
 from typing import Any, Generator
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -15,7 +15,14 @@ from app.core.dependencies.dependencies import (_provide_file_storage_service,
                                                 provide_user_id_from_token)
 from app.main import app
 from app.users.models.user_model import UserModel
+from app.blogs.models.blog_model import BlogModel
 
+@pytest.fixture
+def mock_db_session() -> MagicMock:
+    """
+    Fixture that creates a mock SQLAlchemy session.
+    """
+    return MagicMock()
 # --- Mock Service Fixtures ---
 @pytest.fixture(scope="function")
 def mock_user_service() -> Mock:
@@ -26,6 +33,11 @@ def mock_user_service() -> Mock:
 def mock_file_service() -> AsyncMock:
     """Provides a fresh mock of the file storage service for each test function."""
     return AsyncMock()
+
+@pytest.fixture(scope="function")
+def mock_blog_service() -> Mock:
+    """Provides a fresh mock of the blog service for each test function."""
+    return Mock()
 
 # --- Data Fixtures ---
 @pytest.fixture(scope="session")
@@ -43,6 +55,32 @@ def sample_user_data() -> dict[str, Any]:
         "created_at": datetime.now(tz=timezone.utc),
         "updated_at": datetime.now(tz=timezone.utc),
         "hashed_password": "fake_hash",
+    }
+
+@pytest.fixture
+def sample_blog() -> BlogModel:
+    """
+    Fixture that provides a sample BlogModel for testing.
+    """
+    return BlogModel(
+        id=1,
+        title="Test Blog",
+        content="Test content",
+        user_id=1,
+        is_published=True
+    )
+
+
+@pytest.fixture
+def sample_blog_data() -> dict[str, Any]:
+    """
+    Fixture that provides sample blog data for creation/update operations.
+    """
+    return {
+        "title": "New Blog",
+        "content": "New blog content",
+        "is_published": True,
+        "tags": [1, 2, 3]
     }
 
 

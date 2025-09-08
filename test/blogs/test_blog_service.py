@@ -17,7 +17,7 @@ from app.blogs.repositories.blog_repository import BlogRepository
 from app.blogs.services.blog_service import BlogService
 from app.utils.errors.exceptions import (ForbiddenException,
                                          NotFoundException)
-
+from test.utils.conftest import mock_db_session, sample_blog_data, sample_blog
 
 # --- Pytest Fixtures ---
 
@@ -37,13 +37,6 @@ def mock_blog_tag_repository() -> MagicMock:
     return MagicMock(spec=BlogTagRepository)
 
 
-@pytest.fixture
-def mock_db_session() -> MagicMock:
-    """
-    Fixture that creates a mock SQLAlchemy session.
-    """
-    return MagicMock()
-
 
 @pytest.fixture
 def blog_service(mock_blog_repository: MagicMock, mock_blog_tag_repository: MagicMock, mock_db_session: MagicMock) :
@@ -58,33 +51,6 @@ def blog_service(mock_blog_repository: MagicMock, mock_blog_tag_repository: Magi
             blog_tag_repository=mock_blog_tag_repository,
             db_session=mock_db_session
         )
-
-
-@pytest.fixture
-def sample_blog() -> BlogModel:
-    """
-    Fixture that provides a sample BlogModel for testing.
-    """
-    return BlogModel(
-        id=1,
-        title="Test Blog",
-        content="Test content",
-        user_id=1,
-        is_published=True
-    )
-
-
-@pytest.fixture
-def sample_blog_data() -> Dict[str, Any]:
-    """
-    Fixture that provides sample blog data for creation/update operations.
-    """
-    return {
-        "title": "New Blog",
-        "content": "New blog content",
-        "is_published": True,
-        "tags": [1, 2, 3]
-    }
 
 
 # --- Test Class ---
@@ -102,11 +68,11 @@ class TestBlogService:
         Test successful retrieval of all blogs with pagination.
         """
         # Arrange
-        expected_blogs = [sample_blog]
+        expected_blogs: List[BlogModel] = [sample_blog]
         mock_blog_repository.get_all_blogs.return_value = expected_blogs
 
         # Act
-        result = blog_service.get_all_blogs(limit=10, offset=0)
+        result: List[BlogModel] = blog_service.get_all_blogs(limit=10, offset=0)
 
         # Assert
         mock_blog_repository.get_all_blogs.assert_called_once_with(limit=10, offset=0)
