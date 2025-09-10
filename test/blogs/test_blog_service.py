@@ -129,11 +129,11 @@ class TestBlogService:
         """
         # Arrange
         user_id = 1
-        created_blog = BlogModel(id=1, user_id=user_id, **{k: v for k, v in sample_blog_data.items() if k != 'tags'})
+        created_blog = BlogModel(id=1, **{k: v for k, v in sample_blog_data.items() if k != 'tags'})
         mock_blog_repository.create_blog.return_value = created_blog
 
         # Act
-        result: BlogModel = blog_service.create_blog(blog_data=sample_blog_data, user_id=user_id)
+        result: BlogModel = blog_service.create_blog(blog_data={**sample_blog_data, "tags": [1,2,3]}, user_id=user_id)
 
         # Assert
         mock_blog_repository.create_blog.assert_called_once()

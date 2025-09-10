@@ -12,7 +12,7 @@ from sqlalchemy.orm.session import Session
 from app.core.dependencies.dependencies import (_provide_file_storage_service,
                                                 _provide_user_services,
                                                 provide_token_payload,
-                                                provide_user_id_from_token)
+                                                provide_user_id_from_token, _provide_blog_service)
 from app.main import app
 from app.users.models.user_model import UserModel
 from app.blogs.models.blog_model import BlogModel
@@ -67,7 +67,9 @@ def sample_blog() -> BlogModel:
         title="Test Blog",
         content="Test content",
         user_id=1,
-        is_published=True
+        is_published=True,
+        created_at=datetime.now(tz=timezone.utc),
+        updated_at=datetime.now(tz=timezone.utc),
     )
 
 
@@ -80,13 +82,15 @@ def sample_blog_data() -> dict[str, Any]:
         "title": "New Blog",
         "content": "New blog content",
         "is_published": True,
-        "tags": [1, 2, 3]
+                "image_url": "https://example.com/image.png",
+        "created_at": datetime.now(tz=timezone.utc),
+        "updated_at": datetime.now(tz=timezone.utc)
     }
 
 
 @pytest.fixture(scope="function")
 def auth_client(
-    mock_user_service: Mock, mock_file_service: AsyncMock
+    mock_user_service: Mock, mock_file_service: AsyncMock, mock_blog_service: Mock
 ) -> Generator[TestClient, Any, None]:
     """
     Creates a TestClient with dependency overrides for an authenticated user.
@@ -98,7 +102,8 @@ def auth_client(
     """
     app.dependency_overrides[_provide_user_services] = lambda: mock_user_service
     app.dependency_overrides[_provide_file_storage_service] = lambda: mock_file_service
-    
+    app.dependency_overrides[_provide_blog_service] = lambda: mock_blog_service
+
     app.dependency_overrides[provide_user_id_from_token] = lambda: 1
     app.dependency_overrides[provide_token_payload] = lambda: {"user_id": 1, "role": "user"}
 
